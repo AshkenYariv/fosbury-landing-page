@@ -22,7 +22,7 @@ export const copy = {
       { label: "Pricing", href: "/#pricing" },
       { label: "Demo", href: "/demo" },
     ],
-    cta: { label: "Book a demo" },
+    cta: { label: "Become a design partner" },
   },
 
   hero: {
@@ -30,7 +30,7 @@ export const copy = {
     headline: ["Close in two days.", "Know your margin every morning."],
     subhead:
       "Fosbury unifies your general ledger and inventory ledger on one AI-native data model — so finance and operations finally tell the same story.",
-    primaryCta: "Book a demo",
+    primaryCta: "Become a design partner",
     secondaryCta: "See the product",
     secondaryCtaHref: "#product",
     trustEyebrow: "Trusted by the operators behind",
@@ -118,14 +118,15 @@ export const copy = {
   pricing: {
     eyebrow: "Pricing",
     title: "We charge for outcomes, not seats.",
+    note: "Design partner program only — for now.",
     footnote:
       "Your finance team should grow because the business does — not because the software taxed it.",
-    cta: "Book a demo",
+    cta: "Become a design partner",
   },
 
   footerCta: {
     body: "Run your business on the same system your numbers already wish you used.",
-    cta: "Book a demo",
+    cta: "Become a design partner",
   },
 
   footer: {

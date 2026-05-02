@@ -17,6 +17,10 @@ export function PricingTable() {
           <h2 className="mt-4 text-display-md font-medium tracking-tight text-primary">
             {copy.pricing.title}
           </h2>
+          <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 font-mono text-[11px] uppercase tracking-eyebrow text-accent ring-1 ring-accent/30">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+            {copy.pricing.note}
+          </p>
         </Reveal>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3">
