@@ -18,8 +18,9 @@ export const copy = {
 
   nav: {
     items: [
-      { label: "Product", href: "#product" },
-      { label: "Pricing", href: "#pricing" },
+      { label: "Product", href: "/#product" },
+      { label: "Pricing", href: "/#pricing" },
+      { label: "Demo", href: "/demo" },
     ],
     cta: { label: "Book a demo" },
   },
