@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----------------------------------------------------------------------------
+   Semantic tokens. Light is canonical (#FAFAF7); dark mirrors Linear's
+   low-contrast elegance. Components reference tokens, never raw hex.
+---------------------------------------------------------------------------- */
+
+:root {
+  /* surfaces */
+  --bg: 250 250 247;            /* #FAFAF7 */
+  --bg-subtle: 245 244 240;     /* slightly warmer near-white for strips */
+  --surface: 255 255 255;       /* card / glass-panel base */
+  --surface-elevated: 255 255 255;
+
+  /* text */
+  --text: 14 14 16;             /* near-black */
+  --text-muted: 90 90 96;
+  --text-faint: 140 140 148;
+
+  /* lines */
+  --border: 224 222 215;
+  --border-strong: 200 198 190;
+
+  /* accent — single warm violet, mirrors Linear/Radix infra modernity */
+  --accent: 110 86 207;         /* #6E56CF */
+  --accent-subtle: 234 230 250; /* tint */
+  --accent-fg: 255 255 255;     /* text on accent */
+
+  /* semantic */
+  --anomaly: 224 131 58;        /* #E0833A — reserved exclusively for margin-grid flags */
+  --anomaly-subtle: 250 235 215;
+  --positive: 22 130 90;
+}
+
+.dark {
+  --bg: 14 14 15;               /* #0E0E0F */
+  --bg-subtle: 18 18 20;
+  --surface: 22 22 24;
+  --surface-elevated: 28 28 32;
+
+  --text: 240 240 242;
+  --text-muted: 158 158 166;
+  --text-faint: 100 100 108;
+
+  --border: 38 38 44;
+  --border-strong: 56 56 64;
+
+  --accent: 138 116 230;        /* lifted for dark contrast */
+  --accent-subtle: 36 32 60;
+  --accent-fg: 255 255 255;
+
+  --anomaly: 232 154 92;
+  --anomaly-subtle: 60 38 22;
+  --positive: 64 178 132;
+}
+
+/* ----------------------------------------------------------------------------
+   Base
+---------------------------------------------------------------------------- */
+
+html,
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+}
+
+body {
+  font-feature-settings: "ss01", "ss03", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgb(var(--accent) / 0.25);
+  color: rgb(var(--text));
+}
+
+/* Custom focus ring using accent — replaces browser default. */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Mono numerals everywhere they appear */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skip link */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  background: rgb(var(--text));
+  color: rgb(var(--bg));
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
+/* Reduced motion: collapse any leftover transition durations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Grid background utility for the architecture diagram + hero ambient */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, black 30%, transparent 75%);
+}
+
+/* Soft accent glow used behind the hero mockup */
+.accent-glow {
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 30%,
+    rgb(var(--accent) / 0.18),
+    transparent 70%
+  );
+}
+
+.dark .accent-glow {
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 30%,
+    rgb(var(--accent) / 0.22),
+    transparent 70%
+  );
+}
