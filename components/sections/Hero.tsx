@@ -1,9 +1,7 @@
-import Image from "next/image";
 import { ButtonLink } from "@/components/ui/Button";
 import { CloseCockpit } from "@/components/mockups/CloseCockpit";
 import { Reveal } from "@/components/primitives/Reveal";
 import { copy, BOOK_DEMO_URL } from "@/content/copy";
-import { trustStripBrands } from "@/content/customers";
 
 export function Hero() {
   return (
@@ -61,28 +59,6 @@ export function Hero() {
           <div className="relative mx-auto flex w-full max-w-5xl justify-center">
             <CloseCockpit />
           </div>
-        </Reveal>
-
-        <Reveal className="mt-20 sm:mt-24" delay={0.2}>
-          <p className="mb-6 text-center font-mono text-[11px] uppercase tracking-eyebrow text-muted">
-            {copy.hero.trustEyebrow}
-          </p>
-          <ul className="mx-auto grid max-w-5xl grid-cols-2 items-center gap-x-8 gap-y-6 sm:grid-cols-3 md:grid-cols-6">
-            {trustStripBrands.map((b) => (
-              <li
-                key={b.name}
-                className="flex items-center justify-center text-faint hover:text-muted transition-colors"
-              >
-                <Image
-                  src={b.logo}
-                  alt={b.name}
-                  width={140}
-                  height={28}
-                  className="h-6 w-auto opacity-70"
-                />
-              </li>
-            ))}
-          </ul>
         </Reveal>
       </div>
     </section>

@@ -38,18 +38,10 @@ npm run lint        # next lint
 
 ## Editing copy without touching JSX
 
-Every visible string lives in `content/copy.ts`. Section components destructure what they need. Swap headlines, eyebrows, and CTAs there to A/B test without code changes. Customers and pricing have their own files:
+Every visible string lives in `content/copy.ts`. Section components destructure what they need. Swap headlines, eyebrows, and CTAs there to A/B test without code changes. Pricing has its own file:
 
 - `content/copy.ts` — page-wide strings, plus the `BOOK_DEMO_URL` constant
-- `content/customers.ts` — trust-strip brand list (logos rendered below the hero)
 - `content/pricing.ts` — three tiers, features, fit ranges
-
-## Trust-strip logos
-
-v1 ships with **illustrative logos**: real F500 wordmarks (P&G Ventures, Unilever Prestige, Nestlé Health Science, Mondelez, Coty, Estée Lauder) used aspirationally as placeholders. Swap in real customer logos as commitments land:
-
-1. Drop the customer's wordmark SVG into `public/logos/<slug>.svg` (single-color, ~32px tall, viewBox-bounded).
-2. Update the matching entry in `content/customers.ts` (`name` + `logo` path).
 
 ## Theme
 

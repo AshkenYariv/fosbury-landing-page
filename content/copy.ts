@@ -33,7 +33,6 @@ export const copy = {
     primaryCta: "Become a design partner",
     secondaryCta: "See the product",
     secondaryCtaHref: "#product",
-    trustEyebrow: "Trusted by the operators behind",
   },
 
   problem: {
