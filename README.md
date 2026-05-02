@@ -34,7 +34,7 @@ npm run lint        # next lint
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL used in metadata, sitemap, JSON-LD, OG. |
 | `NEXT_PUBLIC_BOOK_DEMO_URL` | Where every "Book a demo" CTA points. Defaults to `https://calendly.com/ashkenazy-jariv/fosbury-intro`. |
-| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | When set, `<Analytics />` injects the Plausible script. Leave empty in dev. |
+| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Optional override for the Umami website ID. Set in `.env.local` to a separate dev/staging website so localhost clicks don't pollute prod analytics. Defaults to the prod ID baked into `components/ui/Analytics.tsx`. |
 
 ## Editing copy without touching JSX
 

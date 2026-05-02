@@ -3,7 +3,7 @@
  *
  * - `trackEvent(name, data?)` — fire a custom event.
  * - Naming convention: `<action>_<subject>[_<modifier>]` in snake_case
- *   (e.g. `click_hero_primary_cta`, `submit_contact_form`,
+ *   (e.g. `click_hero_primary_cta_book_demo`, `click_nav_cta_book_demo`,
  *   `click_pricing_plan_operator_book_demo`).
  *
  * Safe to call before the script loads or during SSR. Calls made before
