@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fosbury.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fosbury.ai";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/for/", "/docs"],
+        disallow: ["/for/", "/docs"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

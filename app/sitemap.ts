@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fosbury.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fosbury.ai";
 
 /**
  * v1 sitemap lists only the public landing page. Stub routes (verticals,

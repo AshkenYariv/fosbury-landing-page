@@ -59,20 +59,20 @@ v1 ships with **illustrative logos**: real F500 wordmarks (P&G Ventures, Unileve
 
 ## OG images
 
-`/api/og?variant=1|2|3` renders three Edge-runtime OG variants for paid social. Each shares the layout primitives but varies the headline and eyebrow:
+Three pre-rendered variants live as static PNGs in `public/og/variant-{1,2,3}.png` so the static export works on GitHub Pages (no Edge runtime). `app/layout.tsx` references `variant-1` for both OpenGraph and Twitter cards.
 
-- `variant=1` — "Close in two days." (default; referenced from `app/layout.tsx`)
+- `variant=1` — "Close in two days."
 - `variant=2` — "Know your margin every morning."
 - `variant=3` — "The substrate beneath your stack."
 
-Edit `app/api/og/route.tsx` to add variants — copy lives inline there because @vercel/og can't import the rest of the app's React tree.
+To regenerate: temporarily restore the @vercel/og route on a local branch, run `next dev`, hit `/api/og?variant=N`, save the PNG over `public/og/variant-N.png`. The original PNGs were captured this way and stashed in `og-preview/` (gitignored).
 
 ## Routes
 
 | Route | Status | Notes |
 |---|---|---|
 | `/` | Live | Single-page landing. |
-| `/api/og` | Edge | Dynamic OG renderer, `?variant=1\|2\|3`. |
+| `/og/variant-{1,2,3}.png` | Static | Pre-rendered OG images. |
 | `/docs` | Stub | `<ComingSoon>` + `noindex`. |
 | `/for/[vertical]` | Stub (SSG) | `consumer-brands`, `manufacturing`, `distribution`, `medical-devices`. Anything else 404s. |
 | `/for/cfo`, `/for/coo`, `/for/controller` | Stub | Persona pages, separate folders so each can diverge in structure. |

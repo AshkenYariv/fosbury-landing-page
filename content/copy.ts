@@ -137,7 +137,7 @@ export const copy = {
     companyLinks: [
       { label: "Pricing", href: "#pricing" },
       { label: "Careers", href: "#" },
-      { label: "Contact", href: "mailto:hello@fosbury.com" },
+      { label: "Contact", href: "mailto:hello@fosbury.ai" },
     ],
     forLinks: [
       { label: "Consumer brands", href: "/for/consumer-brands" },
@@ -153,7 +153,7 @@ export const copy = {
     legalLinks: [
       { label: "Privacy", href: "#" },
       { label: "Terms", href: "#" },
-      { label: "Status", href: "https://status.fosbury.com" },
+      { label: "Status", href: "https://status.fosbury.ai" },
     ],
     soc2: "SOC 2 Type II",
     copyright: `© ${new Date().getFullYear()} Fosbury, Inc.`,
