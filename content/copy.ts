@@ -134,7 +134,6 @@ export const copy = {
       { label: "Terms", href: "#" },
       { label: "Status", href: "https://status.fosbury.ai" },
     ],
-    soc2: "SOC 2 Type II",
     copyright: `© ${new Date().getFullYear()} Fosbury, Inc.`,
   },
 } as const;

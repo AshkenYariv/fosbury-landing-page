@@ -23,7 +23,6 @@ export const tiers: PricingTier[] = [
       "SKU-level margin with landed-cost allocation",
       "Inventory reconciliation agent",
       "Three-way match agent",
-      "SOC 2 Type II",
     ],
   },
   {

@@ -20,21 +20,6 @@ export function Footer() {
           <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-muted">
             The AI-native ERP for modern consumer brands. One ledger, one truth.
           </p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-md bg-bg-subtle px-2.5 py-1.5 ring-1 ring-border">
-            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" className="text-positive">
-              <path
-                d="M3 8.5L6.5 12 13 4.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="font-mono text-[10px] uppercase tracking-eyebrow text-muted">
-              {copy.footer.soc2}
-            </span>
-          </div>
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-border pt-6 sm:flex-row sm:items-center">
