@@ -128,28 +128,6 @@ export const copy = {
   },
 
   footer: {
-    productLinks: [
-      { label: "Perpetual Ledger", href: "#perpetual-ledger" },
-      { label: "SKU Margin", href: "#sku-margin" },
-      { label: "Operating Agents", href: "#operating-agents" },
-      { label: "Docs", href: "/docs" },
-    ],
-    companyLinks: [
-      { label: "Pricing", href: "#pricing" },
-      { label: "Careers", href: "#" },
-      { label: "Contact", href: "mailto:hello@fosbury.ai" },
-    ],
-    forLinks: [
-      { label: "Consumer brands", href: "/for/consumer-brands" },
-      { label: "Manufacturing", href: "/for/manufacturing" },
-      { label: "Distribution", href: "/for/distribution" },
-      { label: "Medical devices", href: "/for/medical-devices" },
-    ],
-    personaLinks: [
-      { label: "For CFOs", href: "/for/cfo" },
-      { label: "For COOs", href: "/for/coo" },
-      { label: "For controllers", href: "/for/controller" },
-    ],
     legalLinks: [
       { label: "Privacy", href: "#" },
       { label: "Terms", href: "#" },
