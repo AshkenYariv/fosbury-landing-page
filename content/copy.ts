@@ -129,11 +129,6 @@ export const copy = {
   },
 
   footer: {
-    legalLinks: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
-      { label: "Status", href: "https://status.fosbury.ai" },
-    ],
     copyright: `© ${new Date().getFullYear()} Fosbury, Inc.`,
   },
 } as const;
