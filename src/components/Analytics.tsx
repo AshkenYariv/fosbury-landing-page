@@ -11,7 +11,7 @@
  */
 const UMAMI_SRC = "https://cloud.umami.is/script.js";
 const UMAMI_WEBSITE_ID =
-  process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID ??
+  process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID ||
   "4091c37b-0667-4e75-afd2-15874c002962";
 
 export function Analytics() {
