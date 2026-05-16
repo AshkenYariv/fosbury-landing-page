@@ -1,5 +1,5 @@
 import { AgentFeed } from "@/components/AgentFeed";
-import { TrackedAnchor } from "@/components/Tracked";
+import { LogoLink, TrackedAnchor } from "@/components/Tracked";
 import { BOOK_DEMO_URL } from "@/lib/copy";
 
 function RequestAccessButton({
@@ -82,11 +82,16 @@ function Wordmark({ size = "md" }: { size?: "sm" | "md" }) {
 
 export default function Page() {
   return (
-    <main className="relative min-h-screen overflow-x-hidden">
+    <main className="relative min-h-screen overflow-x-clip">
       {/* nav */}
       <header className="sticky top-0 z-40 border-b hairline bg-[var(--color-bg)]/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-          <Wordmark />
+          <LogoLink
+            track="Nav - Logo"
+            className="rounded-sm transition hover:opacity-80"
+          >
+            <Wordmark />
+          </LogoLink>
           <nav className="flex items-center gap-6 font-mono text-[11.5px] uppercase tracking-[0.2em] text-[var(--color-fg-muted)]">
             <TrackedAnchor
               href="#value"

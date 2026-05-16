@@ -26,3 +26,26 @@ export const TrackedAnchor = forwardRef<HTMLAnchorElement, AnchorProps>(
   ),
 );
 TrackedAnchor.displayName = "TrackedAnchor";
+
+type LogoLinkProps = TrackProps & {
+  children: React.ReactNode;
+  className?: string;
+};
+
+/** Logo / home link: tracks the click, then smooth-scrolls to top. */
+export function LogoLink({ track, trackData, children, className }: LogoLinkProps) {
+  return (
+    <a
+      href="/"
+      aria-label="Fosbury home"
+      onClick={(e) => {
+        trackEvent(track, trackData);
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      className={className}
+    >
+      {children}
+    </a>
+  );
+}
