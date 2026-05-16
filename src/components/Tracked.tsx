@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import { trackEvent, type EventData } from "@/lib/analytics";
 
 type TrackProps = {
-  /** Umami event name, e.g. "click_hero_cta_request_access" */
+  /** Umami event name, e.g. "Request Access - Hero" */
   track: string;
   /** Optional metadata to send with the event */
   trackData?: EventData;

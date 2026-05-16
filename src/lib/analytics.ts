@@ -2,8 +2,8 @@
  * Umami analytics helpers.
  *
  * - `trackEvent(name, data?)` — fire a custom event.
- * - Naming convention: `<action>_<subject>[_<modifier>]` in snake_case
- *   (e.g. `click_nav_cta_request_access`, `click_hero_cta_request_access`).
+ * - Naming convention: human-readable Title Case with " - " separator
+ *   (e.g. `Request Access - Hero`, `Request Access - Nav`).
  *
  * Safe to call before the script loads or during SSR. Calls made before
  * `window.umami` is ready are queued and replayed once the script attaches,

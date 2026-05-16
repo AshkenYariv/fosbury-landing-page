@@ -90,14 +90,14 @@ export default function Page() {
           <nav className="flex items-center gap-6 font-mono text-[11.5px] uppercase tracking-[0.2em] text-[var(--color-fg-muted)]">
             <TrackedAnchor
               href="#value"
-              track="click_nav_why"
+              track="Nav - Why"
               className="hover:text-[var(--color-ink)]"
             >
               Why
             </TrackedAnchor>
             <TrackedAnchor
               href="#agents"
-              track="click_nav_what_it_does"
+              track="Nav - What it does"
               className="hidden hover:text-[var(--color-ink)] sm:inline"
             >
               What it does
@@ -106,7 +106,7 @@ export default function Page() {
               href={BOOK_DEMO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              track="click_nav_cta_request_access"
+              track="Request Access - Nav"
               className="rounded-full bg-[var(--color-ink)] px-3.5 py-1.5 text-[var(--color-bg)] hover:bg-[var(--color-accent)]"
             >
               Request access
@@ -135,7 +135,7 @@ export default function Page() {
             </p>
 
             <div className="mt-8">
-              <RequestAccessButton size="lg" track="click_hero_cta_request_access" />
+              <RequestAccessButton size="lg" track="Request Access - Hero" />
               <p className="mt-3 font-mono text-[11px] tracking-wider text-[var(--color-fg-muted)]">
                 Series A B2B SaaS · founder-led sales · seed cohort
               </p>
@@ -270,7 +270,7 @@ export default function Page() {
               Small seed cohort. White-glove setup. Direct line to the founders building this.
             </p>
             <div className="mt-8 flex w-full max-w-lg justify-center">
-              <RequestAccessButton size="lg" track="click_footer_cta_request_access" />
+              <RequestAccessButton size="lg" track="Request Access - Footer" />
             </div>
             <div className="mt-5 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-fg-muted)]">
               · no spam · no public launch list · founders only ·
