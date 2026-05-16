@@ -17,7 +17,7 @@ function RequestAccessButton({
       target="_blank"
       rel="noopener noreferrer"
       track={track}
-      className={`group inline-flex items-center gap-2 rounded-full bg-[var(--color-ink)] font-medium text-[var(--color-bg)] transition hover:bg-[var(--color-accent)] ${sizing}`}
+      className={`group inline-flex items-center gap-2 rounded-full bg-[var(--color-accent)] font-medium text-[var(--color-bg)] transition hover:bg-[var(--color-accent-deep)] ${sizing}`}
     >
       Request access
       <span className="transition group-hover:translate-x-0.5">→</span>
@@ -112,7 +112,7 @@ export default function Page() {
               target="_blank"
               rel="noopener noreferrer"
               track="Request Access - Nav"
-              className="rounded-full bg-[var(--color-ink)] px-3.5 py-1.5 text-[var(--color-bg)] hover:bg-[var(--color-accent)]"
+              className="rounded-full bg-[var(--color-accent)] px-3.5 py-1.5 text-[var(--color-bg)] hover:bg-[var(--color-accent-deep)]"
             >
               Request access
             </TrackedAnchor>
