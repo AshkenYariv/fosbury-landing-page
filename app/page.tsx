@@ -32,12 +32,20 @@ function FosburyMark({ size = 28 }: { size?: number }) {
   );
 }
 
-function PrimaryCTA({ children = "Become a design partner" }: { children?: string }) {
+function PrimaryCTA({
+  children = "Become a design partner",
+  location,
+}: {
+  children?: string;
+  location: "hero" | "footer";
+}) {
   return (
     <a
       href={CTA_HREF}
       target="_blank"
       rel="noopener noreferrer"
+      data-umami-event={`click cta become a design partner ${location}`}
+      data-umami-event-location={location}
       className="group inline-flex items-center gap-2 rounded-full bg-[color:var(--color-accent)] px-6 py-3.5 text-[15px] font-medium tracking-tight text-white shadow-[0_10px_28px_-10px_rgba(234,90,30,0.55)] transition-all hover:bg-[color:var(--color-accent-hover)] hover:shadow-[0_14px_32px_-10px_rgba(234,90,30,0.65)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent)]"
     >
       {children}
@@ -91,7 +99,12 @@ export default function Page() {
         <span className="grain-paper" aria-hidden />
 
         <header className="relative z-10 mx-auto flex max-w-[1240px] items-center justify-between px-6 pt-7">
-          <a href="/" className="flex items-center gap-2.5" aria-label="Fosbury home">
+          <a
+            href="/"
+            className="flex items-center gap-2.5"
+            aria-label="Fosbury home"
+            data-umami-event="click nav logo home"
+          >
             <FosburyMark size={28} />
             <span className="text-[15px] font-semibold tracking-tight">Fosbury</span>
           </a>
@@ -120,7 +133,7 @@ export default function Page() {
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-5">
-              <PrimaryCTA />
+              <PrimaryCTA location="hero" />
             </div>
           </div>
 
@@ -367,7 +380,7 @@ export default function Page() {
                 See your pipeline the way it actually is.
               </div>
             </div>
-            <PrimaryCTA />
+            <PrimaryCTA location="footer" />
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-between gap-3 text-[12px] tracking-tight text-[color:var(--color-muted)]">

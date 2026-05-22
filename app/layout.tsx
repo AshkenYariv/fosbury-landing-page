@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+import VisitTracker from "./components/VisitTracker";
+
+const UMAMI_WEBSITE_ID = "4091c37b-0667-4e75-afd2-15874c002962";
+const UMAMI_SCRIPT_SRC = "https://cloud.umami.is/script.js";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -108,8 +113,15 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
         />
+        <Script
+          src={UMAMI_SCRIPT_SRC}
+          data-website-id={UMAMI_WEBSITE_ID}
+          strategy="afterInteractive"
+          defer
+        />
       </head>
       <body>
+        <VisitTracker />
         {children}
         <div className="grain" aria-hidden />
       </body>
