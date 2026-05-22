@@ -19,19 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SITE_URL: https://fosbury.ai
-      NEXT_PUBLIC_BOOK_DEMO_URL: ${{ vars.NEXT_PUBLIC_BOOK_DEMO_URL }}
-      NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ vars.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
       - name: Add .nojekyll and CNAME
         run: |
           touch out/.nojekyll
