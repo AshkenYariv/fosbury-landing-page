@@ -8,12 +8,11 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-// TODO: replace with the real production URL once the domain is live.
 const SITE_URL = "https://fosbury.ai";
 const SITE_NAME = "Fosbury";
 const SITE_TAGLINE = "Run revenue on signals, not stories.";
 const SITE_DESCRIPTION =
-  "Fosbury captures what buyers actually do — across calls, product, email, and support — so revenue leaders can defend the forecast with evidence, not stories.";
+  "Forecasts miss when inputs lie. Fosbury reads every buyer signal — calls, product, email, support — and gives revenue leaders a forecast they can defend.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
