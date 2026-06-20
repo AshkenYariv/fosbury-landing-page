@@ -37,6 +37,27 @@ export const CHANNELS: { key: ChannelKey; label: string }[] = [
   { key: "instagram", label: "Instagram" },
 ]
 
+// Every surface we cover — paid channels plus organic/earned tactics. Used for
+// the chip rows; the budget console stays on the paid CHANNELS above.
+export type SurfaceKey =
+  | ChannelKey
+  | "hackernews"
+  | "linkedin"
+  | "x"
+  | "geo"
+  | "seo"
+  | "ugc"
+
+export const SURFACES: { key: SurfaceKey; label: string }[] = [
+  ...CHANNELS,
+  { key: "x", label: "X" },
+  { key: "linkedin", label: "LinkedIn" },
+  { key: "hackernews", label: "Hacker News" },
+  { key: "seo", label: "SEO" },
+  { key: "geo", label: "GEO" },
+  { key: "ugc", label: "UGC" },
+]
+
 export const STEPS = [
   { n: "01", title: "Plug in your site", body: "No setup, no tracking spec, no tag manager. Just your URL." },
   { n: "02", title: "We test small", body: "Tiny budgets across every channel. Losers get cut within days." },
@@ -73,3 +94,27 @@ export const EARLY_ACCESS = {
 }
 
 export const FOOTER_LINE = `${BRAND} — built by founders who hated ad dashboards.`
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FOCUSED VARIANT  (/focused)
+// A calm, single-screen variant where the input box is the hero. Less template,
+// more product: one promise, one box, one click.
+// ─────────────────────────────────────────────────────────────────────────────
+export const FOCUSED = {
+  eyebrow: "✦ ads on autopilot",
+  // Two-part headline so we can color the payoff. Short. No scary numbers.
+  headlineLead: "We run your ads.",
+  headlinePayoff: "You get customers.",
+  // One clear line that states the actual mechanic.
+  sub: "Drop in your URL. We test every channel, cut what flops, and put your money only where it brings signups.",
+  urlPlaceholder: "yourstartup.com",
+  cta: "Start with $20 free",
+  reassurance: "$20 of ad spend on us · No card · We never spend your money without your go-ahead",
+  // Step 2: capture email after the URL is in.
+  emailPrompt: "Where do we send your results?",
+  emailPlaceholder: "you@startup.com",
+  emailCta: "Get early access",
+  success: "You're in. We'll email you the moment your batch opens — one note, no spam.",
+  // Quiet proof row under the box.
+  proof: ["Tests every channel", "Cuts the losers", "Scales what converts"],
+}
