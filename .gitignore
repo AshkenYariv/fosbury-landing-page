@@ -1,11 +1,2 @@
-node_modules
-.next
-out
-
-# Local JSON "database" of captured signups — never commit captured emails.
-/data
 .DS_Store
-.env*
-!.env.example
 *.log
-*.tsbuildinfo
