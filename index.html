@@ -268,6 +268,15 @@ input{font:inherit;color:inherit}
 @media(max-width:1080px){.subline{margin-inline:auto}}
 
 /* ── the waitlist ────────────────────────────────────────────────────────── */
+/*
+ * The box in the hero is a doorway, not a field.
+ *
+ * A cursor drives the demo beside it, and driving it means focusing editors and
+ * inserting text — which, while somebody is halfway through typing an address,
+ * takes the caret out from under them. So the address is asked for in a dialog
+ * that stops the reel for as long as it is open: one thing has the keyboard at
+ * a time, and it is whichever one the reader chose.
+ */
 .signup{
   margin-top:clamp(20px,2.8vh,32px);
   max-width:440px;
@@ -290,28 +299,31 @@ input{font:inherit;color:inherit}
 .signupInput::placeholder{color:var(--text-quaternary)}
 .signupInput:hover{border-color:rgb(0 0 0 / .2)}
 .signupInput:focus{border-color:var(--text-primary);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
+/* The doorway wears the field's clothes, so the hero reads as it always did. */
+.signupTrigger{
+  display:flex;align-items:center;
+  text-align:left;color:var(--text-quaternary);
+  cursor:text;
+}
+.signupTrigger:focus-visible{border-color:var(--text-primary);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
 .signupGo{
   display:grid;place-items:center;flex:none;
   width:56px;height:56px;border-radius:999px;
   background:var(--surface-subtle);color:var(--text-primary);
   transition:background .16s ease, color .16s ease, transform .16s ease;
 }
-.signupGo:hover{background:var(--text-primary);color:#fff}
+/* The teaser is one control in two halves, so it lights as one. */
+.signupGo:hover,#signupTeaser:hover .signupGo{background:var(--text-primary);color:#fff}
 .signupGo:active{transform:scale(.94)}
-.signup[data-busy] .signupGo{opacity:.5;pointer-events:none}
+[data-busy] .signupGo{opacity:.5;pointer-events:none}
 .signupNote{
   min-height:1.4em;margin-top:10px;padding-left:22px;
   font-size:13.5px;color:var(--text-tertiary);
 }
 .signupNote[data-bad]{color:var(--danger)}
 
-.signupDone{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
-/* `display` beats `hidden`, so say so rather than relying on the attribute. */
-.signupDone[hidden],.signupForm[hidden],.signupNote[hidden]{display:none}
-.signupDoneTitle{
-  font-size:clamp(16px,1.2vw,18px);font-weight:var(--text-weight-medium);
-  letter-spacing:-.015em;color:var(--text-primary);
-}
+/* Only ever drawn inside the dialog — the hero has no second state. */
+.signupDone{display:flex;flex-direction:column;align-items:center;gap:16px}
 .signupCall{
   display:inline-flex;align-items:center;height:52px;padding:0 26px;
   border-radius:999px;background:var(--text-primary);color:#fff;
@@ -321,8 +333,91 @@ input{font:inherit;color:inherit}
 .signupCall:hover{background:#3d4048}
 @media(max-width:1080px){
   .signup{margin-inline:auto}
-  .signupDone{align-items:center}
-  .signupNote{text-align:center;padding-left:0}
+}
+
+/* ── the dialog that asks for it ─────────────────────────────────────────── */
+.accessScrim{
+  position:fixed;inset:0;z-index:100;
+  display:grid;place-items:center;
+  padding:24px;
+  background:rgb(20 20 22 / .34);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  animation:scrimIn .18s ease forwards;
+}
+.accessScrim[hidden]{display:none}
+/*
+ * A room rather than a box.
+ *
+ * There is one question in here and nothing else to look at, so the card is
+ * sized for the question and the question sits in the middle of it. The height
+ * is deliberate: a tall card with one field in it reads as a step somebody is
+ * taking, where a tight one reads as a form somebody has to fill in.
+ */
+.accessCard{
+  position:relative;
+  display:grid;place-items:center;
+  width:min(760px,100%);
+  min-height:min(480px,74vh);
+  padding:clamp(32px,5vw,64px);
+  border-radius:28px;
+  background:#fff;
+  box-shadow:0 0 0 1px rgb(0 0 0 / .05), 0 32px 80px -24px rgb(0 0 0 / .42);
+  animation:cardIn .26s cubic-bezier(.2,.7,.2,1) forwards;
+  text-align:center;
+}
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+.accessClose{
+  position:absolute;top:22px;right:22px;
+  display:grid;place-items:center;
+  width:40px;height:40px;border-radius:999px;
+  background:var(--surface-subtle);color:var(--icon-tertiary);
+  transition:background .16s ease, color .16s ease;
+}
+.accessClose:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
+.accessStep{width:100%;max-width:600px}
+.accessStep[hidden]{display:none}
+.accessTitle{
+  font-size:clamp(20px,1.75vw,24px);font-weight:600;letter-spacing:-.024em;
+  line-height:1.3;color:var(--text-primary);text-wrap:balance;
+}
+/*
+ * The question writes itself.
+ *
+ * The caret is in the line from the first frame, empty text or not, so the
+ * card is the same height before the first character as after the last one —
+ * a question that types itself into a box that jumps is just a jumping box.
+ */
+.accessCaret{
+  display:inline-block;width:2px;height:1.05em;margin-left:3px;
+  vertical-align:-.16em;
+  background:var(--text-primary);
+  opacity:0;
+}
+.accessTitle[data-state='typing'] .accessCaret{opacity:1}
+.accessTitle[data-state='rest'] .accessCaret{animation:blink 1s steps(1,end) 3}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+.accessSub{
+  margin:14px auto 0;max-width:44ch;
+  font-size:clamp(15px,1.15vw,16.5px);line-height:1.55;color:var(--text-secondary);
+  text-wrap:balance;
+}
+/* The field grows with the room it is in. */
+.accessCard .signupForm{margin-top:clamp(24px,3.6vh,36px);gap:12px}
+.accessCard .signupInput{height:64px;padding:0 26px;font-size:clamp(15px,1.15vw,16.5px)}
+.accessCard .signupGo{width:64px;height:64px}
+.accessCard .signupNote{margin-top:14px;padding-left:0;text-align:center}
+.accessCard .signupDone{margin-top:clamp(24px,3.6vh,34px);align-items:center;gap:18px}
+.accessCard .signupCall{height:56px;padding:0 30px}
+@media(prefers-reduced-motion:reduce){
+  .accessScrim,.accessCard{animation:none}
+}
+@media(max-width:640px){
+  .accessScrim{padding:16px}
+  .accessCard{min-height:min(440px,72vh);padding:32px 22px;border-radius:22px}
+  .accessClose{top:14px;right:14px;width:34px;height:34px}
+  .accessCard .signupInput{height:56px;padding:0 20px}
+  .accessCard .signupGo{width:56px;height:56px}
 }
 
 /* ── the frame ───────────────────────────────────────────────────────────── */
@@ -1131,25 +1226,24 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
       <h1 class="headline">The communication layer for teams that build.</h1>
       <p class="subline">Every conversation gets an owner, a priority, and an end.</p>
 
+      <!--
+        The hero never changes. Signing up happens in the dialog and is
+        answered in the dialog; the page behind it is the same page before and
+        after, so a second reader over somebody's shoulder sees the pitch
+        rather than the tail end of somebody else's sign-up.
+      -->
       <div class="signup" id="signup">
-        <form class="signupForm" id="signupForm" novalidate>
-          <input class="signupInput" id="signupEmail" type="email" name="email"
-                 placeholder="Enter your email" autocomplete="email" spellcheck="false"
-                 aria-label="Your email address">
-          <button class="signupGo" type="submit" aria-label="Join the waitlist">
+        <!-- Not a field: pressing either half opens the dialog that is one. -->
+        <div class="signupForm" id="signupTeaser">
+          <button class="signupInput signupTrigger" type="button" data-open-access
+                  aria-haspopup="dialog">Enter your email</button>
+          <button class="signupGo" type="button" data-open-access aria-label="Get access">
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
               <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8"
                     fill="none" stroke="currentColor" stroke-width="1.6"
                     stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-        </form>
-        <p class="signupNote" id="signupNote" role="status" aria-live="polite"></p>
-
-        <div class="signupDone" id="signupDone" hidden>
-          <p class="signupDoneTitle">You’re on the waitlist.</p>
-          <a class="signupCall" href="https://calendar.app.google/xegK1AbmJKyEs1my9"
-             target="_blank" rel="noopener">Schedule a call</a>
         </div>
       </div>
     </div>
@@ -1169,6 +1263,56 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
     </div>
   </main>
 
+</div>
+
+<!--
+  The waitlist, asked for on its own.
+
+  Outside `.page` because that pane clips what overflows it, and a dialog that
+  covers the window is exactly what overflows it.
+-->
+<div class="accessScrim" id="accessScrim" hidden>
+  <div class="accessCard" role="dialog" aria-modal="true" aria-labelledby="accessTitle" id="accessCard">
+    <button class="accessClose" type="button" data-close-access aria-label="Close">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"
+              fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="accessStep" id="accessAsk">
+      <!-- Typed out on open. The label is the whole question, so a screen
+           reader hears it once rather than a letter at a time. -->
+      <h2 class="accessTitle" id="accessTitle" aria-label="What’s your email?">
+        <span data-typed aria-hidden="true"></span><span class="accessCaret" aria-hidden="true"></span>
+      </h2>
+
+      <form class="signupForm" id="accessForm" novalidate>
+        <input class="signupInput" id="accessEmail" type="email" name="email"
+               placeholder="you@company.com" autocomplete="email" spellcheck="false"
+               aria-label="Your email address">
+        <button class="signupGo" type="submit" aria-label="Join the waitlist">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8"
+                  fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+      <p class="signupNote" id="accessNote" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="accessStep" id="accessDone" hidden>
+      <h2 class="accessTitle">You’re on the waitlist.</h2>
+      <!-- The waitlist is the floor. The line below is the offer, and it runs
+           straight into the button rather than stopping before it. -->
+      <p class="accessSub">If you’re interested in joining alpha testing and influencing the direction of Fosbury</p>
+      <div class="signupDone">
+        <a class="signupCall" data-call-link href="https://calendar.app.google/xegK1AbmJKyEs1my9"
+           target="_blank" rel="noopener">Schedule a 30-minute call</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -3166,39 +3310,120 @@ app.addEventListener('mousedown', (event) => {
 /* ══════════════════════════════════════════════════════════════════════════
    The waitlist.
 
-   The page posts an address to `/api/waitlist`; the key that turns it into an
+   The address is asked for in a dialog rather than in the hero, for one
+   reason: a cursor is driving the app beside it, and driving means focusing
+   editors and inserting characters. Two things typing into one keyboard is
+   how a reader loses half their address. So opening the dialog stops the reel
+   and closing it starts it again — while it is open, nothing else moves.
+
+   The page posts the address to `/api/waitlist`; the key that turns it into an
    email lives on the server and never comes down here. What the reader gets
    back is a confirmation and the one thing worth doing next.
    ══════════════════════════════════════════════════════════════════════════ */
-const signupEl = document.getElementById('signup');
-const signupForm = document.getElementById('signupForm');
-const signupEmail = document.getElementById('signupEmail');
-const signupNote = document.getElementById('signupNote');
-const signupDone = document.getElementById('signupDone');
+const LOOKS_LIKE_EMAIL = /^[^\s@]+@[^\s@.]+\.[^\s@]+$/;
 
-function note(text, bad) {
-  signupNote.textContent = text;
-  if (bad) signupNote.setAttribute('data-bad', ''); else signupNote.removeAttribute('data-bad');
+const scrimEl = document.getElementById('accessScrim');
+const cardEl = document.getElementById('accessCard');
+const askStep = document.getElementById('accessAsk');
+const doneStep = document.getElementById('accessDone');
+const accessForm = document.getElementById('accessForm');
+const accessEmail = document.getElementById('accessEmail');
+const accessNote = document.getElementById('accessNote');
+
+let joined = false;      // said yes already: the dialog opens on the thanks
+let opener = null;       // what to hand focus back to when this closes
+
+/*
+ * The question, written out on arrival.
+ *
+ * The rest of the page is a cursor typing into an app, so the dialog it opens
+ * is asked in the same voice: the question appears the way anything else on
+ * this page appears, a character at a time. It runs on every open, and under
+ * `prefers-reduced-motion` it does not run at all — the question is simply
+ * there, which is the same question.
+ */
+const ASK = 'What’s your email?';
+const titleEl = document.getElementById('accessTitle');
+const typedEl = titleEl.querySelector('[data-typed]');
+let typeTimer = null;
+
+function typeQuestion() {
+  clearTimeout(typeTimer);
+  if (REDUCED) { typedEl.textContent = ASK; titleEl.removeAttribute('data-state'); return; }
+
+  typedEl.textContent = '';
+  titleEl.setAttribute('data-state', 'typing');
+  let i = 0;
+  const tick = () => {
+    typedEl.textContent = ASK.slice(0, ++i);
+    /* A hair slower after a space, the way a sentence is actually typed. */
+    if (i < ASK.length) typeTimer = setTimeout(tick, ASK[i - 1] === ' ' ? 96 : 52);
+    else titleEl.setAttribute('data-state', 'rest');
+  };
+  typeTimer = setTimeout(tick, 220);
 }
 
-document.querySelector('[data-get-access]').addEventListener('click', () => {
+function note(text, bad) {
+  accessNote.textContent = text;
+  if (bad) accessNote.setAttribute('data-bad', ''); else accessNote.removeAttribute('data-bad');
+}
+
+function openAccess(from) {
+  if (!scrimEl.hidden) return;
+  opener = from || document.activeElement;
+  scrimEl.hidden = false;
+  /* Nothing behind the dialog gets the keyboard, the reel included. */
+  pauseDemo();
+  if (joined) doneStep.querySelector('.signupCall').focus({ preventScroll: true });
+  else { typeQuestion(); accessEmail.focus({ preventScroll: true }); accessEmail.select(); }
+}
+
+function closeAccess() {
+  if (scrimEl.hidden) return;
+  scrimEl.hidden = true;
+  clearTimeout(typeTimer);
+  resumeDemo();
+  if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+  opener = null;
+}
+
+document.addEventListener('click', (event) => {
   /* The button in the corner and the box in the middle are the same ask. */
-  if (signupDone.hidden) {
-    signupEmail.focus({ preventScroll: true });
-    signupEmail.select();
+  if (event.target.closest('[data-open-access], [data-get-access]')) {
+    openAccess(event.target.closest('button'));
+    return;
   }
+  if (event.target.closest('[data-close-access]')) { closeAccess(); return; }
+  /* The backdrop, but not the card sitting on it. */
+  if (event.target === scrimEl) closeAccess();
 });
 
-signupForm.addEventListener('submit', async (event) => {
+document.addEventListener('keydown', (event) => {
+  if (scrimEl.hidden) return;
+  if (event.key === 'Escape') { closeAccess(); return; }
+  if (event.key !== 'Tab') return;
+
+  /* Hold the tab ring inside the card: behind it is a demo, not a form. */
+  const stops = [...cardEl.querySelectorAll('button, input, a[href]')]
+    .filter((el) => !el.disabled && el.offsetParent !== null);
+  if (!stops.length) return;
+  const first = stops[0];
+  const last = stops[stops.length - 1];
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+});
+
+accessForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const email = signupEmail.value.trim();
-  if (!/^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(email)) {
+  const email = accessEmail.value.trim();
+  if (!LOOKS_LIKE_EMAIL.test(email)) {
     note('That does not look like an email address.', true);
-    signupEmail.focus();
+    accessEmail.focus();
     return;
   }
 
-  signupEl.setAttribute('data-busy', '');
+  cardEl.setAttribute('data-busy', '');
+  accessEmail.disabled = true;
   note('One moment…');
 
   try {
@@ -3206,17 +3431,34 @@ signupForm.addEventListener('submit', async (event) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
+      cache: 'no-store',
     });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result.ok) throw new Error(result.error || 'That did not go through.');
 
-    signupForm.hidden = true;
-    signupNote.hidden = true;
-    signupDone.hidden = false;
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || `That did not go through (${response.status}).`);
+    }
+
+    joined = true;
+    /* Whatever the server says the booking link is. */
+    if (result.call) {
+      document.querySelectorAll('[data-call-link]').forEach((a) => { a.href = result.call; });
+    }
+    /* The dialog answers; the page behind it stays exactly as it was. */
+    askStep.hidden = true;
+    doneStep.hidden = false;
+    doneStep.querySelector('.signupCall').focus({ preventScroll: true });
   } catch (error) {
-    note(error.message || 'That did not go through. Try again in a moment.', true);
+    /* A dead fetch throws a TypeError with nothing readable in it — the usual
+       cause is a page opened without its API behind it, so say that much. */
+    const failed = error instanceof TypeError;
+    note(failed
+      ? 'We could not reach the server. Check your connection and try again.'
+      : (error.message || 'That did not go through. Try again in a moment.'), true);
   } finally {
-    signupEl.removeAttribute('data-busy');
+    cardEl.removeAttribute('data-busy');
+    accessEmail.disabled = false;
+    if (!joined) accessEmail.focus({ preventScroll: true });
   }
 });
 
@@ -3243,6 +3485,33 @@ const chaptersEl = document.getElementById('chapters');
 let cursorEl = null;
 let run = null;      // the token of the chapter currently playing
 let chapter = 0;
+
+/*
+ * Holding the reel still.
+ *
+ * The demo types into the app, and typing means taking the caret. When the
+ * reader is being asked for their address, they get it: `pauseDemo` parks the
+ * runner at its next checkpoint and it stays there — no focus taken, no
+ * character inserted, the progress bar frozen where it stood — until
+ * `resumeDemo` lets it go. Pausing rather than cancelling means the chapter
+ * picks up mid-sentence rather than starting over.
+ */
+let held = false;
+let waiting = [];
+const gate = () => (held ? new Promise((go) => waiting.push(go)) : Promise.resolve());
+
+function pauseDemo() {
+  if (held) return;
+  held = true;
+  if (fillAnim) fillAnim.pause();
+}
+
+function resumeDemo() {
+  if (!held) return;
+  held = false;
+  if (fillAnim) fillAnim.play();
+  waiting.splice(0).forEach((go) => go());
+}
 
 /* ── steps ───────────────────────────────────────────────────────────────── */
 const one = (query) => ({ find: () => app.querySelector(query) });
@@ -3473,7 +3742,27 @@ function clearHover() {
   app.querySelectorAll('[data-demo-hover]').forEach((n) => n.removeAttribute('data-demo-hover'));
 }
 
+/*
+ * Take the box, and take the end of it.
+ *
+ * `focus()` alone restores whatever selection the element last had, and after
+ * the reader has been typing somewhere else that can be nothing at all — which
+ * leaves `insertText` writing at the top of the draft, or not writing. Putting
+ * the caret after the last child says where the next character goes.
+ */
+function claim(editor) {
+  editor.focus();
+  if (editor.tagName === 'INPUT') { editor.setSelectionRange(editor.value.length, editor.value.length); return; }
+  const range = document.createRange();
+  range.selectNodeContents(editor);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
 async function doStep(step, token) {
+  await gate();
   if (token.cancelled) return;
 
   if (step.kind === 'wait') { await sleep(step.ms); return; }
@@ -3485,8 +3774,10 @@ async function doStep(step, token) {
     if (token.cancelled) return;
     placeCursor(editor);
     await sleep(MOVE_MS);
+    /* The last checkpoint before the caret moves: past here it is ours. */
+    await gate();
     if (token.cancelled) return;
-    editor.focus();
+    claim(editor);
     const isField = editor.tagName === 'INPUT';
     /* A space before the next run, unless the box is empty or already ends in one. */
     const existing = isField ? editor.value : (editor.innerText || '');
@@ -3496,6 +3787,12 @@ async function doStep(step, token) {
     }
     for (const ch of step.text) {
       if (token.cancelled) return;
+      /*
+       * Mid-word is a checkpoint too, and on the way back the box has to be
+       * handed the caret again — the reader had it, and `insertText` writes
+       * wherever the caret happens to be.
+       */
+      if (held) { await gate(); if (token.cancelled) return; claim(editor); }
       if (isField) editor.value += ch;
       else document.execCommand('insertText', false, ch);
       editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -3516,6 +3813,8 @@ async function doStep(step, token) {
 
   placeCursor(el);
   await sleep(MOVE_MS);
+  /* Pressing things is what re-renders the app and moves focus with it. */
+  await gate();
   if (token.cancelled) return;
 
   if (step.kind === 'hover') {
@@ -3561,6 +3860,9 @@ function fillBar(index, ms) {
 }
 
 async function play(index) {
+  /* A chapter that ended while the dialog is open waits its turn rather than
+     resetting the workspace behind it. */
+  await gate();
   if (run) run.cancelled = true;
   const token = { cancelled: false };
   run = token;
@@ -3615,9 +3917,11 @@ async function boot() {
   /* Somewhere neutral on the desktop, so it does not arrive on top of the dock. */
   placeCursorAt(1120, 470);
   await sleep(2600);
+  await gate();
 
   placeCursorAt(DOCK_ICON.x, DOCK_ICON.y);
   await sleep(MOVE_MS + 300);
+  await gate();
 
   cursorEl.setAttribute('data-press', '');
   await sleep(CLICK_MS);
@@ -3632,6 +3936,7 @@ async function boot() {
 
   /* Let it settle before anything starts happening inside it. */
   await sleep(1100);
+  await gate();
   play(0);
 }
 
