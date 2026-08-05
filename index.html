@@ -255,8 +255,8 @@ input{font:inherit;color:inherit}
 }
 .subline{
   margin-top:clamp(12px,1.6vh,20px);
-  max-width:34ch;
-  font-size:clamp(15px,1.2vw,19px);
+  /* One line. It is a single clause and breaking it mid-list reads as two. */
+  font-size:clamp(13px,1.04vw,17px);
   font-weight:var(--text-weight-regular);
   letter-spacing:-.01em;
   line-height:1.5;
@@ -265,7 +265,7 @@ input{font:inherit;color:inherit}
   color:var(--text-secondary);
   text-wrap:balance;
 }
-@media(max-width:1080px){.subline{max-width:none;margin-inline:auto}}
+@media(max-width:1080px){.subline{margin-inline:auto}}
 
 /* ── the frame ───────────────────────────────────────────────────────────── */
 /*
@@ -563,15 +563,6 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .followChip{box-shadow:inset 0 0 0 1px var(--border-subtle);color:var(--text-tertiary)}
 .followChip:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
 .followChip[data-agentic]{color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent)}
-.priorityChip{
-  display:inline-flex;align-items:center;gap:var(--space-1);
-  height:var(--space-5);padding:0 var(--space-2);
-  border-radius:var(--radius-pill);
-  box-shadow:inset 0 0 0 1px var(--border-subtle);
-  color:var(--priority,var(--text-tertiary));
-  font-size:var(--text-size-micro);
-}
-.priorityChip:hover{background:var(--surface-hover-strong)}
 .threadRow{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);margin-left:calc(var(--space-2) * -1)}
 .replies{
   display:inline-flex;align-items:center;gap:var(--space-2);
@@ -595,7 +586,6 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 }
 .tool:hover,.tool[aria-expanded='true']{background:var(--surface-hover-strong);color:var(--text-primary)}
 .tool[data-status]{color:var(--status)}
-.tool[data-priority]{color:var(--priority)}
 .toolDivider{width:1px;height:14px;background:var(--border-subtle);margin:0 2px;flex:none}
 .divider{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-3) var(--space-2)}
 .dividerLabel{color:var(--text-quaternary);font-size:var(--text-size-micro);flex:none}
@@ -770,6 +760,8 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   text-align:left;
 }
 .item:hover{background:var(--surface-hover)}
+/* A finished follow-up is still listed; it just stops asking for attention. */
+.item[data-done] .itemTitle,.item[data-done] .itemPreview{color:var(--text-quaternary)}
 .itemUnread{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;margin-right:var(--space-1)}
 .unreadBadge{
   display:inline-flex;align-items:center;justify-content:center;
@@ -778,14 +770,16 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   color:var(--unread);font-size:var(--text-size-mini);font-weight:var(--text-weight-medium);
   font-variant-numeric:tabular-nums;line-height:1;
 }
-.itemMarks{display:flex;align-items:center;flex:none}
+.itemMarks{position:relative;display:flex;align-items:center;flex:none}
+.itemMarkBtn{border-radius:var(--radius-medium);cursor:pointer}
+.itemMarkBtn:hover,.itemMarkBtn[aria-expanded='true']{background:var(--surface-hover-strong)}
 .itemMark{
   display:inline-flex;align-items:center;justify-content:center;
   width:var(--space-6);height:var(--space-6);
   color:var(--status,var(--priority,var(--icon-default)));
 }
 .itemMark[data-kind]{color:var(--topic-type,var(--icon-tertiary))}
-.itemFace{display:flex;align-items:center;gap:var(--space-3);flex:1;height:100%;padding:0 var(--space-2);min-width:0}
+.itemFace{display:flex;align-items:center;gap:var(--space-3);flex:1;height:100%;padding:0 var(--space-2);min-width:0;text-align:left}
 .itemLead{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--space-6)}
 .itemTitle{
   flex:0 1 auto;min-width:0;max-width:320px;
@@ -802,6 +796,11 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .itemActivity{flex:none;width:40px;color:var(--text-quaternary);font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;text-align:right}
 .itemDue{flex:none;width:132px;font-size:var(--text-size-micro);text-align:right;color:var(--text-tertiary)}
 .itemDue[data-overdue]{color:var(--priority-urgent);font-weight:var(--text-weight-medium)}
+.emptyNote{
+  display:flex;align-items:center;justify-content:center;
+  flex:1;min-height:160px;
+  color:var(--text-quaternary);font-size:var(--text-size-regular);
+}
 .itemCount{
   display:inline-flex;align-items:center;gap:var(--space-2);
   height:var(--row-height-compact);padding:0 var(--space-2);
@@ -1105,19 +1104,26 @@ function initialState() {
     room: 'indexing',
     threadOpen: null,
     menu: null,     // { kind, msgId, stream, place }
+    rowMenu: null,  // { list, id } — the priority menu on a Topics or DMs row
     dialog: null,
     /* Which folding sections in the rail are open. */
     open: { favorites: true, teams: false },
     /* Per-room: is the header's Open filter pressed. */
     openOnly: {},
     agent: { turns: [], busy: false },
+    /* The queues arrive filtered to what is still live; the directories do not. */
+    filters: {
+      'my-threads': { search: '', on: ['Open'] },
+      'follow-ups': { search: '', on: ['Open'] },
+      teams: { search: '', on: ['My teams'] },
+    },
 
     rooms: {
       indexing: {
-        key: 'indexing', name: 'Real-Time Indexing Pipeline', kind: 'topic', type: 'dev',
+        key: 'indexing', priority: 'urgent', name: 'Real-Time Indexing Pipeline', kind: 'topic', type: 'dev',
         team: 'Engineering', members: '4 members', favorite: true,
         messages: [
-          { id: 'x1', author: 'm_david', time: '17:58', day: '3 days ago', status: null, priority: null,
+          { id: 'x1', author: 'm_david', time: '17:58', day: '3 days ago', status: null,
             spans: [
               t('Pulled the numbers on the indexer — we are dropping about '),
               { text: '0.4%', strong: true },
@@ -1127,23 +1133,23 @@ function initialState() {
               t(' ('), { topic: 'API Rate Limiting', topicType: 'dev' }, t(').'),
             ],
             reactions: [], thread: null, followUp: null },
-          { id: 'x2', author: 'm_elena', time: '18:38', day: '3 days ago', status: null, priority: null,
+          { id: 'x2', author: 'm_elena', time: '18:38', day: '3 days ago', status: null,
             spans: [t('That tracks. The queue has no retry ceiling, so a poisoned event blocks the partition until someone notices.')],
             reactions: [{ key: 'agree', count: 2, mine: false }, { emoji: '👀', count: 1, mine: false }],
             thread: null, followUp: null },
-          { id: 'x3', author: 'm_yariv', time: '19:18', day: '3 days ago', status: 'open', priority: 'urgent',
+          { id: 'x3', author: 'm_yariv', time: '19:18', day: '3 days ago', status: 'open',
             spans: [t('Opening a thread for this — I want the retry policy decided before we touch the batching.')],
             reactions: [], thread: { id: 't_101' }, followUp: null },
-          { id: 'x4', author: 'm_agent', time: '19:58', day: '3 days ago', status: null, priority: null,
+          { id: 'x4', author: 'm_agent', time: '19:58', day: '3 days ago', status: null,
             spans: [t('Related: "Backpressure on the ingest worker" was resolved on Oct 12 with a fixed ceiling of 5 retries. That decision assumed single-partition ingest, which no longer holds.')],
             reactions: [{ key: 'thanks', count: 1, mine: false }], thread: null, followUp: null },
-          { id: 'x5', author: 'm_sarah', time: '21:48', day: '3 days ago', status: 'open', priority: 'medium',
+          { id: 'x5', author: 'm_sarah', time: '21:48', day: '3 days ago', status: 'open',
             spans: [t('Micro-batching for better throughput. Pure streaming is costing us more in round trips than it saves in latency.')],
             reactions: [], thread: { id: 't_102' }, followUp: null },
-          { id: 'x6', author: 'm_marco', time: '22:12', day: '3 days ago', status: null, priority: null,
+          { id: 'x6', author: 'm_marco', time: '22:12', day: '3 days ago', status: null,
             spans: [t('I can take the DLQ topic and the retention job this week. Both are small next to the batching change.')],
             reactions: [{ key: 'acknowledged', count: 1, mine: false }], thread: null, followUp: null },
-          { id: 'x7', author: 'm_priya', time: '22:31', day: '3 days ago', status: null, priority: null,
+          { id: 'x7', author: 'm_priya', time: '22:31', day: '3 days ago', status: null,
             spans: [
               t('Then the plan is a ceiling of five, a dedicated DLQ and fourteen days. '), at('m_yariv'),
               t(' can you write it up before the batching work starts?'),
@@ -1152,64 +1158,64 @@ function initialState() {
         ],
       },
       'weekly-sync': {
-        key: 'weekly-sync', name: 'AI Team Weekly Sync', kind: 'topic', type: 'sync',
+        key: 'weekly-sync', priority: 'high', name: 'AI Team Weekly Sync', kind: 'topic', type: 'sync',
         team: 'Product', members: '6 members', favorite: true,
         messages: [
-          { id: 'w1', author: 'm_sarah', time: '09:02', day: 'Yesterday', status: 'open', priority: 'high',
+          { id: 'w1', author: 'm_sarah', time: '09:02', day: 'Yesterday', status: 'open',
             spans: [t('Agenda for Thursday: chunking experiment results, the reranker swap, and whether we ship the eval harness this cycle.')],
             reactions: [], thread: { id: 't_201' }, followUp: null },
-          { id: 'w2', author: 'm_priya', time: '09:31', day: 'Yesterday', status: null, priority: null,
+          { id: 'w2', author: 'm_priya', time: '09:31', day: 'Yesterday', status: null,
             spans: [t('I will not make Thursday — putting my update in the thread instead of holding the room for it.')],
             reactions: [{ key: 'acknowledged', count: 2, mine: false }], thread: null, followUp: null },
-          { id: 'w3', author: 'm_agent', time: '09:44', day: 'Yesterday', status: null, priority: null,
+          { id: 'w3', author: 'm_agent', time: '09:44', day: 'Yesterday', status: null,
             spans: [t('Three of last week’s actions are still open. Two are assigned to David Kim and one to Grace Liu.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'w4', author: 'm_yariv', time: '10:15', day: 'Yesterday', status: 'open', priority: 'medium',
+          { id: 'w4', author: 'm_yariv', time: '10:15', day: 'Yesterday', status: 'open',
             spans: [t('Let us keep it to three things. Anything that needs a decision goes in a thread before the call, not during it.')],
             reactions: [{ key: 'agree', count: 3, mine: false }], thread: { id: 't_202' }, followUp: null },
         ],
       },
       'rate-limits': {
-        key: 'rate-limits', name: 'API Rate Limiting', kind: 'topic', type: 'dev',
+        key: 'rate-limits', priority: 'urgent', name: 'API Rate Limiting', kind: 'topic', type: 'dev',
         team: 'Engineering', members: '5 members', favorite: true,
         messages: [
-          { id: 'r1', author: 'm_tom', time: '11:20', day: '2 days ago', status: null, priority: null,
+          { id: 'r1', author: 'm_tom', time: '11:20', day: '2 days ago', status: null,
             spans: [t('Dashboard for the limiter is up — throttled requests by org, last 24h.')],
             reactions: [{ key: 'thanks', count: 2, mine: false }], thread: null, followUp: null },
-          { id: 'r2', author: 'm_priya', time: '11:48', day: '2 days ago', status: 'open', priority: 'urgent',
+          { id: 'r2', author: 'm_priya', time: '11:48', day: '2 days ago', status: 'open',
             spans: [t('40% of the org ceiling, refilled over five minutes. It covers the nightly batches without letting one integration eat the hour.')],
             reactions: [], thread: { id: 't_301' }, followUp: null },
-          { id: 'r3', author: 'm_david', time: '12:06', day: '2 days ago', status: null, priority: null,
+          { id: 'r3', author: 'm_david', time: '12:06', day: '2 days ago', status: null,
             spans: [t('Per-key or per-org? If it is per-key a single bad integration still takes the org down.')],
             reactions: [{ key: 'question', count: 1, mine: false }], thread: null, followUp: null },
         ],
       },
       'dm-david': {
-        key: 'dm-david', name: 'David Kim', kind: 'dm', member: 'm_david',
+        key: 'dm-david', priority: 'high', name: 'David Kim', kind: 'dm', member: 'm_david',
         members: '2 members', favorite: true,
         messages: [
-          { id: 'd1', author: 'm_david', time: '08:40', day: 'Yesterday', status: null, priority: null,
+          { id: 'd1', author: 'm_david', time: '08:40', day: 'Yesterday', status: null,
             spans: [t('Yes — put it in the thread and I will read it before we talk.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'd2', author: 'm_yariv', time: '08:52', day: 'Yesterday', status: null, priority: null,
+          { id: 'd2', author: 'm_yariv', time: '08:52', day: 'Yesterday', status: null,
             spans: [t('Done. The retention number is the only thing still open.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'd3', author: 'm_david', time: '09:05', day: 'Yesterday', status: null, priority: null,
+          { id: 'd3', author: 'm_david', time: '09:05', day: 'Yesterday', status: null,
             spans: [t('Fourteen days. I will say so in the thread so it is written down somewhere other than here.')],
             reactions: [{ key: 'done', count: 1, mine: true }], thread: null, followUp: null },
         ],
       },
       'dm-priya': {
-        key: 'dm-priya', name: 'Priya Nair', kind: 'dm', member: 'm_priya',
+        key: 'dm-priya', priority: 'medium', name: 'Priya Nair', kind: 'dm', member: 'm_priya',
         members: '2 members', favorite: true,
         messages: [
-          { id: 'p1', author: 'm_priya', time: '14:10', day: 'Today', status: null, priority: null,
+          { id: 'p1', author: 'm_priya', time: '14:10', day: 'Today', status: null,
             spans: [t('40% of the org ceiling, refilled over five minutes. It covers the nightly batches.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'p2', author: 'm_yariv', time: '14:22', day: 'Today', status: null, priority: null,
+          { id: 'p2', author: 'm_yariv', time: '14:22', day: 'Today', status: null,
             spans: [t('That works. Can you put the number in the thread so the limiter work is not blocked on the two of us being awake at once?')],
             reactions: [], thread: null, followUp: null },
-          { id: 'p3', author: 'm_priya', time: '14:25', day: 'Today', status: 'open', priority: 'high',
+          { id: 'p3', author: 'm_priya', time: '14:25', day: 'Today', status: 'open',
             spans: [t('Posting it now.')],
             reactions: [], thread: null, followUp: null },
         ],
@@ -1219,46 +1225,46 @@ function initialState() {
     threads: {
       t_101: { id: 't_101', label: 'Dead letter queue handling', room: 'indexing', parent: 'x3',
         messages: [
-          { id: 'y1', author: 'm_yariv', time: '19:18', day: '3 days ago', status: null, priority: null,
+          { id: 'y1', author: 'm_yariv', time: '19:18', day: '3 days ago', status: null,
             spans: [t('Two open questions: how many retries before we park an event, and where parked events go.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'y2', author: 'm_david', time: '19:48', day: '3 days ago', status: null, priority: null,
+          { id: 'y2', author: 'm_david', time: '19:48', day: '3 days ago', status: null,
             spans: [t('Five, then a dedicated DLQ topic with a 14-day retention. Anything still there after 14 days is a bug we did not fix.')],
             reactions: [{ key: 'agree', count: 1, mine: false }], thread: null, followUp: null },
-          { id: 'y3', author: 'm_agent', time: '20:18', day: '3 days ago', status: null, priority: null,
+          { id: 'y3', author: 'm_agent', time: '20:18', day: '3 days ago', status: null,
             spans: [t('No prior decision covers DLQ retention. The closest is "Disaster recovery plan", which sets 30 days for snapshots — a different class of data.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'y4', author: 'm_elena', time: '21:18', day: '3 days ago', status: null, priority: null,
+          { id: 'y4', author: 'm_elena', time: '21:18', day: '3 days ago', status: null,
             spans: [t('Fine by me. I will take the retention config.')],
             reactions: [{ key: 'done', count: 1, mine: false }], thread: null, followUp: null },
         ] },
       t_102: { id: 't_102', label: 'Batching the writes', room: 'indexing', parent: 'x5',
         messages: [
-          { id: 'z1', author: 'm_priya', time: '22:04', day: '3 days ago', status: null, priority: null,
+          { id: 'z1', author: 'm_priya', time: '22:04', day: '3 days ago', status: null,
             spans: [t('Agreed on micro-batching, but the window has to be a setting. 50ms is wrong for the audit stream.')],
             reactions: [], thread: null, followUp: null },
         ] },
       t_201: { id: 't_201', label: 'Chunking experiment results', room: 'weekly-sync', parent: 'w1',
         messages: [
-          { id: 'c1', author: 'm_grace', time: '09:20', day: 'Yesterday', status: null, priority: null,
+          { id: 'c1', author: 'm_grace', time: '09:20', day: 'Yesterday', status: null,
             spans: [t('Semantic chunking wins on recall by four points and loses on latency by 90ms. Worth it for search, not for the inline answers.')],
             reactions: [{ key: 'agree', count: 2, mine: false }], thread: null, followUp: null },
-          { id: 'c2', author: 'm_sarah', time: '09:26', day: 'Yesterday', status: null, priority: null,
+          { id: 'c2', author: 'm_sarah', time: '09:26', day: 'Yesterday', status: null,
             spans: [t('Then we run both and pick per surface. I will write that up rather than argue it live.')],
             reactions: [], thread: null, followUp: null },
         ] },
       t_202: { id: 't_202', label: 'The three things', room: 'weekly-sync', parent: 'w4',
         messages: [
-          { id: 'c3', author: 'm_elena', time: '10:40', day: 'Yesterday', status: null, priority: null,
+          { id: 'c3', author: 'm_elena', time: '10:40', day: 'Yesterday', status: null,
             spans: [t('Then three and a rider. Agreed.')],
             reactions: [], thread: null, followUp: null },
         ] },
       t_301: { id: 't_301', label: 'Burst allowance for the ingest endpoint', room: 'rate-limits', parent: 'r2',
         messages: [
-          { id: 'c4', author: 'm_tom', time: '12:30', day: '2 days ago', status: null, priority: null,
+          { id: 'c4', author: 'm_tom', time: '12:30', day: '2 days ago', status: null,
             spans: [t('40% is fine for the batches. What I need is the number written down before the limiter ships.')],
             reactions: [], thread: null, followUp: null },
-          { id: 'c5', author: 'm_agent', time: '12:34', day: '2 days ago', status: null, priority: null,
+          { id: 'c5', author: 'm_agent', time: '12:34', day: '2 days ago', status: null,
             spans: [t('Follow-up set on this thread: if nobody has given a number by tomorrow, I will ask the owner for one.')],
             reactions: [{ key: 'acknowledged', count: 1, mine: false }], thread: null, followUp: null },
         ] },
@@ -1271,6 +1277,8 @@ function initialState() {
       { id: 'f4', title: 'Twelve-tag proposal', preview: 'Aisha Rahman: I will wire a required minimum into the readout.', priority: 'medium', owner: 'm_sarah', due: 'Due in 10h', overdue: false, unread: 2, agentic: false },
       { id: 'f5', title: 'SOC 2 evidence export', preview: 'If nobody has replied since I set this, nudge them. If the export is done, say so and close it.', priority: 'medium', owner: 'm_marco', due: 'Due in 10h', overdue: false, unread: 2, agentic: true },
       { id: 'f6', title: 'Budget approval for Q4', preview: '', priority: 'medium', owner: 'm_david', due: 'Due in 2 days', overdue: false, unread: 0, agentic: false },
+      { id: 'f8', title: 'Chase the auditor on SOC 2', preview: 'Marco Bianchi: Sent. They have everything they asked for.', priority: 'medium', owner: 'm_marco', due: 'Closed', overdue: false, unread: 0, agentic: true, done: true },
+      { id: 'f9', title: 'Confirm the rota for next month', preview: 'Elena Ruiz: Signed off.', priority: 'low', owner: 'm_elena', due: 'Closed', overdue: false, unread: 0, agentic: false, done: true },
       { id: 'f7', title: 'Levelling guide', preview: 'Elena Ruiz: Template that asks what the system allowed rather than who did it.', priority: 'low', owner: 'm_david', due: 'Due in 7 days', overdue: false, unread: 1, agentic: false },
     ],
 
@@ -1282,31 +1290,37 @@ function initialState() {
       { title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', priority: 'high', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', room: null, thread: null },
     ],
 
+    /*
+     * A topic and a DM are the things that carry a priority — the whole room is
+     * prioritised, and every thread inside it inherits that. For the rooms this
+     * mock actually holds, the row is a view onto the room, so changing it here
+     * changes it in My Threads too.
+     */
     topicsList: [
-      { name: 'Slack Q&A RAG System', preview: 'Yariv Ashkenazy: Wat do you think?', priority: 'urgent', type: 'dev', open: '3 open', faces: ['m_grace', 'm_david', 'm_yariv'], activity: '1d', room: null },
-      { name: 'Real-Time Indexing Pipeline', preview: 'Priya Nair: Then the plan is a ceiling of five, a dedicated DLQ and fourteen days.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_david', 'm_elena', 'm_yariv'], activity: '1d', room: 'indexing' },
-      { name: 'Data Warehouse Migration', preview: 'Ben Carter: Second reconcile night also clean.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_marco', 'm_tom', 'm_david'], activity: '2d', room: null },
-      { name: 'API Rate Limiting', preview: 'David Kim: Per-key or per-org? If it is per-key a single bad integration still takes the org down.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_david', 'm_priya', 'm_tom'], activity: '2d', room: 'rate-limits' },
-      { name: 'AI Team Weekly Sync', preview: 'Yariv Ashkenazy: Let us keep it to three things.', priority: 'high', type: 'sync', open: '2 open', faces: ['m_sarah', 'm_grace', 'm_priya'], activity: '3d', room: 'weekly-sync' },
-      { name: 'Design System v2', preview: 'Marco Bianchi: Twelve glyphs redrawn, in review.', priority: 'high', type: 'dev', open: '2 open', faces: ['m_marco', 'm_sarah'], activity: '2d', room: null },
-      { name: 'Support Triage', preview: 'Yuki Tanaka: We have 60 tags and about eight of them get used.', priority: 'high', type: 'ask', open: '2 open', faces: ['m_grace', 'm_tom'], activity: '2d', room: null },
-      { name: 'Create Electron desktop client', preview: 'Sarah Chen: I will implement native context menus with proper platform behaviour on both.', priority: 'medium', type: 'dev', open: '4 open', faces: ['m_sarah', 'm_marco'], activity: '2w', room: null },
-      { name: 'Frontend Performance', preview: 'Sofia Almeida: Lighthouse run after the font preload: 2.4s to 1.6s.', priority: 'medium', type: 'dev', open: '2 open', faces: ['m_sarah', 'm_marco'], activity: '2d', room: null },
+      { id: 'tl1', name: 'Slack Q&A RAG System', preview: 'Yariv Ashkenazy: Wat do you think?', priority: 'urgent', type: 'dev', open: '3 open', faces: ['m_grace', 'm_david', 'm_yariv'], owner: 'm_yariv', unread: 3, activity: '1d', room: null },
+      { id: 'tl2', name: 'Real-Time Indexing Pipeline', preview: 'Priya Nair: Then the plan is a ceiling of five, a dedicated DLQ and fourteen days.', type: 'dev', open: '2 open', faces: ['m_david', 'm_elena', 'm_yariv'], owner: 'm_yariv', unread: 0, activity: '1d', room: 'indexing' },
+      { id: 'tl3', name: 'Data Warehouse Migration', preview: 'Ben Carter: Second reconcile night also clean.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_marco', 'm_tom', 'm_david'], owner: 'm_marco', unread: 3, activity: '2d', room: null },
+      { id: 'tl4', name: 'API Rate Limiting', preview: 'David Kim: Per-key or per-org? If it is per-key a single bad integration still takes the org down.', type: 'dev', open: '2 open', faces: ['m_david', 'm_priya', 'm_tom'], owner: 'm_priya', unread: 0, activity: '2d', room: 'rate-limits' },
+      { id: 'tl5', name: 'AI Team Weekly Sync', preview: 'Yariv Ashkenazy: Let us keep it to three things.', type: 'sync', open: '2 open', faces: ['m_sarah', 'm_grace', 'm_priya'], owner: 'm_yariv', unread: 2, activity: '3d', room: 'weekly-sync' },
+      { id: 'tl6', name: 'Design System v2', preview: 'Marco Bianchi: Twelve glyphs redrawn, in review.', priority: 'high', type: 'dev', open: '2 open', faces: ['m_marco', 'm_sarah'], owner: 'm_marco', unread: 0, activity: '2d', room: null },
+      { id: 'tl7', name: 'Support Triage', preview: 'Yuki Tanaka: We have 60 tags and about eight of them get used.', priority: 'high', type: 'ask', open: '2 open', faces: ['m_grace', 'm_tom'], owner: 'm_grace', unread: 3, activity: '2d', room: null },
+      { id: 'tl8', name: 'Create Electron desktop client', preview: 'Sarah Chen: I will implement native context menus with proper platform behaviour on both.', priority: 'medium', type: 'dev', open: '4 open', faces: ['m_sarah', 'm_marco'], owner: 'm_sarah', unread: 0, activity: '2w', room: null },
+      { id: 'tl9', name: 'Frontend Performance', preview: 'Sofia Almeida: Lighthouse run after the font preload: 2.4s to 1.6s.', priority: 'medium', type: 'dev', open: '2 open', faces: ['m_sarah', 'm_marco'], owner: 'm_marco', unread: 0, activity: '2d', room: null },
     ],
 
     dmsList: [
-      { member: 'm_david', preview: 'David Kim: Fourteen days. I will say so in the thread so it is written down.', priority: 'high', unread: 0, activity: '1d', room: 'dm-david' },
-      { member: 'm_priya', preview: 'Priya Nair: Posting it now.', priority: 'medium', unread: 0, activity: '2h', room: 'dm-priya' },
-      { member: 'm_elena', preview: 'Elena Ruiz: Sending the retention config over tonight — 14 days, as agreed in the thread.', priority: 'medium', unread: 0, activity: '4d', room: null },
-      { member: 'm_grace', preview: 'Yariv Ashkenazy: Leaning yes. Let us see the research writeup first.', priority: 'medium', unread: 1, activity: '2d', room: null },
-      { member: 'm_tom', preview: 'Tom Okafor: Dashboard is up whenever you want to look at it.', priority: 'low', unread: 0, activity: '3d', room: null },
+      { id: 'dl1', member: 'm_david', preview: 'David Kim: Fourteen days. I will say so in the thread so it is written down.', unread: 0, activity: '1d', room: 'dm-david' },
+      { id: 'dl2', member: 'm_priya', preview: 'Priya Nair: Posting it now.', unread: 0, activity: '2h', room: 'dm-priya' },
+      { id: 'dl3', member: 'm_elena', preview: 'Elena Ruiz: Sending the retention config over tonight — 14 days, as agreed in the thread.', priority: 'medium', unread: 0, activity: '4d', room: null },
+      { id: 'dl4', member: 'm_grace', preview: 'Yariv Ashkenazy: Leaning yes. Let us see the research writeup first.', priority: 'medium', unread: 1, activity: '2d', room: null },
+      { id: 'dl5', member: 'm_tom', preview: 'Tom Okafor: Dashboard is up whenever you want to look at it.', priority: 'low', unread: 0, activity: '3d', room: null },
     ],
 
     teamsList: [
-      { name: 'Product', glyph: 'compass', people: ['m_yariv', 'm_grace', 'm_sarah'], peopleLabel: '4 people', topics: '8 topics' },
-      { name: 'Engineering', glyph: 'cube', people: ['m_david', 'm_priya', 'm_tom'], peopleLabel: '9 people', topics: '7 topics' },
-      { name: 'CTO Office', glyph: 'shield', people: ['m_elena', 'm_agent'], peopleLabel: '3 people', topics: '5 topics' },
-      { name: 'Design', glyph: 'layers', people: ['m_marco', 'm_sarah'], peopleLabel: '3 people', topics: '2 topics' },
+      { name: 'Product', mine: true, glyph: 'compass', people: ['m_yariv', 'm_grace', 'm_sarah'], peopleLabel: '4 people', topics: '8 topics' },
+      { name: 'Engineering', mine: true, glyph: 'cube', people: ['m_david', 'm_priya', 'm_tom'], peopleLabel: '9 people', topics: '7 topics' },
+      { name: 'CTO Office', mine: true, glyph: 'shield', people: ['m_elena', 'm_agent'], peopleLabel: '3 people', topics: '5 topics' },
+      { name: 'Design', mine: true, glyph: 'layers', people: ['m_marco', 'm_sarah'], peopleLabel: '3 people', topics: '2 topics' },
       { name: 'Data', glyph: 'beaker', people: ['m_grace', 'm_tom'], peopleLabel: '2 people', topics: '2 topics' },
       { name: 'Customer Support', glyph: 'pulse', people: ['m_elena'], peopleLabel: '2 people', topics: '1 topic' },
     ],
@@ -1353,6 +1367,71 @@ function spanHtml(span) {
   return esc(span.text);
 }
 
+/*
+ * A room's priority, wherever it is read from.
+ *
+ * For the rooms this mock holds, the list row is a view onto the room, so the
+ * room object is the one copy of the number; the rows that stand for topics we
+ * do not hold keep their own. Either way nothing else reads or writes it.
+ */
+function rowPriority(row) {
+  const r = row.room && state.rooms[row.room];
+  return (r ? r.priority : row.priority) || 'none';
+}
+
+function setRowPriority(row, value) {
+  const r = row.room && state.rooms[row.room];
+  if (r) r.priority = value; else row.priority = value;
+}
+
+function findListRow(list, id) {
+  return (list === 'topics' ? state.topicsList : state.dmsList).find((r) => r.id === id) || null;
+}
+
+/* ── filters ─────────────────────────────────────────────────────────────── */
+/*
+ * Every filter is a fact about a row, so a screen states which facts it offers
+ * and the same three lines apply them. A pill nothing can answer would be a
+ * pill that does nothing, which is what these used to be.
+ */
+const FILTERS = {
+  'my-threads': [
+    { label: 'Open',           test: (row) => row.status === 'open' },
+    { label: 'Tagged in',      test: (row) => row.taggedIn },
+    { label: 'Assigned to me', test: (row) => row.owner === ME },
+    { label: 'Unread',         test: (row) => row.unread > 0 },
+  ],
+  topics: [
+    { label: 'Unread',         test: (row) => row.unread > 0 },
+    { label: 'Assigned to me', test: (row) => row.owner === ME },
+  ],
+  dms: [
+    { label: 'Unread',         test: (row) => row.unread > 0 },
+  ],
+  'follow-ups': [
+    { label: 'Open',    test: (row) => !row.done },
+    { label: 'Unread',  test: (row) => row.unread > 0 },
+    { label: 'Overdue', test: (row) => row.overdue },
+  ],
+  teams: [
+    { label: 'My teams', test: (row) => row.mine },
+  ],
+};
+
+function filterState(view) {
+  if (!state.filters[view]) state.filters[view] = { search: '', on: [] };
+  return state.filters[view];
+}
+
+function applyFilters(view, rows, text) {
+  const f = filterState(view);
+  const needle = f.search.trim().toLowerCase();
+  return rows.filter((row) => {
+    if (needle && !text(row).toLowerCase().includes(needle)) return false;
+    return FILTERS[view].every((filter) => !f.on.includes(filter.label) || filter.test(row));
+  });
+}
+
 /* A stream is a room's message list or a thread's; both are drawn the same. */
 function streamOf(key) {
   if (state.rooms[key]) return state.rooms[key].messages;
@@ -1386,18 +1465,13 @@ function reactionChip(msg, stream, place, reaction, index) {
 function messageHtml(msg, stream, place, asParent) {
   const person = PEOPLE[msg.author];
   const status = msg.status;
-  const priority = msg.priority;
   const statusMeta = STATUSES.find((s) => s.key === status) || STATUSES[0];
-  const priorityMeta = PRIORITIES.find((p) => p.key === priority) || PRIORITIES[4];
 
   const marks = [];
   /* Open earns no badge — the ring in the corner bar already says so. The two
      finished states do, because a badge is also how you take one back. */
   if (status && status !== 'open') {
     marks.push(`<button class="statusChip" type="button" data-status="${status}" data-act="reset-status" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}">${icon(statusMeta.icon, 'compact')}${statusMeta.label}</button>`);
-  }
-  if (priority && priority !== 'none') {
-    marks.push(`<button class="priorityChip" type="button" data-priority="${priority}" data-act="menu" data-menu="priority" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}">${icon(priorityMeta.icon, 'compact')}${priorityMeta.label}</button>`);
   }
   if (msg.followUp) {
     const kind = FOLLOW_UP_KINDS.find((k) => k.key === msg.followUp.kind) || FOLLOW_UP_KINDS[0];
@@ -1429,7 +1503,6 @@ function messageHtml(msg, stream, place, asParent) {
       <button class="tool" type="button" data-act="noop" title="Tag">${icon('tag')}</button>
       <span class="toolDivider"></span>
       ${tool('reaction', icon('emoji'), 'React')}
-      ${tool('priority', icon(priorityMeta.icon), 'Priority', `data-priority="${priority || 'none'}"`)}
       <button class="tool" type="button" data-act="follow-up" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" title="Set a follow-up">${icon('timer')}</button>
       <button class="tool" type="button" data-act="noop" title="More">${icon('ellipsis')}</button>
       ${menuOpen ? menuHtml(m, msg, stream, place) : ''}
@@ -1449,12 +1522,6 @@ function menuHtml(menu, msg, stream, place) {
     const current = msg.status || 'open';
     return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
       STATUSES.map((s) => row(`data-status="${s.key}"`, s.key, icon(s.icon), s.label, s.key === current)).join('')
-    }</div>`;
-  }
-  if (menu.kind === 'priority') {
-    const current = msg.priority || 'none';
-    return `<div class="menu" style="top:calc(100% + 4px);right:0" data-menu-body>${
-      PRIORITIES.map((p) => row(`data-priority="${p.key}"`, p.key, icon(p.icon), p.label, p.key === current)).join('')
     }</div>`;
   }
   if (menu.kind === 'reaction') {
@@ -1552,9 +1619,8 @@ function roomHtml() {
 }
 
 /* ── the list screens ────────────────────────────────────────────────────── */
-/* `pressed` is the filter the screen arrives with on — the lists that are a
-   queue arrive filtered to what is still open; the directories do not. */
-function headerHtml(title, glyph, filters, pressed) {
+function headerHtml(title, glyph, view) {
+  const f = filterState(view);
   return `
   <div class="pageHeader">
     <div class="pathRow">
@@ -1566,12 +1632,17 @@ function headerHtml(title, glyph, filters, pressed) {
       </div>
     </div>
     <div class="filterRow">
-      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search ${esc(title)}"></span>
-      ${filters.map((f) => `<button class="pill" type="button" data-act="noop"${f === pressed ? ' aria-pressed="true"' : ''}>${esc(f)}</button>`).join('')}
+      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search ${esc(title)}" data-search="${view}" value="${esc(f.search)}"></span>
+      ${FILTERS[view].map((filter) => `<button class="pill" type="button" data-act="toggle-filter" data-view="${view}" data-value="${esc(filter.label)}" aria-pressed="${f.on.includes(filter.label)}">${esc(filter.label)}</button>`).join('')}
       <span class="spacer"></span>
       <button class="iconBtn" type="button" data-act="noop" title="Filter">${icon('filter')}</button>
     </div>
   </div>`;
+}
+
+/* Nothing matched. The list says so rather than looking broken. */
+function emptyHtml(label) {
+  return `<p class="emptyNote">${esc(label)}</p>`;
 }
 
 function groupHtml(key, label, glyph, priorityKey, rows, drawRow) {
@@ -1596,159 +1667,169 @@ function allThreadRows() {
     const parent = r.messages.find((m) => m.id === th.parent);
     const last = th.messages[th.messages.length - 1];
     return {
+      id: th.id,
       title: th.label,
-      preview: last ? `${PEOPLE[last.author].name}: ${last.spans.map((s) => s.text || '').join('')}` : '',
-      priority: (parent && parent.priority) || 'none',
+      preview: last ? `${PEOPLE[last.author].name}: ${last.spans.map((sp) => sp.text || '').join('')}` : '',
+      /* A thread has no priority of its own: it is as urgent as the room it is in. */
+      priority: r.priority,
       status: (parent && parent.status) || 'open',
-      type: r.type || 'general',
+      type: r.kind === 'dm' ? 'general' : r.type,
       owner: parent ? parent.author : ME,
+      taggedIn: th.messages.concat(parent ? [parent] : []).some((m) => m.spans.some((sp) => sp.mention === ME)),
       unread: 0, activity: '2d', room: th.room, thread: th.id,
     };
   });
-  return held.concat(state.extraThreads.map((row) => Object.assign({ status: 'open' }, row)));
+  return held.concat(state.extraThreads.map((row) => Object.assign({ status: 'open', taggedIn: false }, row)));
 }
 
 function myThreadsHtml() {
-  const rows = allThreadRows();
+  const rows = applyFilters('my-threads', allThreadRows(), (row) => `${row.title} ${row.preview}`);
+  const groups = PRIORITIES.map((p) => groupHtml(
+    `mt-${p.key}`,
+    p.key === 'none' ? 'No priority' : p.label,
+    icon(p.icon), p.key,
+    rows.filter((row) => (row.priority || 'none') === p.key),
+    threadRowHtml,
+  )).join('');
   return `
-  ${headerHtml('My Threads', 'my-threads', ['Open', 'Tagged in', 'Assigned to me', 'Unread'], 'Open')}
-  <div class="listScroll">${
-    PRIORITIES.map((p) => groupHtml(
-      `mt-${p.key}`,
-      p.key === 'none' ? 'No priority' : p.label,
-      icon(p.icon), p.key,
-      rows.filter((row) => (row.priority || 'none') === p.key),
-      threadRowHtml,
-    )).join('')
-  }</div>`;
+  ${headerHtml('My Threads', 'my-threads', 'my-threads')}
+  <div class="listScroll">${groups || emptyHtml('No threads match these filters.')}</div>`;
 }
 
+/*
+ * A row's marks: the priority is a fact here, because it belongs to the room
+ * the thread is in and is changed on the Topics or DMs page that lists it.
+ */
 function threadRowHtml(row) {
-  const statusMeta = STATUSES.find((s) => s.key === row.status) || STATUSES[0];
+  const statusMeta = STATUSES.find((st) => st.key === row.status) || STATUSES[0];
   return `
-  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
+  <div class="item">
     <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
     <span class="itemMarks">
-      <span class="itemMark" data-priority="${row.priority || 'none'}">${icon('priority-' + (row.priority || 'none'))}</span>
+      <span class="itemMark" data-priority="${row.priority || 'none'}" title="Priority of the room this thread is in">${icon('priority-' + (row.priority || 'none'))}</span>
       <span class="itemMark" data-status="${row.status}">${icon(statusMeta.icon)}</span>
       <span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>
     </span>
-    <span class="itemFace">
+    <button class="itemFace" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
       <span class="itemTitle">${esc(row.title)}</span>
       <span class="itemPreview">${esc(row.preview)}</span>
-    </span>
+    </button>
     <span class="itemAvatar">${markFor(row.owner, 'mark')}</span>
     <span class="itemActivity">${esc(row.activity)}</span>
-  </button>`;
+  </div>`;
 }
 
 function followUpsHtml() {
-  const overdue = state.followUps.filter((f) => f.overdue);
-  const upcoming = state.followUps.filter((f) => !f.overdue);
+  const rows = applyFilters('follow-ups', state.followUps, (row) => `${row.title} ${row.preview}`);
+  const overdue = rows.filter((f) => f.overdue);
+  const upcoming = rows.filter((f) => !f.overdue);
+  const groups = groupHtml('fu-overdue', 'Overdue', '', null, overdue, followUpRowHtml)
+    + groupHtml('fu-upcoming', 'Upcoming', '', null, upcoming, followUpRowHtml);
   return `
-  ${headerHtml('Follow Ups', 'follow-ups', ['Open', 'Unread', 'Overdue'], 'Open')}
-  <div class="listScroll">
-    ${groupHtml('fu-overdue', 'Overdue', '', null, overdue, followUpRowHtml)}
-    ${groupHtml('fu-upcoming', 'Upcoming', '', null, upcoming, followUpRowHtml)}
-  </div>`;
+  ${headerHtml('Follow Ups', 'follow-ups', 'follow-ups')}
+  <div class="listScroll">${groups || emptyHtml('No follow-ups match these filters.')}</div>`;
 }
 
 function followUpRowHtml(row) {
   return `
-  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
+  <div class="item"${row.done ? ' data-done' : ''}>
     <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
     <span class="itemMarks">
       <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
-      <span class="itemMark" data-status="open">${icon('status-open')}</span>
+      <span class="itemMark" data-status="${row.done ? 'resolved' : 'open'}">${icon(row.done ? 'status-resolved' : 'status-open')}</span>
       <span class="itemMark" data-kind style="${row.agentic ? 'color:var(--accent)' : ''}">${icon(row.agentic ? 'agent' : 'timer')}</span>
     </span>
-    <span class="itemFace">
+    <button class="itemFace" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
       <span class="itemTitle">${esc(row.title)}</span>
       <span class="itemPreview">${esc(row.preview)}</span>
-    </span>
+    </button>
     <span class="itemAvatar">${markFor(row.owner, 'mark')}</span>
     <span class="itemDue"${row.overdue ? ' data-overdue' : ''}>${esc(row.due)}</span>
-  </button>`;
+  </div>`;
 }
 
 function topicsHtml() {
+  const rows = applyFilters('topics', state.topicsList, (row) => `${row.name} ${row.preview}`);
+  const groups = PRIORITIES.map((p) => groupHtml(
+    `tp-${p.key}`,
+    p.key === 'none' ? 'No priority' : p.label,
+    icon(p.icon), p.key,
+    rows.filter((row) => rowPriority(row) === p.key),
+    (row) => listRowHtml(row, 'topics'),
+  )).join('');
   return `
-  ${headerHtml('Topics', 'topics', ['Unread', 'Assigned to me'], null)}
-  <div class="listScroll">${
-    PRIORITIES.map((p) => groupHtml(
-      `tp-${p.key}`,
-      p.key === 'none' ? 'No priority' : p.label,
-      icon(p.icon), p.key,
-      state.topicsList.filter((row) => row.priority === p.key),
-      topicRowHtml,
-    )).join('')
-  }</div>`;
-}
-
-function topicRowHtml(row) {
-  return `
-  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="">
-    <span class="itemUnread"></span>
-    <span class="itemMarks">
-      <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
-      <span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>
-    </span>
-    <span class="itemFace">
-      <span class="itemTitle">${esc(row.name)}</span>
-      <span class="itemPreview">${esc(row.preview)}</span>
-    </span>
-    <span class="itemOpen">${esc(row.open)}</span>
-    <span class="itemFaces">${faceStack(row.faces)}</span>
-    <span class="itemActivity">${esc(row.activity)}</span>
-  </button>`;
+  ${headerHtml('Topics', 'topics', 'topics')}
+  <div class="listScroll">${groups || emptyHtml('No topics match these filters.')}</div>`;
 }
 
 function dmsHtml() {
+  const rows = applyFilters('dms', state.dmsList, (row) => `${PEOPLE[row.member].name} ${row.preview}`);
+  const groups = PRIORITIES.map((p) => groupHtml(
+    `dm-${p.key}`,
+    p.key === 'none' ? 'No priority' : p.label,
+    icon(p.icon), p.key,
+    rows.filter((row) => rowPriority(row) === p.key),
+    (row) => listRowHtml(row, 'dms'),
+  )).join('');
   return `
-  ${headerHtml('DMs', 'dms', ['Unread'], null)}
-  <div class="listScroll">${
-    PRIORITIES.map((p) => groupHtml(
-      `dm-${p.key}`,
-      p.key === 'none' ? 'No priority' : p.label,
-      icon(p.icon), p.key,
-      state.dmsList.filter((row) => row.priority === p.key),
-      dmRowHtml,
-    )).join('')
+  ${headerHtml('DMs', 'dms', 'dms')}
+  <div class="listScroll">${groups || emptyHtml('No conversations match these filters.')}</div>`;
+}
+
+/*
+ * The one row that carries a priority you can change: the mark is the control,
+ * pressed to open the menu, and the row regroups the moment it is set.
+ */
+function listRowHtml(row, list) {
+  const isDm = list === 'dms';
+  const priority = rowPriority(row);
+  const open = state.rowMenu && state.rowMenu.list === list && state.rowMenu.id === row.id;
+  return `
+  <div class="item">
+    <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
+    <span class="itemMarks">
+      <button class="itemMark itemMarkBtn" type="button" data-priority="${priority}" data-act="row-priority-menu" data-list="${list}" data-row="${row.id}" aria-expanded="${Boolean(open)}" title="Priority — press to change">${icon('priority-' + priority)}</button>
+      ${isDm ? '' : `<span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>`}
+      ${open ? rowPriorityMenu(row, list, priority) : ''}
+    </span>
+    <button class="itemFace" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="">
+      ${isDm ? `<span class="itemLead">${markFor(row.member, 'mark')}</span>` : ''}
+      <span class="itemTitle">${esc(isDm ? PEOPLE[row.member].name : row.name)}</span>
+      <span class="itemPreview">${esc(row.preview)}</span>
+    </button>
+    ${isDm ? '' : `<span class="itemOpen">${esc(row.open)}</span><span class="itemFaces">${faceStack(row.faces)}</span>`}
+    <span class="itemActivity">${esc(row.activity)}</span>
+  </div>`;
+}
+
+function rowPriorityMenu(row, list, current) {
+  return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
+    PRIORITIES.map((p) => `
+      <button class="menuItem" type="button" data-act="set-row-priority" data-list="${list}" data-row="${row.id}" data-value="${p.key}"${p.key === current ? ' data-on' : ''}>
+        <span class="menuMark" data-priority="${p.key}">${icon(p.icon)}</span>
+        <span class="menuLabel">${p.label}</span>
+        ${p.key === current ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+      </button>`).join('')
   }</div>`;
 }
 
-function dmRowHtml(row) {
-  return `
-  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="">
-    <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
-    <span class="itemMarks">
-      <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
-    </span>
-    <span class="itemFace">
-      <span class="itemLead">${markFor(row.member, 'mark')}</span>
-      <span class="itemTitle">${esc(PEOPLE[row.member].name)}</span>
-      <span class="itemPreview">${esc(row.preview)}</span>
-    </span>
-    <span class="itemActivity">${esc(row.activity)}</span>
-  </button>`;
-}
-
 function teamsHtml() {
+  const rows = applyFilters('teams', state.teamsList, (row) => row.name);
   return `
-  ${headerHtml('Teams', 'team', ['My teams'], 'My teams')}
+  ${headerHtml('Teams', 'team', 'teams')}
   <div class="listScroll">
-    <div class="groupRows">${state.teamsList.map(teamRowHtml).join('')}</div>
+    ${rows.length ? `<div class="groupRows">${rows.map(teamRowHtml).join('')}</div>` : emptyHtml('No teams match these filters.')}
   </div>`;
 }
 
 function teamRowHtml(row) {
   return `
-  <button class="item" type="button" data-act="noop">
+  <div class="item">
     <span class="itemMarks"><span class="itemMark" data-kind>${icon(row.glyph)}</span></span>
-    <span class="itemFace"><span class="itemTitle">${esc(row.name)}</span></span>
+    <button class="itemFace" type="button" data-act="noop"><span class="itemTitle">${esc(row.name)}</span></button>
     <span class="itemPeople">${faceStack(row.people, parseInt(row.peopleLabel, 10))}<span class="itemCount">${esc(row.peopleLabel)}</span></span>
     <span class="itemTopics"><span class="itemCount">${icon('topics', 'compact')} ${esc(row.topics)}</span></span>
-  </button>`;
+  </div>`;
 }
 
 /* ── the agent ───────────────────────────────────────────────────────────── */
@@ -2127,7 +2208,7 @@ function send(streamKey, text) {
   if (streamKey === 'agent') { ask(body, null); return; }
 
   streamOf(streamKey).push({
-    id: nextId(), author: ME, time: now(), day: 'Today', status: null, priority: null,
+    id: nextId(), author: ME, time: now(), day: 'Today', status: null,
     spans: [t(body)], reactions: [], thread: null, followUp: null,
   });
   state.menu = null;
@@ -2203,10 +2284,9 @@ app.addEventListener('click', (event) => {
 
   /* A click that is neither inside an open menu nor on its own trigger shuts it. */
   let dirty = false;
-  if (state.menu && !event.target.closest('[data-menu-body]') && act !== 'menu') {
-    state.menu = null;
-    dirty = true;
-  }
+  const insideMenu = Boolean(event.target.closest('[data-menu-body]'));
+  if (state.menu && !insideMenu && act !== 'menu') { state.menu = null; dirty = true; }
+  if (state.rowMenu && !insideMenu && act !== 'row-priority-menu') { state.rowMenu = null; dirty = true; }
   if (!act) { if (dirty) render(); return; }
 
   switch (act) {
@@ -2218,6 +2298,7 @@ app.addEventListener('click', (event) => {
     case 'view':
       state.view = data.value;
       state.menu = null;
+      state.rowMenu = null;
       render();
       break;
 
@@ -2235,6 +2316,29 @@ app.addEventListener('click', (event) => {
       state.room = data.room;
       state.threadOpen = data.thread || null;
       state.menu = null;
+      render();
+      break;
+    }
+
+    case 'toggle-filter': {
+      const f = filterState(data.view);
+      f.on = f.on.includes(data.value) ? f.on.filter((l) => l !== data.value) : f.on.concat(data.value);
+      render();
+      break;
+    }
+
+    case 'row-priority-menu': {
+      const same = state.rowMenu && state.rowMenu.list === data.list && state.rowMenu.id === data.row;
+      state.rowMenu = same ? null : { list: data.list, id: data.row };
+      state.menu = null;
+      render();
+      break;
+    }
+
+    case 'set-row-priority': {
+      const target = findListRow(data.list, data.row);
+      if (target) setRowPriority(target, data.value);
+      state.rowMenu = null;
       render();
       break;
     }
@@ -2288,14 +2392,6 @@ app.addEventListener('click', (event) => {
     case 'reset-status': {
       const msg = findMessage(stream, msgId);
       if (msg) msg.status = 'open';
-      render();
-      break;
-    }
-
-    case 'set-priority': {
-      const msg = findMessage(stream, msgId);
-      if (msg) msg.priority = data.value === 'none' ? null : data.value;
-      state.menu = null;
       render();
       break;
     }
@@ -2394,7 +2490,7 @@ function confirmFollowUp() {
     state.followUps.push({
       id, title,
       preview: kind.agentic ? `${kind.label} — set by you` : `Reminder — set by you`,
-      priority: msg.priority || 'medium', owner: ME,
+      priority: state.rooms[d.roomKey].priority, owner: ME,
       due: `Due ${d.when.toLowerCase()}`, overdue: false, unread: 0,
       agentic: kind.agentic,
       room: state.rooms[d.stream] ? d.stream : d.roomKey,
@@ -2408,7 +2504,20 @@ function confirmFollowUp() {
 /* Composers: typing, Enter, and the send button. */
 app.addEventListener('input', (event) => {
   const editor = event.target.closest('[data-editor]');
-  if (editor) syncEditor(editor);
+  if (editor) { syncEditor(editor); return; }
+
+  const search = event.target.closest('[data-search]');
+  if (!search) return;
+  /*
+   * The list is redrawn on every keystroke, which replaces the box being typed
+   * in — so the caret is put back at the end of what was typed. The value
+   * itself is state, because it survives leaving the screen and coming back.
+   */
+  const view = search.dataset.search;
+  filterState(view).search = search.value;
+  render();
+  const again = app.querySelector(`[data-search="${view}"]`);
+  if (again) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
 });
 
 app.addEventListener('submit', (event) => {
@@ -2465,7 +2574,7 @@ document.addEventListener('keydown', (event) => {
   /* Innermost first, and the page's own panel is outside all of it. */
   if (aboutScrim.hasAttribute('data-open')) { aboutScrim.removeAttribute('data-open'); return; }
   if (state.dialog) { state.dialog = null; render(); return; }
-  if (state.menu) { state.menu = null; render(); return; }
+  if (state.menu || state.rowMenu) { state.menu = null; state.rowMenu = null; render(); return; }
   if (state.threadOpen) { state.threadOpen = null; render(); }
 });
 
