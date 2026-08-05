@@ -293,6 +293,73 @@ input{font:inherit;color:inherit}
    frame never has to reflow the app to fit it. */
 .artScaler{position:relative}
 
+/* ── the stage: the frame, the chapters under it, and the line under those ── */
+.stage{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(12px,1.8vh,20px);
+  min-width:0;min-height:0;height:100%;
+}
+.chapters{
+  display:flex;align-items:stretch;gap:clamp(6px,.9vw,14px);flex:none;max-width:100%;
+  opacity:0;animation:rise .9s 1.5s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.chapter{
+  position:relative;
+  display:flex;flex-direction:column;gap:8px;
+  flex:0 1 auto;min-width:0;padding:0;
+  color:var(--text-quaternary);
+  font-size:clamp(12px,.92vw,13.5px);font-weight:var(--text-weight-medium);
+  letter-spacing:-.01em;text-align:left;white-space:nowrap;
+  transition:color .2s ease;
+}
+.chapter:hover{color:var(--text-secondary)}
+.chapter[aria-selected='true']{color:var(--text-primary)}
+.chapterTrack{
+  display:block;height:2px;width:clamp(66px,7.2vw,116px);
+  border-radius:var(--radius-pill);background:rgb(0 0 0 / .1);overflow:hidden;
+}
+.chapterFill{
+  display:block;height:100%;width:100%;
+  border-radius:inherit;background:var(--text-primary);
+  transform-origin:left center;transform:scaleX(0);
+}
+/* The bar fills over the chapter it belongs to and empties the moment it ends. */
+.chapter[aria-selected='true'] .chapterFill{transition:transform linear}
+
+/* ── the cursor that drives it ───────────────────────────────────────────── */
+/*
+ * Deliberately larger and softer than a real pointer, so nobody spends a second
+ * wondering whether their own mouse has got away from them.
+ */
+.cursor{
+  position:absolute;z-index:90;
+  top:0;left:0;width:26px;height:26px;
+  margin:-3px 0 0 -3px;
+  pointer-events:none;
+  filter:drop-shadow(0 2px 5px rgb(0 0 0 / .3));
+  transition:transform .42s cubic-bezier(.33,.72,.24,1);
+}
+.cursor[data-press]{transform:translate(var(--cx),var(--cy)) scale(.82)}
+.cursorRing{
+  position:absolute;top:-9px;left:-9px;width:40px;height:40px;
+  border-radius:var(--radius-pill);
+  background:rgb(94 106 210 / .3);
+  opacity:0;transform:scale(.35);
+}
+.cursor[data-press] .cursorRing{animation:tap .42s ease-out}
+@keyframes tap{0%{opacity:.85;transform:scale(.3)}100%{opacity:0;transform:scale(1)}}
+
+/* The window is a display while the demo runs; the cursor clicks it, not you. */
+.win[data-driven]{pointer-events:none}
+/* A pointer that is not real still has to raise what a real one would. */
+.msg[data-demo-hover] .tools{display:flex}
+
+@media(prefers-reduced-motion:reduce){
+  .cursor{transition:none}
+  .cursor[data-press] .cursorRing{animation:none}
+  .chapter[aria-selected='true'] .chapterFill{transition:none}
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    The app, in a window.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -560,6 +627,14 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   color:var(--status);font-weight:var(--text-weight-medium);
 }
 .statusChip:hover{background:color-mix(in srgb, var(--status) 22%, transparent)}
+.assignChip{
+  display:inline-flex;align-items:center;gap:var(--space-1);
+  height:var(--space-5);padding:0 var(--space-2) 0 var(--space-1);
+  border-radius:var(--radius-pill);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--text-tertiary);font-size:var(--text-size-micro);
+}
+.assignChip:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
 .followChip{box-shadow:inset 0 0 0 1px var(--border-subtle);color:var(--text-tertiary)}
 .followChip:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
 .followChip[data-agentic]{color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent)}
@@ -660,6 +735,42 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .send:hover{background:var(--text-secondary)}
 .send[disabled]{background:var(--surface-sunken);color:var(--text-quaternary);cursor:default}
 
+/* ── the composer's mention typeahead ────────────────────────────────────── */
+/*
+ * Lifted from the product's `features/chat/Typeahead`. It is positioned and
+ * updated by hand rather than through the render, because a re-render replaces
+ * the box being typed in and takes the caret with it.
+ */
+.typeahead{
+  position:absolute;z-index:70;
+  display:flex;flex-direction:column;
+  width:288px;max-height:232px;padding:var(--space-1);
+  overflow-y:auto;overscroll-behavior:contain;
+  border-radius:var(--radius-large);
+  background:var(--surface-raised);box-shadow:var(--shadow-menu);
+}
+.typeaheadHeading{
+  flex:none;padding:var(--space-1) var(--space-2);
+  color:var(--text-quaternary);font-size:var(--text-size-micro);font-weight:var(--text-weight-medium);
+}
+.typeaheadOption{
+  display:flex;align-items:center;gap:var(--space-2);flex:none;
+  height:var(--row-height-default);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-secondary);font-size:var(--text-size-regular);
+}
+.typeaheadOption[data-active]{background:var(--surface-selected);color:var(--text-primary)}
+.typeaheadText{display:flex;align-items:baseline;gap:var(--space-2);min-width:0}
+.typeaheadDetail{color:var(--text-quaternary);font-size:var(--text-size-small)}
+/* A mention already made, sitting in the box you are still writing in. */
+.mentionChip{
+  display:inline-flex;align-items:baseline;gap:var(--space-1);
+  color:var(--text-primary);font-weight:var(--text-weight-medium);
+  text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:2px;
+  white-space:nowrap;
+}
+.mentionChip .mk{transform:translateY(2px)}
+
 /* ── menus and dialogs inside the window ─────────────────────────────────── */
 .menu{
   position:absolute;z-index:60;
@@ -706,6 +817,16 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 }
 .dialogCrumb{color:var(--text-tertiary);font-size:var(--text-size-regular);min-width:0;overflow:hidden;text-overflow:ellipsis}
 .dialogCrumb[data-last]{color:var(--text-primary);font-weight:var(--text-weight-medium)}
+.dialogNote{padding:var(--space-3) var(--space-4) 0}
+.dialogInput{
+  width:100%;height:var(--row-height-default);
+  padding:0 var(--space-3);
+  border:0;outline:none;border-radius:var(--radius-medium);
+  background:var(--surface-subtle);
+  color:var(--text-primary);font-size:var(--text-size-regular);
+}
+.dialogInput::placeholder{color:var(--text-quaternary)}
+.dialogInput:focus{box-shadow:inset 0 0 0 1px var(--border-strong)}
 .dialogChips{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4) var(--space-4)}
 .dialogChip{
   position:relative;
@@ -878,7 +999,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
   #script,#crossbar{animation:none;stroke-dashoffset:0}
-  .wordmark,.nav,.openApp,.copy,.art{animation:none;opacity:1;transform:none}
+  .wordmark,.nav,.openApp,.copy,.art,.chapters{animation:none;opacity:1;transform:none}
   .chatBody{transition:none}
   .pulse{animation:none;opacity:.6}
 }
@@ -926,11 +1047,15 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
       <p class="subline">Every conversation gets an owner, a priority, and an end.</p>
     </div>
 
-    <div class="art">
-      <div class="artScaler" id="scaler">
-        <!-- The product, drawn with the product's own tokens. Mock data, in memory only. -->
-        <div class="win" id="app" role="application" aria-label="Fosbury product demo"></div>
+    <div class="stage">
+      <div class="art">
+        <div class="artScaler" id="scaler">
+          <!-- The product, drawn with the product's own tokens. Mock data, in memory only. -->
+          <div class="win" id="app" role="img" aria-label="Fosbury product demo"></div>
+        </div>
       </div>
+
+      <div class="chapters" id="chapters" role="tablist" aria-label="Demos"></div>
     </div>
   </main>
 
@@ -1182,6 +1307,18 @@ function initialState() {
             reactions: [{ key: 'done', count: 1, mine: true }], thread: null, followUp: null },
         ],
       },
+      'dm-tom': {
+        key: 'dm-tom', name: 'Tom Okafor', kind: 'dm', member: 'm_tom', priority: 'low',
+        members: '2 members', favorite: false,
+        messages: [
+          { id: 'o1', author: 'm_tom', time: '16:40', day: '2 days ago', status: null,
+            spans: [t('Dashboard is up whenever you want to look at it. No rush.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'o2', author: 'm_tom', time: '16:52', day: '2 days ago', status: 'open',
+            spans: [t('One thing I never got an answer on: do we keep the old limiter running in parallel for a week, or cut over?')],
+            reactions: [], thread: null, followUp: null },
+        ],
+      },
       'dm-priya': {
         key: 'dm-priya', priority: 'medium', name: 'Priya Nair', kind: 'dm', member: 'm_priya',
         members: '2 members', favorite: true,
@@ -1290,7 +1427,7 @@ function initialState() {
       { id: 'dl2', member: 'm_priya', preview: 'Priya Nair: Posting it now.', unread: 0, activity: '2h', room: 'dm-priya' },
       { id: 'dl3', member: 'm_elena', preview: 'Elena Ruiz: Sending the retention config over tonight — 14 days, as agreed in the thread.', priority: 'medium', unread: 0, activity: '4d', room: null },
       { id: 'dl4', member: 'm_grace', preview: 'Yariv Ashkenazy: Leaning yes. Let us see the research writeup first.', priority: 'medium', unread: 1, activity: '2d', room: null },
-      { id: 'dl5', member: 'm_tom', preview: 'Tom Okafor: Dashboard is up whenever you want to look at it.', priority: 'low', unread: 0, activity: '3d', room: null },
+      { id: 'dl5', member: 'm_tom', preview: 'Tom Okafor: One thing I never got an answer on — parallel run, or cut over?', unread: 1, activity: '3d', room: 'dm-tom' },
     ],
 
     teamsList: [
@@ -1450,6 +1587,9 @@ function messageHtml(msg, stream, place, asParent) {
   if (status && status !== 'open') {
     marks.push(`<button class="statusChip" type="button" data-status="${status}" data-act="reset-status" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}">${icon(statusMeta.icon, 'compact')}${statusMeta.label}</button>`);
   }
+  if (msg.assignee) {
+    marks.push(`<button class="assignChip" type="button" data-act="menu" data-menu="assignee" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" title="Assignee">${markFor(msg.assignee, 'small')}${esc(PEOPLE[msg.assignee].name)}</button>`);
+  }
   if (msg.followUp) {
     const kind = FOLLOW_UP_KINDS.find((k) => k.key === msg.followUp.kind) || FOLLOW_UP_KINDS[0];
     marks.push(`<button class="followChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="clear-follow-up" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" title="Clear this follow-up">${icon(kind.icon, 'compact')}${esc(msg.followUp.when)}</button>`);
@@ -1476,7 +1616,7 @@ function messageHtml(msg, stream, place, asParent) {
     </div>
     <div class="tools">
       ${tool('status', icon(statusMeta.icon), 'Status', `data-status="${status || 'open'}"`)}
-      <button class="tool" type="button" data-act="noop" title="Assignee">${markFor(ME, 'small')}</button>
+      ${tool('assignee', markFor(msg.assignee || ME, 'small'), 'Assignee')}
       <button class="tool" type="button" data-act="noop" title="Tag">${icon('tag')}</button>
       <span class="toolDivider"></span>
       ${tool('reaction', icon('emoji'), 'React')}
@@ -1499,6 +1639,18 @@ function menuHtml(menu, msg, stream, place) {
     const current = msg.status || 'open';
     return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
       STATUSES.map((s) => row(`data-status="${s.key}"`, s.key, icon(s.icon), s.label, s.key === current)).join('')
+    }</div>`;
+  }
+  if (menu.kind === 'assignee') {
+    const current = msg.assignee || null;
+    const people = ['m_yariv', 'm_david', 'm_elena', 'm_sarah', 'm_priya', 'm_marco', 'm_tom'];
+    return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
+      people.map((id) => `
+        <button class="menuItem" type="button" data-act="set-assignee" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" data-value="${id}"${id === current ? ' data-on' : ''}>
+          <span class="menuMark">${markFor(id, 'small')}</span>
+          <span class="menuLabel">${esc(PEOPLE[id].name)}</span>
+          ${id === current ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+        </button>`).join('')
     }</div>`;
   }
   if (menu.kind === 'reaction') {
@@ -1651,7 +1803,7 @@ function allThreadRows() {
       priority: r.priority,
       status: (parent && parent.status) || 'open',
       type: r.kind === 'dm' ? 'general' : r.type,
-      owner: parent ? parent.author : ME,
+      owner: parent ? (parent.assignee || parent.author) : ME,
       taggedIn: th.messages.concat(parent ? [parent] : []).some((m) => m.spans.some((sp) => sp.mention === ME)),
       unread: 0, activity: '2d', room: th.room, thread: th.id,
     };
@@ -1959,6 +2111,64 @@ const ANSWERS = [
   },
 ];
 
+/* Asked in the demo, and the only one not offered as a chip. */
+const CANNED = {
+  /*
+   * The one the agent is asked to *do* rather than answer.
+   *
+   * `effect` is the work itself — the same mutations the controls make, run by
+   * the agent instead of by a pointer. The turn then reports what it did, which
+   * is why this answer never leaves the agent screen.
+   */
+  'clear what is low priority in my threads': {
+    activity: ['Reading My Threads', 'Reading 2 low-priority threads', 'Drafting a reply to Tom Okafor', 'Closing what is answered'],
+    workLabel: 'Worked for 11s',
+    steps: [
+      { title: 'Collecting what is low', tool: { label: 'list', detail: 'priority:low status:open' } },
+      { title: 'Deciding what can be answered without you', reasoning: 'One is waiting on a decision that has already been made elsewhere in the workspace, so it can be answered and closed. The other is somebody else drafting, and nothing is waiting on you.' },
+      { title: null, tool: { label: 'reply', detail: 'Tom Okafor — parallel for a week, then cut over' } },
+      { title: null, tool: { label: 'resolve', detail: 'Tom Okafor' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Two were low priority. One is closed, one needs nothing from you.' },
+      { kind: 'bullets', items: [
+        'Tom Okafor asked about a parallel run — answered from the limiter decision and closed',
+        'Levelling guide — Elena Ruiz is drafting it and has not asked you for anything',
+      ] },
+      { kind: 'p', text: 'Nothing low priority is open. I will leave the levelling guide alone until she asks.' },
+    ],
+    effect: () => {
+      const room = state.rooms['dm-tom'];
+      const asked = room.messages.find((m) => m.id === 'o2');
+      room.messages.push({
+        id: nextId(), author: 'm_agent', time: now(), day: 'Today', status: null,
+        spans: [
+          { mention: 'm_tom' },
+          t(' parallel for a week, then cut over — that is the limiter decision from Tuesday. Closing this out; reopen it if that is wrong.'),
+        ],
+        reactions: [], thread: null, followUp: null,
+      });
+      if (asked) asked.status = 'resolved';
+    },
+  },
+  'what is low priority in my threads': {
+    activity: ['Reading My Threads', 'Reading 2 low-priority threads'],
+    workLabel: 'Worked for 5s',
+    steps: [
+      { title: 'Collecting what is low', tool: { label: 'list', detail: 'priority:low status:open' } },
+      { title: 'Reading what each is waiting on', reasoning: 'Both are waiting on a sentence from you rather than on a decision from anyone else.' },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Two things are low priority, and both are waiting on you.' },
+      { kind: 'bullets', items: [
+        'Tom Okafor asked whether the old limiter runs in parallel for a week or you cut over',
+        'Levelling guide — Elena Ruiz is drafting it and does not need you yet',
+      ] },
+      { kind: 'p', text: 'The first one you can answer now: parallel for a week, then cut over. Say so and close it.' },
+    ],
+  },
+};
+
 const FALLBACK = {
   activity: ['Searching the workspace', 'Reading what came back'],
   workLabel: 'Worked for 4s',
@@ -2012,7 +2222,7 @@ function sidebarHtml() {
     </div>
     <div class="sideScroll">
       <div class="sideGroup">
-        ${sidebarRow({ label: 'My Threads', iconName: 'my-threads', act: 'view', value: 'my-threads', count: 6, active: state.view === 'my-threads' })}
+        ${sidebarRow({ label: 'My Threads', iconName: 'my-threads', act: 'view', value: 'my-threads', count: allThreadRows().filter((row) => row.status === 'open').length, active: state.view === 'my-threads' })}
         ${sidebarRow({ label: 'Follow Ups', iconName: 'follow-ups', act: 'view', value: 'follow-ups', count: state.followUps.length, active: state.view === 'follow-ups' })}
         ${sidebarRow({ label: 'Agents', iconName: 'agent', act: 'view', value: 'agents', active: state.view === 'agents' })}
       </div>
@@ -2059,6 +2269,11 @@ function dialogHtml() {
         <span class="crumbSep">›</span>
         <span class="dialogCrumb">${esc(r.name)}</span><span class="crumbSep">›</span>
         <span class="dialogCrumb" data-last>Follow up</span>
+      </div>
+      <div class="dialogNote">
+        <input type="text" class="dialogInput" data-followup-note
+               placeholder="${kind.agentic ? 'What should the agent do when it comes due?' : 'What is this a reminder to do?'}"
+               value="${esc(d.note)}" aria-label="Follow-up instruction">
       </div>
       <div class="dialogChips">
         <button class="dialogChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="cycle-kind" title="What happens when it comes due">${icon(kind.icon)}${esc(kind.label)}</button>
@@ -2148,6 +2363,8 @@ function render() {
 
   restoreDrafts(drafts);
   restoreScroll();
+  /* `innerHTML` took the cursor with it; it belongs to the window, not the view. */
+  if (cursorEl) app.appendChild(cursorEl);
 }
 
 /* Where each stream was scrolled to, so a re-render does not jump the room. */
@@ -2175,18 +2392,21 @@ function now() {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function send(streamKey, text) {
-  const body = text.replace(/\s+/g, ' ').trim();
-  if (!body) return;
-  /* Empty the box before the render, so the draft it hands back is this one. */
+function send(streamKey) {
   const sent = app.querySelector(`[data-editor="${streamKey}"]`);
-  if (sent) sent.innerHTML = '';
+  if (!sent) return;
+  const spans = readSpans(sent);
+  if (!spans.length) return;
 
-  if (streamKey === 'agent') { ask(body, null); return; }
+  closeMention();
+  /* Empty the box before the render, so the draft it hands back is this one. */
+  sent.innerHTML = '';
+
+  if (streamKey === 'agent') { ask(spans.map((sp) => sp.text || '').join('').trim()); return; }
 
   streamOf(streamKey).push({
     id: nextId(), author: ME, time: now(), day: 'Today', status: null,
-    spans: [t(body)], reactions: [], thread: null, followUp: null,
+    spans, reactions: [], thread: null, followUp: null,
   });
   state.menu = null;
   scrollTarget = streamKey;
@@ -2200,7 +2420,7 @@ function readEditor(el) {
 }
 
 function syncEditor(el) {
-  const empty = readEditor(el).trim().length === 0;
+  const empty = readEditor(el).trim().length === 0 && !el.querySelector('.mentionChip');
   el.dataset.empty = empty ? 'true' : 'false';
   const form = el.closest('.composer');
   const btn = form && form.querySelector('.send');
@@ -2217,8 +2437,16 @@ function syncEditor(el) {
 const timers = [];
 function clearTimers() { timers.splice(0).forEach(clearTimeout); }
 
-function ask(text, suggestionIndex) {
-  const answer = suggestionIndex === null ? FALLBACK : ANSWERS[suggestionIndex];
+/* What was asked decides what comes back; a suggestion chip is just one way to ask. */
+function answerFor(text) {
+  const asked = text.trim().toLowerCase().replace(/[?.]+$/, '');
+  const i = SUGGESTIONS.findIndex((sug) => sug.toLowerCase().replace(/[?.]+$/, '') === asked);
+  if (i !== -1) return ANSWERS[i];
+  return CANNED[asked] || FALLBACK;
+}
+
+function ask(text) {
+  const answer = answerFor(text);
   const turn = {
     id: nextId(), role: 'agent', state: 'running',
     activity: answer.activity[0], workLabel: answer.workLabel,
@@ -2231,16 +2459,19 @@ function ask(text, suggestionIndex) {
   render();
 
   clearTimers();
+  const BEAT = 1100;
   answer.activity.slice(1).forEach((line, i) => {
     timers.push(setTimeout(() => {
       turn.activity = line;
       scrollTarget = 'agent';
       render();
-    }, 700 * (i + 1)));
+    }, BEAT * (i + 1)));
   });
   timers.push(setTimeout(() => {
     turn.state = 'done';
     turn.blocks = answer.blocks;
+    /* What it reports and what it changed are the same act. */
+    if (answer.effect) answer.effect();
     state.agent.busy = false;
     scrollTarget = 'agent';
     render();
@@ -2358,6 +2589,14 @@ app.addEventListener('click', (event) => {
       break;
     }
 
+    case 'set-assignee': {
+      const msg = findMessage(stream, msgId);
+      if (msg) msg.assignee = data.value;
+      state.menu = null;
+      render();
+      break;
+    }
+
     case 'set-status': {
       const msg = findMessage(stream, msgId);
       if (msg) msg.status = data.value;
@@ -2399,7 +2638,7 @@ app.addEventListener('click', (event) => {
 
     case 'follow-up':
       state.menu = null;
-      state.dialog = { msgId, stream, roomKey: state.room, kind: FOLLOW_UP_KINDS[0].key, when: FOLLOW_UP_WHENS[0] };
+      state.dialog = { msgId, stream, roomKey: state.room, kind: FOLLOW_UP_KINDS[0].key, when: FOLLOW_UP_WHENS[0], note: '' };
       render();
       break;
 
@@ -2436,7 +2675,7 @@ app.addEventListener('click', (event) => {
     }
 
     case 'ask':
-      ask(SUGGESTIONS[Number(data.value)], Number(data.value));
+      ask(SUGGESTIONS[Number(data.value)]);
       break;
 
     case 'new-chat':
@@ -2466,7 +2705,7 @@ function confirmFollowUp() {
     state.followUps = state.followUps.filter((f) => f.id !== id);
     state.followUps.push({
       id, title,
-      preview: kind.agentic ? `${kind.label} — set by you` : `Reminder — set by you`,
+      preview: d.note.trim() || (kind.agentic ? `${kind.label} — set by you` : 'Reminder — set by you'),
       priority: state.rooms[d.roomKey].priority, owner: ME,
       due: `Due ${d.when.toLowerCase()}`, overdue: false, unread: 0,
       agentic: kind.agentic,
@@ -2481,7 +2720,15 @@ function confirmFollowUp() {
 /* Composers: typing, Enter, and the send button. */
 app.addEventListener('input', (event) => {
   const editor = event.target.closest('[data-editor]');
-  if (editor) { syncEditor(editor); return; }
+  if (editor) { syncEditor(editor); syncMention(editor); return; }
+
+  const note = event.target.closest('[data-followup-note]');
+  if (note) {
+    /* Held, not drawn: the dialog only re-renders when a chip is cycled, and
+       the value has to survive that without the caret being taken along. */
+    if (state.dialog) state.dialog.note = note.value;
+    return;
+  }
 
   const search = event.target.closest('[data-search]');
   if (!search) return;
@@ -2502,7 +2749,7 @@ app.addEventListener('submit', (event) => {
   const form = event.target.closest('.composer');
   if (!form) return;
   const editor = form.querySelector('[data-editor]');
-  send(editor.dataset.editor, readEditor(editor));
+  send(editor.dataset.editor);
 });
 
 /* Paste as text: a pasted heading should not arrive as a heading. */
@@ -2524,10 +2771,27 @@ app.addEventListener('paste', (event) => {
 document.addEventListener('keydown', (event) => {
   const editor = event.target.closest && event.target.closest('[data-editor]');
 
+  /* An open typeahead owns the arrows, Enter and Escape until it is done with. */
+  if (mention && editor) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      mention.index = (mention.index + step + mention.matches.length) % mention.matches.length;
+      drawMention();
+      return;
+    }
+    if (event.key === 'Enter' || event.key === 'Tab') {
+      event.preventDefault();
+      takeMention(mention.matches[mention.index]);
+      return;
+    }
+    if (event.key === 'Escape') { event.preventDefault(); closeMention(); return; }
+  }
+
   if (event.key === 'Enter' && !event.shiftKey) {
     if (editor) {
       event.preventDefault();
-      send(editor.dataset.editor, readEditor(editor));
+      send(editor.dataset.editor);
     } else if (state.dialog) {
       event.preventDefault();
       confirmFollowUp();
@@ -2543,11 +2807,492 @@ document.addEventListener('keydown', (event) => {
   if (state.threadOpen) { state.threadOpen = null; render(); }
 });
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The composer's mention typeahead.
+
+   `@` is one of the product's four composer sigils. What is typed after it
+   narrows a list of people; taking a row drops a finished mention into the box
+   and the caret carries on after it.
+
+   All of it is imperative — the panel is placed and updated by hand, never
+   through `render()`, because re-rendering the box somebody is typing in takes
+   the caret with it.
+   ══════════════════════════════════════════════════════════════════════════ */
+const MENTIONABLE = ['m_yariv', 'm_david', 'm_elena', 'm_sarah', 'm_priya', 'm_marco', 'm_tom', 'm_grace'];
+let mention = null;   // { editor, query, matches, index }
+
+function mentionPanel() {
+  let el = app.querySelector('.typeahead');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'typeahead';
+    el.setAttribute('role', 'listbox');
+    el.setAttribute('aria-label', 'People');
+    app.appendChild(el);
+  }
+  return el;
+}
+
+function closeMention() {
+  mention = null;
+  const el = app.querySelector('.typeahead');
+  if (el) el.remove();
+}
+
+/* What has been typed since an `@` that begins a word, or nothing. */
+function mentionQuery(editor) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return null;
+  const node = sel.focusNode;
+  if (!node || node.nodeType !== 3 || !editor.contains(node)) return null;
+  const upto = node.textContent.slice(0, sel.focusOffset);
+  const at = upto.lastIndexOf('@');
+  if (at === -1) return null;
+  const before = at === 0 ? ' ' : upto[at - 1];
+  if (!/\s|\u00a0/.test(before)) return null;
+  const query = upto.slice(at + 1);
+  if (/\s/.test(query)) return null;
+  return { node, at, offset: sel.focusOffset, query };
+}
+
+function syncMention(editor) {
+  const found = mentionQuery(editor);
+  if (!found) { closeMention(); return; }
+
+  const needle = found.query.toLowerCase();
+  const matches = MENTIONABLE.filter((id) => PEOPLE[id].name.toLowerCase().includes(needle));
+  if (!matches.length) { closeMention(); return; }
+
+  mention = Object.assign({ editor, matches, index: 0 }, found);
+  drawMention();
+}
+
+function drawMention() {
+  if (!mention) return;
+  const el = mentionPanel();
+  el.innerHTML = `<p class="typeaheadHeading">People</p>${
+    mention.matches.map((id, i) => `
+      <div class="typeaheadOption" role="option" aria-selected="${i === mention.index}"${i === mention.index ? ' data-active' : ''} data-mention="${id}">
+        ${markFor(id, 'small')}
+        <span class="typeaheadText">
+          <span>${esc(PEOPLE[id].name)}</span>
+          <span class="typeaheadDetail">${id === ME ? 'you' : ''}</span>
+        </span>
+      </div>`).join('')
+  }`;
+
+  /* Above the composer it belongs to, in the window's own coordinates. */
+  const form = mention.editor.closest('.composer');
+  const win = app.getBoundingClientRect();
+  const k = win.width / app.offsetWidth || 1;
+  const r = form.getBoundingClientRect();
+  const left = (r.left - win.left) / k;
+  const bottom = (win.bottom - r.top) / k + 6;
+  el.style.left = `${Math.round(left)}px`;
+  el.style.bottom = `${Math.round(bottom)}px`;
+}
+
+/* Take a row: the `@word` becomes a finished mention and the caret follows it. */
+function takeMention(id) {
+  if (!mention) return;
+  const { editor, node, at, offset } = mention;
+  const range = document.createRange();
+  range.setStart(node, at);
+  range.setEnd(node, offset);
+  range.deleteContents();
+
+  const chip = document.createElement('span');
+  chip.className = 'mentionChip';
+  chip.contentEditable = 'false';
+  chip.dataset.member = id;
+  chip.innerHTML = `${markFor(id, 'small')}${esc(PEOPLE[id].name)}`;
+
+  const tail = document.createTextNode('\u00a0');
+  range.insertNode(tail);
+  range.insertNode(chip);
+
+  const after = document.createRange();
+  after.setStart(tail, 1);
+  after.collapse(true);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(after);
+
+  closeMention();
+  syncEditor(editor);
+  editor.focus();
+}
+
+/*
+ * Reading the box back out.
+ *
+ * A draft is a run of text nodes and mention chips, which is exactly the span
+ * list a message is made of — so this walks the children rather than parsing a
+ * string, and a name somebody typed by hand never becomes a mention by accident.
+ */
+function readSpans(editor) {
+  const spans = [];
+  const push = (text) => {
+    const clean = text.replace(/\u00a0/g, ' ');
+    if (!clean) return;
+    const last = spans[spans.length - 1];
+    if (last && last.text !== undefined) last.text += clean;
+    else spans.push({ text: clean });
+  };
+  editor.childNodes.forEach((node) => {
+    if (node.nodeType === 3) push(node.textContent);
+    else if (node.classList && node.classList.contains('mentionChip')) spans.push({ mention: node.dataset.member });
+    else push(node.textContent || '');
+  });
+  /* Trim the ends without touching the join between a mention and its sentence. */
+  if (spans.length && spans[0].text !== undefined) spans[0].text = spans[0].text.replace(/^\s+/, '');
+  const end = spans[spans.length - 1];
+  if (end && end.text !== undefined) end.text = end.text.replace(/\s+$/, '');
+  return spans.filter((sp) => sp.mention || sp.text);
+}
+
+app.addEventListener('mousedown', (event) => {
+  const option = event.target.closest('[data-mention]');
+  if (!option) return;
+  event.preventDefault();
+  takeMention(option.dataset.mention);
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The demo.
+
+   A cursor drives the real app: every step resolves a selector against the DOM
+   that is actually on screen and clicks the button that is actually there. So
+   the reel cannot drift from the product — if a control moves, the demo breaks
+   loudly rather than showing something the app no longer does.
+
+   Three chapters, in the order the argument goes: you do it, you hand it to
+   time, you ask the agent what is left.
+   ══════════════════════════════════════════════════════════════════════════ */
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOVE_MS = REDUCED ? 0 : 640;
+const CLICK_MS = 210;
+const SETTLE_MS = 420;
+const TYPE_MS = 46;
+/* Long enough after a view changes that the eye lands before the cursor does. */
+const READ_MS = 900;
+
+const chaptersEl = document.getElementById('chapters');
+let cursorEl = null;
+let run = null;      // the token of the chapter currently playing
+let chapter = 0;
+
+/* ── steps ───────────────────────────────────────────────────────────────── */
+const one = (query) => ({ find: () => app.querySelector(query) });
+/* A row is found by what it says, because its position is the thing on trial. */
+const saying = (query, text) => ({
+  find: () => [...app.querySelectorAll(query)].find((n) => n.textContent.includes(text)) || null,
+});
+const newest = (query) => ({ find: () => { const all = app.querySelectorAll(query); return all[all.length - 1] || null; } });
+
+const click = (target) => ({ kind: 'click', target });
+const hover = (target) => ({ kind: 'hover', target });
+const write = (target, text) => ({ kind: 'type', target, text });
+const pause = (ms) => ({ kind: 'wait', ms });
+
+function stepCost(step) {
+  if (step.kind === 'wait') return step.ms;
+  if (step.kind === 'type') return MOVE_MS + step.text.length * TYPE_MS + 220;
+  if (step.kind === 'hover') return MOVE_MS + 120;
+  return MOVE_MS + CLICK_MS + SETTLE_MS;
+}
+
+/* ── the chapters ────────────────────────────────────────────────────────── */
+const CHAPTERS = [
+  {
+    id: 'triage',
+    label: 'Triage a thread',
+    /* Arrives showing everything, so the filter has something to do at the end. */
+    open: () => { state.view = 'my-threads'; filterState('my-threads').on = []; },
+    steps: () => [
+      /* A beat on the list first: this is the queue, and it is what changes. */
+      pause(2200),
+      click(saying('.itemFace', 'Per-key or per-org rate limits?')),
+      pause(READ_MS),
+      write(one('[data-editor="t_301"]'), 'Going with per-org. @pri'),
+      pause(520),
+      click(one('[data-mention="m_priya"]')),
+      write(one('[data-editor="t_301"]'), 'can you land the sub-limit today?'),
+      pause(360),
+      click(one('.panel .composer .send')),
+      pause(READ_MS),
+      hover(one('.panel .msg[data-msg="r2"]')),
+      click(one('.panel .msg[data-msg="r2"] [data-menu="assignee"]')),
+      pause(520),
+      click(one('[data-act="set-assignee"][data-value="m_priya"]')),
+      pause(760),
+      hover(one('.panel .msg[data-msg="r2"]')),
+      click(one('.panel .msg[data-msg="r2"] [data-menu="status"]')),
+      pause(520),
+      click(one('[data-act="set-status"][data-value="resolved"]')),
+      pause(1100),
+
+      /* Back to the queue, and a second one closed without a word typed. */
+      click(one('[data-act="view"][data-value="my-threads"]')),
+      pause(1300),
+      click(saying('.itemFace', 'Dead letter queue handling')),
+      pause(READ_MS),
+      hover(one('.panel .msg[data-msg="x3"]')),
+      click(one('.panel .msg[data-msg="x3"] [data-menu="status"]')),
+      pause(520),
+      click(one('[data-act="set-status"][data-value="resolved"]')),
+      pause(1100),
+      click(one('[data-act="view"][data-value="my-threads"]')),
+      pause(1600),
+
+      /* Two are done. Ask for what is still open and watch them go. */
+      click(saying('.pill', 'Open')),
+      pause(2400),
+    ],
+  },
+  {
+    id: 'follow-up',
+    label: 'Set an agentic follow-up',
+    open: () => { state.view = 'room'; state.room = 'rate-limits'; },
+    steps: () => [
+      pause(1400),
+      write(one('[data-editor="rate-limits"]'), '@tom'),
+      pause(520),
+      click(one('[data-mention="m_tom"]')),
+      write(one('[data-editor="rate-limits"]'), 'can you confirm the burst number before Thursday?'),
+      pause(360),
+      click(one('.stream .composer .send')),
+      pause(READ_MS),
+      hover(newest('.stream .messages .msg')),
+      click({ find: () => {
+        const msgs = app.querySelectorAll('.stream .messages .msg');
+        const msg = msgs[msgs.length - 1];
+        return msg && msg.querySelector('[data-act="follow-up"]');
+      } }),
+      pause(READ_MS),
+      /* Who does it, when, and — the part that matters — what they should do. */
+      click(one('[data-act="cycle-kind"]')),
+      pause(620),
+      click(one('[data-act="cycle-when"]')),
+      pause(620),
+      write(one('[data-followup-note]'), 'If Tom has not given a number, ask him again in the thread.'),
+      pause(700),
+      click(one('[data-act="confirm-follow-up"]')),
+      pause(1200),
+      click(one('[data-act="view"][data-value="follow-ups"]')),
+      pause(2600),
+    ],
+  },
+  {
+    id: 'agent',
+    label: 'Ask the agent',
+    /* This one never leaves the agent: it is asked, and it goes and does it. */
+    open: () => { state.view = 'agents'; },
+    steps: () => [
+      pause(1200),
+      write(one('[data-editor="agent"]'), 'Clear what is low priority in my threads'),
+      pause(400),
+      click(one('.composer[data-size="large"] .send')),
+      pause(9000),
+    ],
+  },
+];
+
+/* ── the cursor ──────────────────────────────────────────────────────────── */
+function makeCursor() {
+  const el = document.createElement('div');
+  el.className = 'cursor';
+  el.innerHTML = `
+    <span class="cursorRing"></span>
+    <svg viewBox="0 0 22 22" width="26" height="26" aria-hidden="true">
+      <path d="M5 2.4 17.4 11.2l-5.3.55-2.7 5.05z" fill="#fff" stroke="#22242a" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>`;
+  return el;
+}
+
+/* Window coordinates, undoing the scale the frame applies to everything in it. */
+function pointAt(el) {
+  const win = app.getBoundingClientRect();
+  const k = win.width / app.offsetWidth || 1;
+  const r = el.getBoundingClientRect();
+  return {
+    x: (r.left + r.width / 2 - win.left) / k,
+    y: (r.top + r.height / 2 - win.top) / k,
+  };
+}
+
+function placeCursor(el) {
+  const { x, y } = pointAt(el);
+  cursorEl.style.setProperty('--cx', `${Math.round(x)}px`);
+  cursorEl.style.setProperty('--cy', `${Math.round(y)}px`);
+  cursorEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+}
+
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+
+/*
+ * Bring a target into view before the cursor goes for it.
+ *
+ * Sending a message scrolls a stream to the newest thing in it, so the message
+ * a thread is *about* is then somewhere above the fold — and a pointer clicking
+ * a control nobody can see reads as a bug rather than as a demo.
+ */
+function reveal(el) {
+  const box = el.closest('.scroll, .listScroll, .agentScroll, .sideScroll');
+  if (!box) return false;
+  const outer = box.getBoundingClientRect();
+  const inner = el.getBoundingClientRect();
+  if (inner.top >= outer.top + 8 && inner.bottom <= outer.bottom - 8) return false;
+  box.scrollTop += (inner.top - outer.top) - 24;
+  if (box.dataset.scroll) scrollTops[box.dataset.scroll] = box.scrollTop;
+  return true;
+}
+
+/* ── running one ─────────────────────────────────────────────────────────── */
+function clearHover() {
+  app.querySelectorAll('[data-demo-hover]').forEach((n) => n.removeAttribute('data-demo-hover'));
+}
+
+async function doStep(step, token) {
+  if (token.cancelled) return;
+
+  if (step.kind === 'wait') { await sleep(step.ms); return; }
+
+  if (step.kind === 'type') {
+    const editor = step.target.find();
+    if (!editor) { console.warn('[demo] nothing to write into', step); return; }
+    if (reveal(editor)) await sleep(300);
+    if (token.cancelled) return;
+    placeCursor(editor);
+    await sleep(MOVE_MS);
+    if (token.cancelled) return;
+    editor.focus();
+    const isField = editor.tagName === 'INPUT';
+    /* A space before the next run, unless the box is empty or already ends in one. */
+    const existing = isField ? editor.value : (editor.innerText || '');
+    if (existing && !/\s$/.test(existing)) {
+      if (isField) editor.value += ' ';
+      else document.execCommand('insertText', false, ' ');
+    }
+    for (const ch of step.text) {
+      if (token.cancelled) return;
+      if (isField) editor.value += ch;
+      else document.execCommand('insertText', false, ch);
+      editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      await sleep(TYPE_MS);
+    }
+    return;
+  }
+
+  const el = step.target.find();
+  /*
+   * A step whose target is not on screen means the app moved and the demo did
+   * not. Skipping it quietly would leave a reel that half-works; say so.
+   */
+  if (!el) { console.warn('[demo] step target missing', step); return; }
+
+  if (reveal(el)) await sleep(340);
+  if (token.cancelled) return;
+
+  placeCursor(el);
+  await sleep(MOVE_MS);
+  if (token.cancelled) return;
+
+  if (step.kind === 'hover') {
+    clearHover();
+    el.setAttribute('data-demo-hover', '');
+    await sleep(120);
+    return;
+  }
+
+  cursorEl.setAttribute('data-press', '');
+  await sleep(CLICK_MS);
+  cursorEl.removeAttribute('data-press');
+  if (token.cancelled) return;
+
+  /* A typeahead row answers to mousedown; everything else to a click. */
+  if (el.dataset.mention) el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+  else el.click();
+
+  await sleep(SETTLE_MS);
+}
+
+function paintChapters() {
+  chaptersEl.innerHTML = CHAPTERS.map((ch, i) => `
+    <button class="chapter" type="button" role="tab" data-chapter="${i}" aria-selected="${i === chapter}">
+      <span class="chapterTrack"><span class="chapterFill"></span></span>
+      <span class="chapterLabel">${esc(ch.label)}</span>
+    </button>`).join('');
+}
+
+let fillAnim = null;
+
+function fillBar(index, ms) {
+  if (fillAnim) fillAnim.cancel();
+  chaptersEl.querySelectorAll('.chapterFill').forEach((bar, i) => {
+    bar.style.transform = i < index ? 'scaleX(1)' : 'scaleX(0)';
+  });
+  const active = chaptersEl.querySelector(`[data-chapter="${index}"] .chapterFill`);
+  if (!active || REDUCED) return;
+  fillAnim = active.animate(
+    [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }],
+    { duration: ms, easing: 'linear', fill: 'forwards' },
+  );
+}
+
+async function play(index) {
+  if (run) run.cancelled = true;
+  const token = { cancelled: false };
+  run = token;
+  chapter = index;
+
+  const ch = CHAPTERS[index];
+
+  /* Every chapter starts from the same workspace, so nothing carries over. */
+  clearTimers();
+  state = initialState();
+  ch.open();
+  render();
+  clearHover();
+
+  paintChapters();
+  const steps = ch.steps();
+  fillBar(index, steps.reduce((sum, step) => sum + stepCost(step), 0));
+
+  const first = app.querySelector('.canvas');
+  if (first) placeCursor(first);
+
+  for (const step of steps) {
+    if (token.cancelled) return;
+    await doStep(step, token);
+  }
+  if (token.cancelled) return;
+
+  clearHover();
+  play((index + 1) % CHAPTERS.length);
+}
+
+chaptersEl.addEventListener('click', (event) => {
+  const hit = event.target.closest('[data-chapter]');
+  if (hit) play(Number(hit.dataset.chapter));
+});
+
+function startDemo() {
+  app.setAttribute('data-driven', '');
+  cursorEl = makeCursor();
+  app.appendChild(cursorEl);
+  paintChapters();
+  play(0);
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    Fitting the window to whatever room the frame has.
    ══════════════════════════════════════════════════════════════════════════ */
 const scaler = document.getElementById('scaler');
 const artEl = document.querySelector('.art');
+const stageEl = document.querySelector('.stage');
 const heroEl = document.querySelector('.hero');
 const copyEl = document.querySelector('.copy');
 
@@ -2584,7 +3329,12 @@ function fit() {
   const tracks = getComputedStyle(heroEl).gridTemplateColumns.split(' ').map(parseFloat);
   const gap = parseFloat(getComputedStyle(heroEl).rowGap) || 0;
   const availW = Math.max(0, tracks[tracks.length - 1] - padX);
-  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - padY);
+
+  /* The chapters and their caption sit under the frame and are not scaled, so
+     their height comes off the budget before the window is sized to it. */
+  const stageGap = parseFloat(getComputedStyle(stageEl).rowGap) || 0;
+  const under = chaptersEl.offsetHeight + stageGap;
+  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - under - padY);
   if (availW <= 0 || availH <= 0) return;
 
   /*
@@ -2611,6 +3361,7 @@ window.addEventListener('resize', fit);
 
 render();
 fit();
+startDemo();
 
 })();
 </script>
