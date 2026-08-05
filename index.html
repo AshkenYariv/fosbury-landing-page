@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fosbury</title>
-<meta name="description" content="Resolve every conversation your team runs on, without ever being online at the same time.">
+<meta name="description" content="The communication layer for teams that build. Every conversation gets an owner, a priority, and an end.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;510;600;620;700&display=swap" rel="stylesheet">
@@ -19,18 +19,17 @@
    ══════════════════════════════════════════════════════════════════════════ */
 :root{
   --font-family-app:'Inter',system-ui,-apple-system,sans-serif;
-  --font-family-code:ui-monospace,'SF Mono',Menlo,monospace;
   --text-size-mini:10px;
   --text-size-micro:11px;
   --text-size-small:12px;
   --text-size-regular:13px;
   --text-size-medium:14px;
   --text-size-large:15px;
+  --text-size-title:21px;
   --text-weight-regular:400;
   --text-weight-medium:500;
   --text-weight-heading:510;
   --text-weight-bold:620;
-  --line-height-tight:1.3;
   --line-height-ui:1.45;
   --line-height-reading:1.65;
 
@@ -43,7 +42,6 @@
   --surface-selected:rgb(0 0 0 / .068);
   --surface-sunken:rgb(0 0 0 / .055);
   --surface-scrim:rgb(20 20 22 / .28);
-  --surface-code:rgb(0 0 0 / .025);
 
   --border-subtle:rgb(0 0 0 / .07);
   --border-strong:rgb(0 0 0 / .12);
@@ -58,8 +56,6 @@
 
   --accent:#5e6ad2;
   --focus-ring:rgb(94 106 210 / .55);
-
-  --success:#4cb782;
   --danger:#eb5757;
 
   --status-open:#8a8f98;
@@ -106,13 +102,12 @@
   --row-height-default:32px;
   --row-height-issue:36px;
   --row-height-table:40px;
-  --icon-size-compact:12px;
-  --icon-size-default:14px;
   --icon-size-prominent:16px;
 
   --sidebar-width:244px;
   --utilitybar-height:34px;
-  --chrome-gap:8px;
+  --titlebar-height:38px;
+  --content-max-width:780px;
   --duration-panel:180ms;
   --ease-panel:cubic-bezier(.32,.72,0,1);
 
@@ -135,6 +130,12 @@
 [data-status='open']{--status:var(--status-open)}
 [data-status='resolved']{--status:var(--status-resolved)}
 [data-status='closed']{--status:var(--status-closed)}
+
+[data-priority='urgent']{--priority:var(--priority-urgent)}
+[data-priority='high']{--priority:var(--icon-default)}
+[data-priority='medium']{--priority:var(--icon-default)}
+[data-priority='low']{--priority:var(--icon-default)}
+[data-priority='none']{--priority:var(--icon-tertiary)}
 
 [data-reaction='acknowledged']{--reaction:var(--reaction-acknowledged)}
 [data-reaction='agree']{--reaction:var(--reaction-agree)}
@@ -178,7 +179,6 @@ input{font:inherit;color:inherit}
   height:100dvh;
   display:grid;
   grid-template-rows:auto minmax(0,1fr);
-  /* One gutter for the whole page, so the mark, the sentence and the frame share an edge. */
   --gut:clamp(20px,3.2vw,48px);
   padding:clamp(16px,2.4vh,26px) var(--gut) clamp(18px,3vh,38px);
   /* The frame grows to fill this row, so the bar above it needs a gap of its
@@ -234,7 +234,7 @@ input{font:inherit;color:inherit}
 /* ── the two halves ──────────────────────────────────────────────────────── */
 .hero{
   display:grid;
-  grid-template-columns:minmax(280px,0.78fr) minmax(0,1.7fr);
+  grid-template-columns:minmax(300px,0.95fr) minmax(0,1.5fr);
   align-items:center;
   gap:clamp(22px,2.6vw,40px);
   min-height:0;
@@ -244,15 +244,28 @@ input{font:inherit;color:inherit}
   opacity:0;
   animation:rise .8s 1.25s cubic-bezier(.2,.7,.2,1) forwards;
 }
-/* A single sentence. Nothing above it, nothing under it. */
+/* The claim, and the one line that says what it means. */
 .headline{
-  font-size:clamp(28px,2.9vw,46px);
+  font-size:clamp(30px,3.1vw,50px);
   font-weight:600;
   letter-spacing:-.035em;
   line-height:1.06;
   color:var(--text-primary);
   text-wrap:balance;
 }
+.subline{
+  margin-top:clamp(12px,1.6vh,20px);
+  max-width:34ch;
+  font-size:clamp(15px,1.2vw,19px);
+  font-weight:var(--text-weight-regular);
+  letter-spacing:-.01em;
+  line-height:1.5;
+  /* Secondary rather than tertiary: this is a sentence to read, and the muted
+     grey the app uses for a timestamp does not carry 17px of prose on white. */
+  color:var(--text-secondary);
+  text-wrap:balance;
+}
+@media(max-width:1080px){.subline{max-width:none;margin-inline:auto}}
 
 /* ── the frame ───────────────────────────────────────────────────────────── */
 /*
@@ -300,11 +313,17 @@ input{font:inherit;color:inherit}
   color:var(--text-secondary);
   line-height:var(--line-height-ui);
 }
+/*
+ * The title bar is the shell's own grid, so the tab strip begins exactly where
+ * the canvas does rather than trailing the traffic lights.
+ */
 .winBar{
-  display:flex;align-items:center;gap:var(--space-3);
-  flex:none;height:38px;padding:0 var(--space-3);
+  display:grid;
+  grid-template-columns:var(--sidebar-width) minmax(0,1fr);
+  align-items:center;
+  flex:none;height:var(--titlebar-height);
 }
-.lights{display:inline-flex;align-items:center;gap:8px;flex:none}
+.lights{display:inline-flex;align-items:center;gap:8px;flex:none;padding-left:var(--space-3)}
 .light{width:12px;height:12px;border-radius:var(--radius-pill)}
 .light[data-l='r']{background:#ff5f57}
 .light[data-l='y']{background:#febc2e}
@@ -321,6 +340,7 @@ input{font:inherit;color:inherit}
   font-weight:var(--text-weight-medium);
   min-width:0;
 }
+.win[data-compact] .winBar{grid-template-columns:auto minmax(0,1fr);gap:var(--space-3)}
 .winBody{
   display:grid;
   grid-template-columns:var(--sidebar-width) minmax(0,1fr);
@@ -372,15 +392,20 @@ input{font:inherit;color:inherit}
 .iconBtn:hover{background:var(--surface-hover);color:var(--text-primary)}
 .sideScroll{
   display:flex;flex-direction:column;gap:var(--space-5);
-  flex:1;min-height:0;overflow:hidden;
+  flex:1;min-height:0;overflow-y:auto;
   padding-top:var(--space-3);padding-bottom:var(--space-4);
 }
 .sideGroup{display:flex;flex-direction:column}
+/* A section head is the control that folds the section: same row, same hover. */
 .sideLabel{
   display:flex;align-items:center;gap:var(--space-2);
-  height:var(--row-height-default);padding:0 var(--space-2);
-  color:var(--text-tertiary);font-size:var(--text-size-small);
+  width:100%;height:var(--row-height-default);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-tertiary);font-size:var(--text-size-small);text-align:left;
 }
+.sideLabel:hover{background:var(--surface-hover);color:var(--text-secondary)}
+.sideChevron{display:inline-flex;flex:none;color:var(--icon-tertiary);transition:transform var(--duration-panel) ease}
+.sideLabel[aria-expanded='false'] .sideChevron{transform:rotate(-90deg)}
 .row{
   display:flex;align-items:center;gap:var(--space-2);
   width:100%;height:var(--row-height-default);
@@ -398,6 +423,7 @@ input{font:inherit;color:inherit}
   flex:none;color:var(--text-tertiary);
   font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;
 }
+.rowNested{padding-left:var(--space-4)}
 
 /* ── page header inside the canvas ───────────────────────────────────────── */
 .pageHeader{display:flex;flex-direction:column;flex:none}
@@ -412,7 +438,7 @@ input{font:inherit;color:inherit}
   border-radius:var(--radius-medium);
   color:var(--text-tertiary);font-size:var(--text-size-regular);white-space:nowrap;
 }
-.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
+button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .crumb[data-last]{color:var(--text-primary);font-weight:var(--text-weight-medium)}
 .crumbSep{color:var(--text-quaternary);padding:0 2px;font-size:var(--text-size-regular)}
 .crumbMark{flex:none;color:var(--topic-type,var(--icon-tertiary))}
@@ -465,6 +491,16 @@ input{font:inherit;color:inherit}
 .mk[data-size='small']{width:var(--icon-size-prominent);height:var(--icon-size-prominent);font-size:var(--text-size-mini);letter-spacing:0}
 .mk[data-size='mark']{width:var(--space-5);height:var(--space-5);font-size:var(--text-size-mini)}
 .mk[data-size='large']{width:var(--space-6);height:var(--space-6);font-size:var(--text-size-micro)}
+.mkStack{display:inline-flex;align-items:center;flex:none;padding-left:var(--space-1)}
+.mkStack>.mk{
+  margin-left:calc(var(--space-1) * -1);
+  background:color-mix(in srgb, var(--identity,var(--identity-gray)) var(--identity-wash), var(--surface-canvas));
+  box-shadow:0 0 0 2px var(--surface-canvas);
+}
+.mkOverflow{
+  margin-left:var(--space-1);
+  color:var(--text-quaternary);font-size:var(--text-size-mini);font-variant-numeric:tabular-nums;
+}
 
 /* ── messages ────────────────────────────────────────────────────────────── */
 .stream{display:flex;flex-direction:column;min-width:0;min-height:0}
@@ -524,11 +560,18 @@ input{font:inherit;color:inherit}
   color:var(--status);font-weight:var(--text-weight-medium);
 }
 .statusChip:hover{background:color-mix(in srgb, var(--status) 22%, transparent)}
-.followChip{
-  box-shadow:inset 0 0 0 1px var(--border-subtle);
-  color:var(--text-tertiary);
-}
+.followChip{box-shadow:inset 0 0 0 1px var(--border-subtle);color:var(--text-tertiary)}
 .followChip:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
+.followChip[data-agentic]{color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent)}
+.priorityChip{
+  display:inline-flex;align-items:center;gap:var(--space-1);
+  height:var(--space-5);padding:0 var(--space-2);
+  border-radius:var(--radius-pill);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--priority,var(--text-tertiary));
+  font-size:var(--text-size-micro);
+}
+.priorityChip:hover{background:var(--surface-hover-strong)}
 .threadRow{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);margin-left:calc(var(--space-2) * -1)}
 .replies{
   display:inline-flex;align-items:center;gap:var(--space-2);
@@ -552,10 +595,16 @@ input{font:inherit;color:inherit}
 }
 .tool:hover,.tool[aria-expanded='true']{background:var(--surface-hover-strong);color:var(--text-primary)}
 .tool[data-status]{color:var(--status)}
+.tool[data-priority]{color:var(--priority)}
 .toolDivider{width:1px;height:14px;background:var(--border-subtle);margin:0 2px;flex:none}
 .divider{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-3) var(--space-2)}
 .dividerLabel{color:var(--text-quaternary);font-size:var(--text-size-micro);flex:none}
 .divider::after{content:'';flex:1;height:1px;background:var(--border-subtle)}
+.filteredNote{
+  display:flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-2) var(--space-3);
+  color:var(--text-quaternary);font-size:var(--text-size-micro);
+}
 
 /* ── thread panel ────────────────────────────────────────────────────────── */
 .panel{
@@ -589,6 +638,7 @@ input{font:inherit;color:inherit}
   box-shadow:inset 0 0 0 1px var(--border-subtle);
 }
 .composer:focus-within{box-shadow:inset 0 0 0 1px var(--border-strong)}
+.composer[data-size='large']{padding:var(--space-2);gap:var(--space-2);margin:0}
 .editor{
   min-width:0;max-height:96px;padding:var(--space-1) var(--space-2);
   overflow-y:auto;overscroll-behavior:contain;
@@ -596,6 +646,7 @@ input{font:inherit;color:inherit}
   line-height:var(--line-height-ui);white-space:pre-wrap;word-break:break-word;
   outline:none;
 }
+.composer[data-size='large'] .editor{padding:var(--space-2)}
 .editor[data-empty='true']::before{content:attr(data-placeholder);color:var(--text-quaternary);pointer-events:none}
 .attach{
   display:inline-flex;align-items:center;justify-content:center;
@@ -622,7 +673,7 @@ input{font:inherit;color:inherit}
 /* ── menus and dialogs inside the window ─────────────────────────────────── */
 .menu{
   position:absolute;z-index:60;
-  min-width:168px;padding:var(--space-1);
+  min-width:172px;padding:var(--space-1);
   border-radius:var(--radius-large);
   background:var(--surface-raised);box-shadow:var(--shadow-menu);
 }
@@ -634,9 +685,9 @@ input{font:inherit;color:inherit}
 }
 .menuItem:hover{background:var(--surface-hover)}
 .menuItem[data-on]{color:var(--text-primary)}
-.menuMark{flex:none;color:var(--status,var(--icon-default))}
+.menuMark{flex:none;display:inline-flex;color:var(--status,var(--priority,var(--icon-default)))}
 .menuLabel{flex:1}
-.menuCheck{flex:none;color:var(--icon-tertiary)}
+.menuCheck{flex:none;display:inline-flex;color:var(--icon-tertiary)}
 .reactionMenu{display:flex;align-items:center;gap:2px;padding:var(--space-1);min-width:0}
 .reactionOpt{
   display:inline-flex;align-items:center;justify-content:center;
@@ -667,14 +718,16 @@ input{font:inherit;color:inherit}
 .dialogCrumb[data-last]{color:var(--text-primary);font-weight:var(--text-weight-medium)}
 .dialogChips{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4) var(--space-4)}
 .dialogChip{
+  position:relative;
   display:inline-flex;align-items:center;gap:var(--space-2);
   height:var(--row-height-default);padding:0 var(--space-3);
   border-radius:var(--radius-medium);
   box-shadow:inset 0 0 0 1px var(--border-subtle);
   color:var(--text-primary);font-size:var(--text-size-regular);
 }
-.dialogChip:hover{box-shadow:inset 0 0 0 1px var(--border-strong)}
+.dialogChip:hover,.dialogChip[aria-expanded='true']{box-shadow:inset 0 0 0 1px var(--border-strong)}
 .dialogChip svg{color:var(--icon-tertiary);flex:none}
+.dialogChip[data-agentic] svg{color:var(--accent)}
 .dialogFoot{
   display:flex;align-items:center;gap:var(--space-3);
   padding:var(--space-3) var(--space-4);
@@ -704,7 +757,8 @@ input{font:inherit;color:inherit}
   border-radius:var(--radius-medium);text-align:left;
 }
 .groupHead:hover{background:var(--surface-hover)}
-.groupChevron{color:var(--icon-tertiary);flex:none;display:inline-flex}
+.groupChevron{color:var(--icon-tertiary);flex:none;display:inline-flex;transition:transform var(--duration-panel) ease}
+.groupHead[aria-expanded='false'] .groupChevron{transform:rotate(-90deg)}
 .groupMark{color:var(--priority,var(--icon-default));flex:none;display:inline-flex}
 .groupLabel{color:var(--text-primary);font-size:var(--text-size-regular);font-weight:var(--text-weight-medium)}
 .groupCount{color:var(--text-quaternary);font-size:var(--text-size-small);font-variant-numeric:tabular-nums}
@@ -732,6 +786,7 @@ input{font:inherit;color:inherit}
 }
 .itemMark[data-kind]{color:var(--topic-type,var(--icon-tertiary))}
 .itemFace{display:flex;align-items:center;gap:var(--space-3);flex:1;height:100%;padding:0 var(--space-2);min-width:0}
+.itemLead{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--space-6)}
 .itemTitle{
   flex:0 1 auto;min-width:0;max-width:320px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -741,10 +796,82 @@ input{font:inherit;color:inherit}
   flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   color:var(--text-quaternary);font-size:var(--text-size-regular);
 }
+.itemOpen{flex:none;width:60px;margin-left:auto;color:var(--text-tertiary);font-size:var(--text-size-micro);text-align:right}
+.itemFaces{display:inline-flex;justify-content:flex-end;flex:none;width:88px}
 .itemAvatar{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--space-5);margin-left:auto}
 .itemActivity{flex:none;width:40px;color:var(--text-quaternary);font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;text-align:right}
 .itemDue{flex:none;width:132px;font-size:var(--text-size-micro);text-align:right;color:var(--text-tertiary)}
 .itemDue[data-overdue]{color:var(--priority-urgent);font-weight:var(--text-weight-medium)}
+.itemCount{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-compact);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-tertiary);font-size:var(--text-size-small);white-space:nowrap;
+}
+.itemPeople{display:inline-flex;align-items:center;justify-content:flex-end;flex:none;width:168px;gap:var(--space-2)}
+.itemTopics{display:inline-flex;align-items:center;justify-content:flex-end;flex:none;width:100px}
+
+/* ── the agent ───────────────────────────────────────────────────────────── */
+.agentCentred{display:flex;align-items:center;justify-content:center;flex:1;min-height:0;padding:var(--space-4)}
+.agentOpening{width:100%;max-width:620px;margin-bottom:var(--space-8)}
+.greeting{
+  padding:0 var(--space-3) var(--space-4);
+  color:var(--text-primary);font-size:var(--text-size-title);
+  font-weight:var(--text-weight-heading);letter-spacing:-.01em;
+}
+.suggestions{display:flex;flex-wrap:wrap;gap:var(--space-2);padding:var(--space-4) var(--space-3) 0}
+.suggestion{
+  height:var(--row-height-default);padding:0 var(--space-3);
+  border-radius:var(--radius-pill);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--text-tertiary);font-size:var(--text-size-small);text-align:left;
+}
+.suggestion:hover{background:var(--surface-hover);color:var(--text-primary)}
+.conversation{display:flex;flex-direction:column;flex:1;min-height:0}
+.agentScroll{flex:1;min-height:0;overflow-y:auto;padding:var(--space-4) var(--space-2)}
+.turns{
+  display:flex;flex-direction:column;gap:var(--space-5);
+  width:100%;max-width:var(--content-max-width);margin:0 auto;
+}
+.agentComposerWrap{flex:none;width:100%;max-width:var(--content-max-width);margin:0 auto;padding:var(--space-3) 0 var(--space-3)}
+.turnYou{
+  align-self:flex-end;max-width:78%;
+  padding:var(--space-2) var(--space-3);border-radius:var(--radius-large);
+  background:var(--surface-subtle);color:var(--text-primary);font-size:var(--text-size-regular);
+}
+.turnAgent{display:flex;flex-direction:column;gap:var(--space-2);max-width:100%}
+.activity{display:flex;align-items:center;gap:var(--space-2);color:var(--text-tertiary);font-size:var(--text-size-small)}
+.pulse{
+  width:6px;height:6px;flex:none;border-radius:var(--radius-pill);
+  background:var(--text-tertiary);animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+.summary,.stepHead{
+  display:inline-flex;align-items:center;gap:var(--space-1);align-self:flex-start;
+  color:var(--text-tertiary);font-size:var(--text-size-small);
+}
+.summary:hover,.stepHead:hover{color:var(--text-secondary)}
+.turnChevron{color:var(--icon-tertiary);display:inline-flex;transition:transform var(--duration-panel) ease}
+[aria-expanded='true'] > .turnChevron{transform:rotate(90deg)}
+.steps{
+  display:flex;flex-direction:column;gap:var(--space-3);
+  padding:0 0 var(--space-1) var(--space-3);
+  border-left:1px solid var(--border-subtle);
+}
+.step{display:flex;flex-direction:column;gap:var(--space-1)}
+.stepHeadPlain{color:var(--text-tertiary);font-size:var(--text-size-small)}
+.reasoning{color:var(--text-quaternary);font-size:var(--text-size-small);line-height:var(--line-height-reading)}
+.stepTool{display:flex;align-items:baseline;gap:var(--space-2);font-size:var(--text-size-small)}
+.toolLabel{color:var(--text-tertiary)}
+.toolDetail{color:var(--text-quaternary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.answer{display:flex;flex-direction:column;gap:var(--space-2);color:var(--text-primary)}
+.paragraph{font-size:var(--text-size-regular);line-height:var(--line-height-reading)}
+.bullets{
+  display:flex;flex-direction:column;gap:var(--space-1);
+  padding-left:var(--space-4);font-size:var(--text-size-regular);line-height:var(--line-height-reading);
+  list-style:disc;
+}
+
 /* ── about dialog (page level, not the app) ──────────────────────────────── */
 .aboutScrim{
   position:fixed;inset:0;z-index:200;
@@ -769,6 +896,7 @@ input{font:inherit;color:inherit}
   #script,#crossbar{animation:none;stroke-dashoffset:0}
   .wordmark,.nav,.openApp,.copy,.art{animation:none;opacity:1;transform:none}
   .chatBody{transition:none}
+  .pulse{animation:none;opacity:.6}
 }
 
 /* ── the page on a narrower screen ───────────────────────────────────────── */
@@ -810,7 +938,8 @@ input{font:inherit;color:inherit}
 
   <main class="hero">
     <div class="copy">
-      <h1 class="headline">Resolve every conversation your team runs on, without ever being online at the same time.</h1>
+      <h1 class="headline">The communication layer for teams that build.</h1>
+      <p class="subline">Every conversation gets an owner, a priority, and an end.</p>
     </div>
 
     <div class="art">
@@ -892,17 +1021,24 @@ const ICONS = {
   'reaction-agree': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.6 8.8 8 6.4l2.4 2.4"/></g>`,
   'reaction-disagree': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.6 7.2 8 9.6l2.4-2.4"/></g>`,
   'reaction-thanks': `<path d="M8 2.4l1.6 3.44 3.76.5-2.74 2.66.67 3.74L8 10.98l-3.29 1.76.67-3.74L2.64 6.34l3.76-.5z" ${S}/>`,
-  'reaction-done': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.2 8.2 7.1 10.1l3.7-4"/></g>`,
-  'reaction-acknowledged': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.4 8h5.2"/></g>`,
+  'reaction-done': `<g><circle cx="8" cy="8" r="6.9" fill="currentColor"/><path d="M4.9 8.2 7 10.3l4.1-4.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+  'reaction-acknowledged': `<path d="M3.2 8.4 6.4 11.6 12.8 4.8" ${S}/>`,
   'reaction-question': QUESTION,
+  /* Team glyphs, as the seeded workspace names them. */
+  compass: `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M10.4 5.6 9.2 9.2 5.6 10.4 6.8 6.8z"/></g>`,
+  cube: `<g ${S}><path d="M8 1.9 13.6 5v6L8 14.1 2.4 11V5z"/><path d="M2.4 5 8 8.1 13.6 5M8 8.1v6"/></g>`,
+  shield: `<path d="M8 2 13 4v4.2c0 3-2.1 5-5 5.8-2.9-.8-5-2.8-5-5.8V4z" ${S}/>`,
+  layers: `<g ${S}><path d="M8 2.2 14 5.4 8 8.6 2 5.4z"/><path d="m2 8.6 6 3.2 6-3.2"/></g>`,
+  beaker: `<g ${S}><path d="M6.2 2.2v4L2.9 12a1.4 1.4 0 0 0 1.2 2.1h7.8A1.4 1.4 0 0 0 13.1 12L9.8 6.2v-4"/><path d="M5.4 2.2h5.2M4.7 9.6h6.6"/></g>`,
+  pulse: `<path d="M1.8 8h3l1.8-4.6L9.4 12l1.6-4h3.2" ${S}/>`,
 };
 
 const SIZE = { compact: 12, default: 14, prominent: 16 };
-function icon(name, size = 'default', cls = '') {
+function icon(name, size = 'default') {
   const glyph = ICONS[name];
   if (!glyph) return '';
   const s = SIZE[size] || 14;
-  return `<svg viewBox="0 0 16 16" width="${s}" height="${s}" aria-hidden="true"${cls ? ` class="${cls}"` : ''}>${glyph}</svg>`;
+  return `<svg viewBox="0 0 16 16" width="${s}" height="${s}" aria-hidden="true">${glyph}</svg>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -916,6 +1052,8 @@ const PEOPLE = {
   m_sarah: { name: 'Sarah Chen',      initials: 'SC', color: 'teal' },
   m_priya: { name: 'Priya Nair',      initials: 'PN', color: 'orange' },
   m_marco: { name: 'Marco Bianchi',   initials: 'MB', color: 'green' },
+  m_tom:   { name: 'Tom Okafor',      initials: 'TO', color: 'yellow' },
+  m_grace: { name: 'Grace Liu',       initials: 'GL', color: 'red' },
   m_agent: { name: 'Newport Agent',   initials: 'NA', color: 'gray' },
 };
 
@@ -923,6 +1061,14 @@ const STATUSES = [
   { key: 'open',     label: 'Open',     icon: 'status-open' },
   { key: 'resolved', label: 'Resolved', icon: 'status-resolved' },
   { key: 'closed',   label: 'Closed',   icon: 'status-closed' },
+];
+
+const PRIORITIES = [
+  { key: 'urgent', label: 'Urgent',      icon: 'priority-urgent' },
+  { key: 'high',   label: 'High',        icon: 'priority-high' },
+  { key: 'medium', label: 'Medium',      icon: 'priority-medium' },
+  { key: 'low',    label: 'Low',         icon: 'priority-low' },
+  { key: 'none',   label: 'No priority', icon: 'priority-none' },
 ];
 
 const REACTIONS = [
@@ -934,139 +1080,235 @@ const REACTIONS = [
   { key: 'thanks',       label: 'Thanks' },
 ];
 
+/*
+ * What a follow-up *is*. The first is a clock; the other two hand the errand to
+ * the agent, which is why they carry its glyph and its colour wherever they
+ * land — on the message, and in the Follow Ups list.
+ */
+const FOLLOW_UP_KINDS = [
+  { key: 'reminder', label: 'Remind me',        icon: 'timer', agentic: false },
+  { key: 'nudge',    label: 'Agent nudges the thread', icon: 'agent', agentic: true },
+  { key: 'answer',   label: 'Agent answers it for me', icon: 'agent', agentic: true },
+];
 const FOLLOW_UP_WHENS = ['Tomorrow', 'In 2 days', 'Next week'];
-const FOLLOW_UP_KINDS = ['Reminder', 'Nudge the owner'];
 
-/* A span is already read: the bold, the mention and the reference were decided
-   before they got here, exactly as the product hands them to a component. */
 const t  = (text) => ({ text });
 const at = (id)   => ({ mention: id });
 
 let uid = 0;
-const nextId = () => `m_new_${++uid}`;
+const nextId = () => `n${++uid}`;
 
+/* Every room is the same shape, so one screen draws all of them. */
 function initialState() {
   return {
-    view: 'topic',
+    view: 'room',
+    room: 'indexing',
     threadOpen: null,
-    menu: null,     // { kind, msgId, stream }
-    dialog: null,   // { kind, msgId, stream, when, type }
-    favorite: true,
-    streams: {
-      room: [
-        {
-          id: 'x1', author: 'm_david', time: '17:58', day: '3 days ago', status: null,
-          spans: [
-            t('Pulled the numbers on the indexer — we are dropping about '),
-            { text: '0.4%', strong: true },
-            t(' of events under load. '),
-            at('m_elena'),
-            t(' the dead letter path is the bulk of it, same as '),
-            { ref: 'Burst allowance for the ingest endpoint', refIcon: 'thread' },
-            t(' ('),
-            { topic: 'API Rate Limiting', topicType: 'dev' },
-            t(').'),
-          ],
-          reactions: [], thread: null, followUp: null,
-        },
-        {
-          id: 'x2', author: 'm_elena', time: '18:38', day: '3 days ago', status: null,
-          spans: [t('That tracks. The queue has no retry ceiling, so a poisoned event blocks the partition until someone notices.')],
-          reactions: [
-            { key: 'agree', count: 2, mine: false },
-            { emoji: '👀', count: 1, mine: false },
-          ],
-          thread: null, followUp: null,
-        },
-        {
-          id: 'x3', author: 'm_yariv', time: '19:18', day: '3 days ago', status: 'open',
-          spans: [t('Opening a thread for this — I want the retry policy decided before we touch the batching.')],
-          reactions: [],
-          thread: { id: 't_101', label: 'Dead letter queue handling' },
-          followUp: null,
-        },
-        {
-          id: 'x4', author: 'm_agent', time: '19:58', day: '3 days ago', status: null,
-          spans: [t('Related: "Backpressure on the ingest worker" was resolved on Oct 12 with a fixed ceiling of 5 retries. That decision assumed single-partition ingest, which no longer holds.')],
-          reactions: [{ key: 'thanks', count: 1, mine: false }],
-          thread: null, followUp: null,
-        },
-        {
-          id: 'x5', author: 'm_sarah', time: '21:48', day: '3 days ago', status: null,
-          spans: [t('Micro-batching for better throughput. Pure streaming is costing us more in round trips than it saves in latency.')],
-          reactions: [],
-          thread: { id: 't_102', label: 'Batching the writes' },
-          followUp: null,
-        },
-        {
-          id: 'x6', author: 'm_marco', time: '22:12', day: '3 days ago', status: null,
-          spans: [t('I can take the DLQ topic and the retention job this week. Both are small next to the batching change.')],
-          reactions: [{ key: 'acknowledged', count: 1, mine: false }],
-          thread: null, followUp: null,
-        },
-        {
-          id: 'x7', author: 'm_priya', time: '22:31', day: '3 days ago', status: null,
-          spans: [
-            t('Then the plan is a ceiling of five, a dedicated DLQ and fourteen days. '),
-            at('m_yariv'),
-            t(' can you write it up before the batching work starts?'),
-          ],
-          reactions: [], thread: null, followUp: null,
-        },
-      ],
-      t_101: [
-        {
-          id: 'y1', author: 'm_yariv', time: '19:18', day: '3 days ago', status: null,
-          spans: [t('Two open questions: how many retries before we park an event, and where parked events go.')],
-          reactions: [], thread: null, followUp: null,
-        },
-        {
-          id: 'y2', author: 'm_david', time: '19:48', day: '3 days ago', status: null,
-          spans: [t('Five, then a dedicated DLQ topic with a 14-day retention. Anything still there after 14 days is a bug we did not fix.')],
-          reactions: [{ key: 'agree', count: 1, mine: false }],
-          thread: null, followUp: null,
-        },
-        {
-          id: 'y3', author: 'm_agent', time: '20:18', day: '3 days ago', status: null,
-          spans: [t('No prior decision covers DLQ retention. The closest is "Disaster recovery plan", which sets 30 days for snapshots — a different class of data.')],
-          reactions: [], thread: null, followUp: null,
-        },
-        {
-          id: 'y4', author: 'm_elena', time: '21:18', day: '3 days ago', status: null,
-          spans: [t('Fine by me. I will take the retention config.')],
-          reactions: [{ key: 'done', count: 1, mine: false }],
-          thread: null, followUp: null,
-        },
-      ],
-      t_102: [
-        {
-          id: 'z1', author: 'm_priya', time: '22:04', day: '3 days ago', status: null,
-          spans: [t('Agreed on micro-batching, but the window has to be a setting. 50ms is wrong for the audit stream.')],
-          reactions: [], thread: null, followUp: null,
-        },
-      ],
+    menu: null,     // { kind, msgId, stream, place }
+    dialog: null,
+    /* Which folding sections in the rail are open. */
+    open: { favorites: true, teams: false },
+    /* Per-room: is the header's Open filter pressed. */
+    openOnly: {},
+    agent: { turns: [], busy: false },
+
+    rooms: {
+      indexing: {
+        key: 'indexing', name: 'Real-Time Indexing Pipeline', kind: 'topic', type: 'dev',
+        team: 'Engineering', members: '4 members', favorite: true,
+        messages: [
+          { id: 'x1', author: 'm_david', time: '17:58', day: '3 days ago', status: null, priority: null,
+            spans: [
+              t('Pulled the numbers on the indexer — we are dropping about '),
+              { text: '0.4%', strong: true },
+              t(' of events under load. '), at('m_elena'),
+              t(' the dead letter path is the bulk of it, same as '),
+              { ref: 'Burst allowance for the ingest endpoint', refIcon: 'thread' },
+              t(' ('), { topic: 'API Rate Limiting', topicType: 'dev' }, t(').'),
+            ],
+            reactions: [], thread: null, followUp: null },
+          { id: 'x2', author: 'm_elena', time: '18:38', day: '3 days ago', status: null, priority: null,
+            spans: [t('That tracks. The queue has no retry ceiling, so a poisoned event blocks the partition until someone notices.')],
+            reactions: [{ key: 'agree', count: 2, mine: false }, { emoji: '👀', count: 1, mine: false }],
+            thread: null, followUp: null },
+          { id: 'x3', author: 'm_yariv', time: '19:18', day: '3 days ago', status: 'open', priority: 'urgent',
+            spans: [t('Opening a thread for this — I want the retry policy decided before we touch the batching.')],
+            reactions: [], thread: { id: 't_101' }, followUp: null },
+          { id: 'x4', author: 'm_agent', time: '19:58', day: '3 days ago', status: null, priority: null,
+            spans: [t('Related: "Backpressure on the ingest worker" was resolved on Oct 12 with a fixed ceiling of 5 retries. That decision assumed single-partition ingest, which no longer holds.')],
+            reactions: [{ key: 'thanks', count: 1, mine: false }], thread: null, followUp: null },
+          { id: 'x5', author: 'm_sarah', time: '21:48', day: '3 days ago', status: 'open', priority: 'medium',
+            spans: [t('Micro-batching for better throughput. Pure streaming is costing us more in round trips than it saves in latency.')],
+            reactions: [], thread: { id: 't_102' }, followUp: null },
+          { id: 'x6', author: 'm_marco', time: '22:12', day: '3 days ago', status: null, priority: null,
+            spans: [t('I can take the DLQ topic and the retention job this week. Both are small next to the batching change.')],
+            reactions: [{ key: 'acknowledged', count: 1, mine: false }], thread: null, followUp: null },
+          { id: 'x7', author: 'm_priya', time: '22:31', day: '3 days ago', status: null, priority: null,
+            spans: [
+              t('Then the plan is a ceiling of five, a dedicated DLQ and fourteen days. '), at('m_yariv'),
+              t(' can you write it up before the batching work starts?'),
+            ],
+            reactions: [], thread: null, followUp: null },
+        ],
+      },
+      'weekly-sync': {
+        key: 'weekly-sync', name: 'AI Team Weekly Sync', kind: 'topic', type: 'sync',
+        team: 'Product', members: '6 members', favorite: true,
+        messages: [
+          { id: 'w1', author: 'm_sarah', time: '09:02', day: 'Yesterday', status: 'open', priority: 'high',
+            spans: [t('Agenda for Thursday: chunking experiment results, the reranker swap, and whether we ship the eval harness this cycle.')],
+            reactions: [], thread: { id: 't_201' }, followUp: null },
+          { id: 'w2', author: 'm_priya', time: '09:31', day: 'Yesterday', status: null, priority: null,
+            spans: [t('I will not make Thursday — putting my update in the thread instead of holding the room for it.')],
+            reactions: [{ key: 'acknowledged', count: 2, mine: false }], thread: null, followUp: null },
+          { id: 'w3', author: 'm_agent', time: '09:44', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Three of last week’s actions are still open. Two are assigned to David Kim and one to Grace Liu.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'w4', author: 'm_yariv', time: '10:15', day: 'Yesterday', status: 'open', priority: 'medium',
+            spans: [t('Let us keep it to three things. Anything that needs a decision goes in a thread before the call, not during it.')],
+            reactions: [{ key: 'agree', count: 3, mine: false }], thread: { id: 't_202' }, followUp: null },
+        ],
+      },
+      'rate-limits': {
+        key: 'rate-limits', name: 'API Rate Limiting', kind: 'topic', type: 'dev',
+        team: 'Engineering', members: '5 members', favorite: true,
+        messages: [
+          { id: 'r1', author: 'm_tom', time: '11:20', day: '2 days ago', status: null, priority: null,
+            spans: [t('Dashboard for the limiter is up — throttled requests by org, last 24h.')],
+            reactions: [{ key: 'thanks', count: 2, mine: false }], thread: null, followUp: null },
+          { id: 'r2', author: 'm_priya', time: '11:48', day: '2 days ago', status: 'open', priority: 'urgent',
+            spans: [t('40% of the org ceiling, refilled over five minutes. It covers the nightly batches without letting one integration eat the hour.')],
+            reactions: [], thread: { id: 't_301' }, followUp: null },
+          { id: 'r3', author: 'm_david', time: '12:06', day: '2 days ago', status: null, priority: null,
+            spans: [t('Per-key or per-org? If it is per-key a single bad integration still takes the org down.')],
+            reactions: [{ key: 'question', count: 1, mine: false }], thread: null, followUp: null },
+        ],
+      },
+      'dm-david': {
+        key: 'dm-david', name: 'David Kim', kind: 'dm', member: 'm_david',
+        members: '2 members', favorite: true,
+        messages: [
+          { id: 'd1', author: 'm_david', time: '08:40', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Yes — put it in the thread and I will read it before we talk.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'd2', author: 'm_yariv', time: '08:52', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Done. The retention number is the only thing still open.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'd3', author: 'm_david', time: '09:05', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Fourteen days. I will say so in the thread so it is written down somewhere other than here.')],
+            reactions: [{ key: 'done', count: 1, mine: true }], thread: null, followUp: null },
+        ],
+      },
+      'dm-priya': {
+        key: 'dm-priya', name: 'Priya Nair', kind: 'dm', member: 'm_priya',
+        members: '2 members', favorite: true,
+        messages: [
+          { id: 'p1', author: 'm_priya', time: '14:10', day: 'Today', status: null, priority: null,
+            spans: [t('40% of the org ceiling, refilled over five minutes. It covers the nightly batches.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'p2', author: 'm_yariv', time: '14:22', day: 'Today', status: null, priority: null,
+            spans: [t('That works. Can you put the number in the thread so the limiter work is not blocked on the two of us being awake at once?')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'p3', author: 'm_priya', time: '14:25', day: 'Today', status: 'open', priority: 'high',
+            spans: [t('Posting it now.')],
+            reactions: [], thread: null, followUp: null },
+        ],
+      },
     },
+
     threads: {
-      t_101: { label: 'Dead letter queue handling', parent: 'x3', status: 'open' },
-      t_102: { label: 'Batching the writes',        parent: 'x5', status: 'open' },
+      t_101: { id: 't_101', label: 'Dead letter queue handling', room: 'indexing', parent: 'x3',
+        messages: [
+          { id: 'y1', author: 'm_yariv', time: '19:18', day: '3 days ago', status: null, priority: null,
+            spans: [t('Two open questions: how many retries before we park an event, and where parked events go.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'y2', author: 'm_david', time: '19:48', day: '3 days ago', status: null, priority: null,
+            spans: [t('Five, then a dedicated DLQ topic with a 14-day retention. Anything still there after 14 days is a bug we did not fix.')],
+            reactions: [{ key: 'agree', count: 1, mine: false }], thread: null, followUp: null },
+          { id: 'y3', author: 'm_agent', time: '20:18', day: '3 days ago', status: null, priority: null,
+            spans: [t('No prior decision covers DLQ retention. The closest is "Disaster recovery plan", which sets 30 days for snapshots — a different class of data.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'y4', author: 'm_elena', time: '21:18', day: '3 days ago', status: null, priority: null,
+            spans: [t('Fine by me. I will take the retention config.')],
+            reactions: [{ key: 'done', count: 1, mine: false }], thread: null, followUp: null },
+        ] },
+      t_102: { id: 't_102', label: 'Batching the writes', room: 'indexing', parent: 'x5',
+        messages: [
+          { id: 'z1', author: 'm_priya', time: '22:04', day: '3 days ago', status: null, priority: null,
+            spans: [t('Agreed on micro-batching, but the window has to be a setting. 50ms is wrong for the audit stream.')],
+            reactions: [], thread: null, followUp: null },
+        ] },
+      t_201: { id: 't_201', label: 'Chunking experiment results', room: 'weekly-sync', parent: 'w1',
+        messages: [
+          { id: 'c1', author: 'm_grace', time: '09:20', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Semantic chunking wins on recall by four points and loses on latency by 90ms. Worth it for search, not for the inline answers.')],
+            reactions: [{ key: 'agree', count: 2, mine: false }], thread: null, followUp: null },
+          { id: 'c2', author: 'm_sarah', time: '09:26', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Then we run both and pick per surface. I will write that up rather than argue it live.')],
+            reactions: [], thread: null, followUp: null },
+        ] },
+      t_202: { id: 't_202', label: 'The three things', room: 'weekly-sync', parent: 'w4',
+        messages: [
+          { id: 'c3', author: 'm_elena', time: '10:40', day: 'Yesterday', status: null, priority: null,
+            spans: [t('Then three and a rider. Agreed.')],
+            reactions: [], thread: null, followUp: null },
+        ] },
+      t_301: { id: 't_301', label: 'Burst allowance for the ingest endpoint', room: 'rate-limits', parent: 'r2',
+        messages: [
+          { id: 'c4', author: 'm_tom', time: '12:30', day: '2 days ago', status: null, priority: null,
+            spans: [t('40% is fine for the batches. What I need is the number written down before the limiter ships.')],
+            reactions: [], thread: null, followUp: null },
+          { id: 'c5', author: 'm_agent', time: '12:34', day: '2 days ago', status: null, priority: null,
+            spans: [t('Follow-up set on this thread: if nobody has given a number by tomorrow, I will ask the owner for one.')],
+            reactions: [{ key: 'acknowledged', count: 1, mine: false }], thread: null, followUp: null },
+        ] },
     },
+
     followUps: [
-      { id: 'f1', title: 'Design approval on the composer', preview: 'Elena Ruiz: Is anyone actually using the bold shortcut?', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 0, kind: 'timer' },
-      { id: 'f2', title: 'Weekend rota funding', preview: 'Nathan Williams: Worth it. A quarter of small wins that sum to nothing is the classic failure.', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 1, kind: 'timer' },
-      { id: 'f3', title: 'Burst allowance number', preview: 'If this is still open when it comes due, nudge the owner in the thread and ask for a number.', priority: 'high', owner: 'm_priya', due: 'Ran 13h', overdue: true, unread: 2, kind: 'agent' },
-      { id: 'f4', title: 'Twelve-tag proposal', preview: 'Aisha Rahman: I will wire a required minimum into the readout.', priority: 'medium', owner: 'm_sarah', due: 'Due in 10h', overdue: false, unread: 2, kind: 'timer' },
-      { id: 'f5', title: 'SOC 2 evidence export', preview: 'If nobody has replied since I set this, nudge them. If the export is done, say so and close it.', priority: 'medium', owner: 'm_marco', due: 'Due in 10h', overdue: false, unread: 2, kind: 'agent' },
-      { id: 'f6', title: 'Budget approval for Q4', preview: '', priority: 'medium', owner: 'm_david', due: 'Due in 2 days', overdue: false, unread: 0, kind: 'timer' },
-      { id: 'f7', title: 'Levelling guide', preview: 'Elena Ruiz: Template that asks what the system allowed rather than who did it. I will draft it.', priority: 'low', owner: 'm_david', due: 'Due in 7 days', overdue: false, unread: 1, kind: 'timer' },
+      { id: 'f1', title: 'Design approval on the composer', preview: 'Elena Ruiz: Is anyone actually using the bold shortcut?', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 0, agentic: false },
+      { id: 'f2', title: 'Weekend rota funding', preview: 'Nathan Williams: A quarter of small wins that sum to nothing is the classic failure.', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 1, agentic: false },
+      { id: 'f3', title: 'Burst allowance number', preview: 'If this is still open when it comes due, nudge the owner in the thread and ask for a number.', priority: 'high', owner: 'm_priya', due: 'Ran 13h', overdue: true, unread: 2, agentic: true },
+      { id: 'f4', title: 'Twelve-tag proposal', preview: 'Aisha Rahman: I will wire a required minimum into the readout.', priority: 'medium', owner: 'm_sarah', due: 'Due in 10h', overdue: false, unread: 2, agentic: false },
+      { id: 'f5', title: 'SOC 2 evidence export', preview: 'If nobody has replied since I set this, nudge them. If the export is done, say so and close it.', priority: 'medium', owner: 'm_marco', due: 'Due in 10h', overdue: false, unread: 2, agentic: true },
+      { id: 'f6', title: 'Budget approval for Q4', preview: '', priority: 'medium', owner: 'm_david', due: 'Due in 2 days', overdue: false, unread: 0, agentic: false },
+      { id: 'f7', title: 'Levelling guide', preview: 'Elena Ruiz: Template that asks what the system allowed rather than who did it.', priority: 'low', owner: 'm_david', due: 'Due in 7 days', overdue: false, unread: 1, agentic: false },
     ],
-    myThreads: [
-      { group: 'urgent', title: 'Per-key or per-org rate limits?', preview: 'Priya Nair: I will put the sub-limit at 40% of the org ceiling unless somebody has a better number.', type: 'dev', owner: 'm_david', unread: 4, activity: '2d', thread: null },
-      { group: 'urgent', title: 'Dead letter queue handling', preview: 'Elena Ruiz: Fine by me. I will take the retention config.', type: 'dev', owner: 'm_yariv', unread: 0, activity: '3d', thread: 't_101' },
-      { group: 'high',   title: 'Are you using Cursor', preview: 'Yariv Ashkenazy: ?', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', thread: null },
-      { group: 'high',   title: 'Newport Agent is in the building', preview: 'Yariv Ashkenazy: Build auto-prioritization', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', thread: null },
-      { group: 'high',   title: 'What are the three things for Q4?', preview: 'Elena Ruiz: Then three and a rider. Agreed.', type: 'sync', owner: 'm_yariv', unread: 0, activity: '2d', thread: null },
-      { group: 'high',   title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', thread: null },
-      { group: 'medium', title: 'Batching the writes', preview: 'Priya Nair: Agreed on micro-batching, but the window has to be a setting.', type: 'dev', owner: 'm_priya', unread: 3, activity: '2d', thread: 't_102' },
+
+    /* Rows in the two list screens that are not threads in a room we hold. */
+    extraThreads: [
+      { title: 'Per-key or per-org rate limits?', preview: 'Priya Nair: I will put the sub-limit at 40% of the org ceiling unless somebody has a better number.', priority: 'urgent', type: 'dev', owner: 'm_david', unread: 4, activity: '2d', room: 'rate-limits', thread: 't_301' },
+      { title: 'Are you using Cursor', preview: 'Yariv Ashkenazy: ?', priority: 'high', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', room: null, thread: null },
+      { title: 'Newport Agent is in the building', preview: 'Yariv Ashkenazy: Build auto-prioritization', priority: 'high', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', room: null, thread: null },
+      { title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', priority: 'high', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', room: null, thread: null },
+    ],
+
+    topicsList: [
+      { name: 'Slack Q&A RAG System', preview: 'Yariv Ashkenazy: Wat do you think?', priority: 'urgent', type: 'dev', open: '3 open', faces: ['m_grace', 'm_david', 'm_yariv'], activity: '1d', room: null },
+      { name: 'Real-Time Indexing Pipeline', preview: 'Priya Nair: Then the plan is a ceiling of five, a dedicated DLQ and fourteen days.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_david', 'm_elena', 'm_yariv'], activity: '1d', room: 'indexing' },
+      { name: 'Data Warehouse Migration', preview: 'Ben Carter: Second reconcile night also clean.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_marco', 'm_tom', 'm_david'], activity: '2d', room: null },
+      { name: 'API Rate Limiting', preview: 'David Kim: Per-key or per-org? If it is per-key a single bad integration still takes the org down.', priority: 'urgent', type: 'dev', open: '2 open', faces: ['m_david', 'm_priya', 'm_tom'], activity: '2d', room: 'rate-limits' },
+      { name: 'AI Team Weekly Sync', preview: 'Yariv Ashkenazy: Let us keep it to three things.', priority: 'high', type: 'sync', open: '2 open', faces: ['m_sarah', 'm_grace', 'm_priya'], activity: '3d', room: 'weekly-sync' },
+      { name: 'Design System v2', preview: 'Marco Bianchi: Twelve glyphs redrawn, in review.', priority: 'high', type: 'dev', open: '2 open', faces: ['m_marco', 'm_sarah'], activity: '2d', room: null },
+      { name: 'Support Triage', preview: 'Yuki Tanaka: We have 60 tags and about eight of them get used.', priority: 'high', type: 'ask', open: '2 open', faces: ['m_grace', 'm_tom'], activity: '2d', room: null },
+      { name: 'Create Electron desktop client', preview: 'Sarah Chen: I will implement native context menus with proper platform behaviour on both.', priority: 'medium', type: 'dev', open: '4 open', faces: ['m_sarah', 'm_marco'], activity: '2w', room: null },
+      { name: 'Frontend Performance', preview: 'Sofia Almeida: Lighthouse run after the font preload: 2.4s to 1.6s.', priority: 'medium', type: 'dev', open: '2 open', faces: ['m_sarah', 'm_marco'], activity: '2d', room: null },
+    ],
+
+    dmsList: [
+      { member: 'm_david', preview: 'David Kim: Fourteen days. I will say so in the thread so it is written down.', priority: 'high', unread: 0, activity: '1d', room: 'dm-david' },
+      { member: 'm_priya', preview: 'Priya Nair: Posting it now.', priority: 'medium', unread: 0, activity: '2h', room: 'dm-priya' },
+      { member: 'm_elena', preview: 'Elena Ruiz: Sending the retention config over tonight — 14 days, as agreed in the thread.', priority: 'medium', unread: 0, activity: '4d', room: null },
+      { member: 'm_grace', preview: 'Yariv Ashkenazy: Leaning yes. Let us see the research writeup first.', priority: 'medium', unread: 1, activity: '2d', room: null },
+      { member: 'm_tom', preview: 'Tom Okafor: Dashboard is up whenever you want to look at it.', priority: 'low', unread: 0, activity: '3d', room: null },
+    ],
+
+    teamsList: [
+      { name: 'Product', glyph: 'compass', people: ['m_yariv', 'm_grace', 'm_sarah'], peopleLabel: '4 people', topics: '8 topics' },
+      { name: 'Engineering', glyph: 'cube', people: ['m_david', 'm_priya', 'm_tom'], peopleLabel: '9 people', topics: '7 topics' },
+      { name: 'CTO Office', glyph: 'shield', people: ['m_elena', 'm_agent'], peopleLabel: '3 people', topics: '5 topics' },
+      { name: 'Design', glyph: 'layers', people: ['m_marco', 'm_sarah'], peopleLabel: '3 people', topics: '2 topics' },
+      { name: 'Data', glyph: 'beaker', people: ['m_grace', 'm_tom'], peopleLabel: '2 people', topics: '2 topics' },
+      { name: 'Customer Support', glyph: 'pulse', people: ['m_elena'], peopleLabel: '2 people', topics: '1 topic' },
     ],
   };
 }
@@ -1079,9 +1321,21 @@ let state = initialState();
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const room = () => state.rooms[state.room];
+const thread = (id) => state.threads[id];
+
 function markFor(memberId, size = 'mark') {
   const p = PEOPLE[memberId];
   return `<span class="mk" data-size="${size}" data-identity-color="${p.color}" title="${esc(p.name)}">${esc(p.initials)}</span>`;
+}
+
+/* Three faces and a count: a row says who is in a room, not everyone in it. */
+function faceStack(ids, total) {
+  const shown = ids.slice(0, 3);
+  const rest = (total || ids.length) - shown.length;
+  return `<span class="mkStack">${shown.map((id) => markFor(id, 'mark')).join('')}${
+    rest > 0 ? `<span class="mkOverflow">+${rest}</span>` : ''
+  }</span>`;
 }
 
 function spanHtml(span) {
@@ -1099,48 +1353,66 @@ function spanHtml(span) {
   return esc(span.text);
 }
 
-function statusOf(msg) {
-  if (msg.thread) return state.threads[msg.thread.id].status;
-  return msg.status;
+/* A stream is a room's message list or a thread's; both are drawn the same. */
+function streamOf(key) {
+  if (state.rooms[key]) return state.rooms[key].messages;
+  if (state.threads[key]) return state.threads[key].messages;
+  return [];
 }
 
-function reactionChip(msg, stream, reaction, index) {
-  const mine = reaction.mine;
-  const cls = mine ? 'chipMine' : 'chip';
+function findMessage(streamKey, id) {
+  return streamOf(streamKey).find((m) => m.id === id) || null;
+}
+
+function replyLabel(threadId) {
+  const n = state.threads[threadId].messages.length;
+  return n === 1 ? '1 reply' : `${n} replies`;
+}
+
+function reactionChip(msg, stream, place, reaction, index) {
+  const cls = reaction.mine ? 'chipMine' : 'chip';
   const face = reaction.emoji
     ? `<span class="chipEmoji">${reaction.emoji}</span>`
     : `<span class="chipMark" data-reaction="${reaction.key}">${icon('reaction-' + reaction.key, 'compact')}</span>`;
-  return `<button class="${cls}" type="button" data-act="toggle-reaction" data-stream="${stream}" data-msg="${msg.id}" data-index="${index}">${face}${reaction.count}</button>`;
+  return `<button class="${cls}" type="button" data-act="toggle-reaction" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" data-index="${index}">${face}${reaction.count}</button>`;
 }
 
 /*
- * `asParent` is the same message drawn at the top of its own thread. It keeps
- * its corner bar — the thread's status is changed from there — but loses the
- * way in, because the reply count is the line under it and a link back into
- * the panel you are already standing in is a link to here.
+ * `place` is which of the two columns this copy of the message is being drawn
+ * in. A thread's opening message appears in the room *and* at the top of the
+ * panel — same id, same stream — so without it, opening a menu on one opens
+ * the identical menu on the other.
  */
-function messageHtml(msg, stream, asParent) {
+function messageHtml(msg, stream, place, asParent) {
   const person = PEOPLE[msg.author];
-  const status = statusOf(msg);
-  /* Open earns no badge — the ring in the corner bar already says so. The two
-     finished states do, because a badge is also how you take one back. */
-  const showStatusChip = Boolean(status) && status !== 'open';
+  const status = msg.status;
+  const priority = msg.priority;
   const statusMeta = STATUSES.find((s) => s.key === status) || STATUSES[0];
+  const priorityMeta = PRIORITIES.find((p) => p.key === priority) || PRIORITIES[4];
 
   const marks = [];
-  if (showStatusChip) {
-    marks.push(`<button class="statusChip" type="button" data-status="${status}" data-act="reset-status" data-stream="${stream}" data-msg="${msg.id}">${icon(statusMeta.icon, 'compact')}${statusMeta.label}</button>`);
+  /* Open earns no badge — the ring in the corner bar already says so. The two
+     finished states do, because a badge is also how you take one back. */
+  if (status && status !== 'open') {
+    marks.push(`<button class="statusChip" type="button" data-status="${status}" data-act="reset-status" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}">${icon(statusMeta.icon, 'compact')}${statusMeta.label}</button>`);
+  }
+  if (priority && priority !== 'none') {
+    marks.push(`<button class="priorityChip" type="button" data-priority="${priority}" data-act="menu" data-menu="priority" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}">${icon(priorityMeta.icon, 'compact')}${priorityMeta.label}</button>`);
   }
   if (msg.followUp) {
-    marks.push(`<button class="followChip" type="button" data-act="clear-follow-up" data-stream="${stream}" data-msg="${msg.id}" title="Clear follow-up">${icon('timer', 'compact')}${esc(msg.followUp)}</button>`);
+    const kind = FOLLOW_UP_KINDS.find((k) => k.key === msg.followUp.kind) || FOLLOW_UP_KINDS[0];
+    marks.push(`<button class="followChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="clear-follow-up" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" title="Clear this follow-up">${icon(kind.icon, 'compact')}${esc(msg.followUp.when)}</button>`);
   }
-  msg.reactions.forEach((r, i) => marks.push(reactionChip(msg, stream, r, i)));
+  msg.reactions.forEach((r, i) => marks.push(reactionChip(msg, stream, place, r, i)));
 
   const threadRow = msg.thread && !asParent
     ? `<div class="threadRow"><button class="replies" type="button" data-act="open-thread" data-thread="${msg.thread.id}">${replyLabel(msg.thread.id)}</button></div>`
     : '';
 
-  const menuOpen = state.menu && state.menu.msgId === msg.id && state.menu.stream === stream;
+  const m = state.menu;
+  const menuOpen = Boolean(m && m.msgId === msg.id && m.stream === stream && m.place === place);
+  const tool = (kind, glyph, title, extra = '') =>
+    `<button class="tool" type="button" ${extra} data-act="menu" data-menu="${kind}" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" aria-expanded="${menuOpen && m.kind === kind}" title="${title}">${glyph}</button>`;
 
   return `
   <li class="msg" data-msg="${msg.id}"${menuOpen ? ' data-busy' : ''}>
@@ -1152,75 +1424,72 @@ function messageHtml(msg, stream, asParent) {
       ${threadRow}
     </div>
     <div class="tools">
-      <button class="tool" type="button" data-status="${status || 'open'}" data-act="menu" data-menu="status" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'status'}" title="Status">${icon(statusMeta.icon)}</button>
+      ${tool('status', icon(statusMeta.icon), 'Status', `data-status="${status || 'open'}"`)}
       <button class="tool" type="button" data-act="noop" title="Assignee">${markFor(ME, 'small')}</button>
       <button class="tool" type="button" data-act="noop" title="Tag">${icon('tag')}</button>
       <span class="toolDivider"></span>
-      <button class="tool" type="button" data-act="menu" data-menu="reaction" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'reaction'}" title="React">${icon('emoji')}</button>
-      <button class="tool" type="button" data-act="menu" data-menu="priority" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'priority'}" title="Priority">${icon('priority-medium')}</button>
-      <button class="tool" type="button" data-act="follow-up" data-stream="${stream}" data-msg="${msg.id}" title="Set a follow-up">${icon('timer')}</button>
+      ${tool('reaction', icon('emoji'), 'React')}
+      ${tool('priority', icon(priorityMeta.icon), 'Priority', `data-priority="${priority || 'none'}"`)}
+      <button class="tool" type="button" data-act="follow-up" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" title="Set a follow-up">${icon('timer')}</button>
       <button class="tool" type="button" data-act="noop" title="More">${icon('ellipsis')}</button>
-      ${menuOpen ? menuHtml(state.menu, msg, stream) : ''}
+      ${menuOpen ? menuHtml(m, msg, stream, place) : ''}
     </div>
   </li>`;
 }
 
-function menuHtml(menu, msg, stream) {
+function menuHtml(menu, msg, stream, place) {
+  const row = (kindAttr, value, glyph, label, on) => `
+    <button class="menuItem" type="button" data-act="set-${menu.kind}" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" data-value="${value}"${on ? ' data-on' : ''}>
+      <span class="menuMark" ${kindAttr}>${glyph}</span>
+      <span class="menuLabel">${label}</span>
+      ${on ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+    </button>`;
+
   if (menu.kind === 'status') {
-    const current = statusOf(msg);
+    const current = msg.status || 'open';
     return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
-      STATUSES.map((s) => `
-        <button class="menuItem" type="button" data-act="set-status" data-stream="${stream}" data-msg="${msg.id}" data-value="${s.key}"${s.key === current ? ' data-on' : ''}>
-          <span class="menuMark" data-status="${s.key}">${icon(s.icon)}</span>
-          <span class="menuLabel">${s.label}</span>
-          ${s.key === current ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
-        </button>`).join('')
+      STATUSES.map((s) => row(`data-status="${s.key}"`, s.key, icon(s.icon), s.label, s.key === current)).join('')
+    }</div>`;
+  }
+  if (menu.kind === 'priority') {
+    const current = msg.priority || 'none';
+    return `<div class="menu" style="top:calc(100% + 4px);right:0" data-menu-body>${
+      PRIORITIES.map((p) => row(`data-priority="${p.key}"`, p.key, icon(p.icon), p.label, p.key === current)).join('')
     }</div>`;
   }
   if (menu.kind === 'reaction') {
     return `<div class="menu reactionMenu" style="top:calc(100% + 4px);right:0" data-menu-body>${
       REACTIONS.map((r) => `
-        <button class="reactionOpt" type="button" data-reaction="${r.key}" data-act="add-reaction" data-stream="${stream}" data-msg="${msg.id}" data-value="${r.key}" title="${r.label}">${icon('reaction-' + r.key)}</button>`).join('')
-    }</div>`;
-  }
-  if (menu.kind === 'priority') {
-    const items = [
-      { key: 'urgent', label: 'Urgent' }, { key: 'high', label: 'High' },
-      { key: 'medium', label: 'Medium' }, { key: 'low', label: 'Low' }, { key: 'none', label: 'No priority' },
-    ];
-    return `<div class="menu" style="top:calc(100% + 4px);right:0" data-menu-body>${
-      items.map((p) => `
-        <button class="menuItem" type="button" data-act="close-menu">
-          <span class="menuMark" style="color:${p.key === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + p.key)}</span>
-          <span class="menuLabel">${p.label}</span>
-        </button>`).join('')
+        <button class="reactionOpt" type="button" data-reaction="${r.key}" data-act="add-reaction" data-stream="${stream}" data-msg="${msg.id}" data-place="${place}" data-value="${r.key}" title="${r.label}">${icon('reaction-' + r.key)}</button>`).join('')
     }</div>`;
   }
   return '';
 }
 
-function replyLabel(threadId) {
-  const n = state.streams[threadId].length;
-  return n === 1 ? '1 reply' : `${n} replies`;
-}
-
-function streamHtml(stream) {
-  const list = state.streams[stream];
+function streamHtml(streamKey, place, filterOpen) {
+  const list = streamOf(streamKey);
   const out = [];
   let day = null;
+  let hidden = 0;
   list.forEach((msg) => {
+    /* The filter is about what is still live, so it only ever hides a message
+       somebody has finished with. */
+    if (filterOpen && msg.status && msg.status !== 'open') { hidden += 1; return; }
     if (msg.day !== day) {
       day = msg.day;
       out.push(`<li class="divider"><span class="dividerLabel">${esc(day)}</span></li>`);
     }
-    out.push(messageHtml(msg, stream));
+    out.push(messageHtml(msg, streamKey, place, false));
   });
+  if (hidden) {
+    out.push(`<li class="filteredNote">${icon('filter', 'compact')} ${hidden === 1 ? '1 finished thread hidden' : `${hidden} finished threads hidden`}</li>`);
+  }
   return out.join('');
 }
 
-function composerHtml(stream, placeholder, withProperties) {
+function composerHtml(stream, placeholder, withProperties, size) {
   return `
-  <form class="composer" data-composer="${stream}">
+  <form class="composer"${size ? ` data-size="${size}"` : ''} data-composer="${stream}">
     <button class="attach" type="button" data-act="noop" title="Attach files">${icon('attach')}</button>
     <div class="editor" contenteditable="true" role="textbox" aria-label="${esc(placeholder)}"
          data-empty="true" data-placeholder="${esc(placeholder)}" data-editor="${stream}"></div>
@@ -1234,22 +1503,27 @@ function composerHtml(stream, placeholder, withProperties) {
 
 /* ── the room ────────────────────────────────────────────────────────────── */
 function roomHtml() {
+  const r = room();
   const open = state.threadOpen;
-  const thread = open ? state.threads[open] : null;
-  const parent = open ? state.streams.room.find((m) => m.id === thread.parent) : null;
+  const th = open ? thread(open) : null;
+  const parent = th ? r.messages.find((m) => m.id === th.parent) : null;
+  const filterOpen = Boolean(state.openOnly[r.key]);
+
+  const lead = r.kind === 'dm'
+    ? `<span class="crumb"><span class="crumbMark">${icon('dms')}</span> DMs</span><span class="crumbSep">/</span>
+       <span class="crumb" data-last>${markFor(r.member, 'small')} ${esc(r.name)}</span>`
+    : `<span class="crumb">${icon('team')} ${esc(r.team)}</span><span class="crumbSep">/</span>
+       <span class="crumb">${icon('topics')} Topics</span><span class="crumbSep">/</span>
+       <span class="crumb" data-last><span class="crumbMark" data-topic-type="${r.type}">${icon('type-' + r.type)}</span> ${esc(r.name)}</span>`;
 
   return `
   <div class="pageHeader">
     <div class="pathRow">
-      <div class="crumbs">
-        <span class="crumb">${icon('team')} Engineering</span><span class="crumbSep">/</span>
-        <span class="crumb">${icon('topics')} Topics</span><span class="crumbSep">/</span>
-        <span class="crumb" data-last><span class="crumbMark" data-topic-type="dev">${icon('type-dev')}</span> Real-Time Indexing Pipeline</span>
-      </div>
-      <button class="favBtn" type="button" data-act="favorite"${state.favorite ? ' data-on' : ''} title="Favorite">${icon(state.favorite ? 'star' : 'star-outline')}</button>
-      <span class="members">4 members</span>
+      <div class="crumbs">${lead}</div>
+      <button class="favBtn" type="button" data-act="favorite"${r.favorite ? ' data-on' : ''} title="${r.favorite ? 'Remove from favorites' : 'Add to favorites'}">${icon(r.favorite ? 'star' : 'star-outline')}</button>
+      <span class="members">${esc(r.members)}</span>
       <div class="headerActions">
-        <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
+        <button class="pill" type="button" data-act="toggle-open-filter" aria-pressed="${filterOpen}" title="${filterOpen ? 'Showing open only — press to show all' : 'Showing all — press to show open only'}">${filterOpen ? 'Open' : 'All'}</button>
         <button class="iconBtn" type="button" data-act="noop" title="Search this conversation">${icon('search')}</button>
         <button class="iconBtn" type="button" data-act="noop" title="More actions">${icon('ellipsis')}</button>
         <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
@@ -1259,51 +1533,32 @@ function roomHtml() {
 
   <div class="chatBody" data-panel="${open ? 'open' : 'closed'}">
     <section class="stream">
-      <div class="scroll" data-scroll="room" data-anchor="bottom"><ul class="messages">${streamHtml('room')}</ul></div>
-      ${composerHtml('room', 'Message Real-Time Indexing Pipeline', true)}
+      <div class="scroll" data-scroll="${r.key}" data-anchor="bottom"><ul class="messages">${streamHtml(r.key, 'room', filterOpen)}</ul></div>
+      ${composerHtml(r.key, `Message ${r.name}`, true)}
     </section>
     ${open ? `
-    <aside class="panel" aria-label="${esc(thread.label)}">
+    <aside class="panel" aria-label="${esc(th.label)}">
       <header class="panelHeader">
         <button class="panelClose" type="button" data-act="close-thread" title="Close thread">${icon('close')}</button>
       </header>
       <div class="scroll" data-scroll="${open}">
-        <ul class="messages">${messageHtml(parent, 'room', true)}</ul>
+        <ul class="messages">${messageHtml(parent, r.key, 'panel', true)}</ul>
         <p class="panelCount">${replyLabel(open)}</p>
-        <ul class="messages">${streamHtml(open)}</ul>
+        <ul class="messages">${streamHtml(open, 'panel', false)}</ul>
       </div>
       ${composerHtml(open, 'Reply in thread', false)}
     </aside>` : ''}
   </div>`;
 }
 
-/* ── the lists ───────────────────────────────────────────────────────────── */
-const PRIORITY_GROUPS = [
-  { key: 'urgent', label: 'Urgent' },
-  { key: 'high',   label: 'High' },
-  { key: 'medium', label: 'Medium' },
-];
-
-function myThreadsHtml() {
-  const groups = PRIORITY_GROUPS.map((g) => {
-    const rows = state.myThreads.filter((r) => r.group === g.key);
-    if (!rows.length) return '';
-    return `
-    <section class="group">
-      <div class="groupHead">
-        <span class="groupChevron">${icon('chevron-down', 'compact')}</span>
-        <span class="groupMark" style="color:${g.key === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + g.key)}</span>
-        <span class="groupLabel">${g.label}</span>
-        <span class="groupCount">${rows.length}</span>
-      </div>
-      <div class="groupRows">${rows.map(threadRowHtml).join('')}</div>
-    </section>`;
-  }).join('');
-
+/* ── the list screens ────────────────────────────────────────────────────── */
+/* `pressed` is the filter the screen arrives with on — the lists that are a
+   queue arrive filtered to what is still open; the directories do not. */
+function headerHtml(title, glyph, filters, pressed) {
   return `
   <div class="pageHeader">
     <div class="pathRow">
-      <div class="crumbs"><span class="crumb" data-last>${icon('my-threads')} My Threads</span></div>
+      <div class="crumbs"><span class="crumb" data-last>${icon(glyph)} ${esc(title)}</span></div>
       <div class="headerActions">
         <button class="iconBtn" type="button" data-act="noop" title="New">${icon('plus')}</button>
         <button class="iconBtn" type="button" data-act="noop" title="Copy link">${icon('link')}</button>
@@ -1311,25 +1566,71 @@ function myThreadsHtml() {
       </div>
     </div>
     <div class="filterRow">
-      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search threads"></span>
-      <button class="pill" type="button" data-muted data-act="noop">Tagged in</button>
-      <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
-      <button class="pill" type="button" data-act="noop">Assigned to me</button>
-      <button class="pill" type="button" data-act="noop">Unread</button>
+      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search ${esc(title)}"></span>
+      ${filters.map((f) => `<button class="pill" type="button" data-act="noop"${f === pressed ? ' aria-pressed="true"' : ''}>${esc(f)}</button>`).join('')}
       <span class="spacer"></span>
       <button class="iconBtn" type="button" data-act="noop" title="Filter">${icon('filter')}</button>
     </div>
-  </div>
-  <div class="listScroll">${groups}</div>`;
+  </div>`;
+}
+
+function groupHtml(key, label, glyph, priorityKey, rows, drawRow) {
+  if (!rows.length) return '';
+  const isOpen = state.open[key] !== false;
+  return `
+  <section class="group">
+    <button class="groupHead" type="button" data-act="toggle-group" data-value="${key}" aria-expanded="${isOpen}">
+      <span class="groupChevron">${icon('chevron-down', 'compact')}</span>
+      ${glyph ? `<span class="groupMark"${priorityKey ? ` data-priority="${priorityKey}"` : ''}>${glyph}</span>` : ''}
+      <span class="groupLabel">${esc(label)}</span>
+      <span class="groupCount">${rows.length}</span>
+    </button>
+    ${isOpen ? `<div class="groupRows">${rows.map(drawRow).join('')}</div>` : ''}
+  </section>`;
+}
+
+/* My Threads is every thread we hold plus the rows that stand for the rest. */
+function allThreadRows() {
+  const held = Object.values(state.threads).map((th) => {
+    const r = state.rooms[th.room];
+    const parent = r.messages.find((m) => m.id === th.parent);
+    const last = th.messages[th.messages.length - 1];
+    return {
+      title: th.label,
+      preview: last ? `${PEOPLE[last.author].name}: ${last.spans.map((s) => s.text || '').join('')}` : '',
+      priority: (parent && parent.priority) || 'none',
+      status: (parent && parent.status) || 'open',
+      type: r.type || 'general',
+      owner: parent ? parent.author : ME,
+      unread: 0, activity: '2d', room: th.room, thread: th.id,
+    };
+  });
+  return held.concat(state.extraThreads.map((row) => Object.assign({ status: 'open' }, row)));
+}
+
+function myThreadsHtml() {
+  const rows = allThreadRows();
+  return `
+  ${headerHtml('My Threads', 'my-threads', ['Open', 'Tagged in', 'Assigned to me', 'Unread'], 'Open')}
+  <div class="listScroll">${
+    PRIORITIES.map((p) => groupHtml(
+      `mt-${p.key}`,
+      p.key === 'none' ? 'No priority' : p.label,
+      icon(p.icon), p.key,
+      rows.filter((row) => (row.priority || 'none') === p.key),
+      threadRowHtml,
+    )).join('')
+  }</div>`;
 }
 
 function threadRowHtml(row) {
+  const statusMeta = STATUSES.find((s) => s.key === row.status) || STATUSES[0];
   return `
-  <button class="item" type="button" data-act="open-row" data-thread="${row.thread || ''}">
+  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
     <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
     <span class="itemMarks">
-      <span class="itemMark" style="color:${row.group === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + row.group)}</span>
-      <span class="itemMark" data-status="open">${icon('status-open')}</span>
+      <span class="itemMark" data-priority="${row.priority || 'none'}">${icon('priority-' + (row.priority || 'none'))}</span>
+      <span class="itemMark" data-status="${row.status}">${icon(statusMeta.icon)}</span>
       <span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>
     </span>
     <span class="itemFace">
@@ -1344,46 +1645,22 @@ function threadRowHtml(row) {
 function followUpsHtml() {
   const overdue = state.followUps.filter((f) => f.overdue);
   const upcoming = state.followUps.filter((f) => !f.overdue);
-  const section = (label, rows) => rows.length ? `
-    <section class="group">
-      <div class="groupHead">
-        <span class="groupChevron">${icon('chevron-down', 'compact')}</span>
-        <span class="groupLabel">${label}</span>
-        <span class="groupCount">${rows.length}</span>
-      </div>
-      <div class="groupRows">${rows.map(followUpRowHtml).join('')}</div>
-    </section>` : '';
-
   return `
-  <div class="pageHeader">
-    <div class="pathRow">
-      <div class="crumbs"><span class="crumb" data-last>${icon('follow-ups')} Follow Ups</span></div>
-      <div class="headerActions">
-        <button class="iconBtn" type="button" data-act="noop" title="New">${icon('plus')}</button>
-        <button class="iconBtn" type="button" data-act="noop" title="Copy link">${icon('link')}</button>
-        <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
-      </div>
-    </div>
-    <div class="filterRow">
-      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search follow-ups"></span>
-      <button class="pill" type="button" data-act="noop">Unread</button>
-      <button class="pill" type="button" data-act="noop">Overdue</button>
-      <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
-      <span class="spacer"></span>
-      <button class="iconBtn" type="button" data-act="noop" title="Filter">${icon('filter')}</button>
-    </div>
-  </div>
-  <div class="listScroll">${section('Overdue', overdue)}${section('Upcoming', upcoming)}</div>`;
+  ${headerHtml('Follow Ups', 'follow-ups', ['Open', 'Unread', 'Overdue'], 'Open')}
+  <div class="listScroll">
+    ${groupHtml('fu-overdue', 'Overdue', '', null, overdue, followUpRowHtml)}
+    ${groupHtml('fu-upcoming', 'Upcoming', '', null, upcoming, followUpRowHtml)}
+  </div>`;
 }
 
 function followUpRowHtml(row) {
   return `
-  <button class="item" type="button" data-act="open-row" data-thread="">
+  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="${row.thread || ''}">
     <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
     <span class="itemMarks">
-      <span class="itemMark" style="color:var(--icon-default)">${icon('priority-' + row.priority)}</span>
+      <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
       <span class="itemMark" data-status="open">${icon('status-open')}</span>
-      <span class="itemMark" data-kind style="${row.kind === 'agent' ? 'color:var(--accent)' : ''}">${icon(row.kind === 'agent' ? 'agent' : 'timer')}</span>
+      <span class="itemMark" data-kind style="${row.agentic ? 'color:var(--accent)' : ''}">${icon(row.agentic ? 'agent' : 'timer')}</span>
     </span>
     <span class="itemFace">
       <span class="itemTitle">${esc(row.title)}</span>
@@ -1394,22 +1671,276 @@ function followUpRowHtml(row) {
   </button>`;
 }
 
+function topicsHtml() {
+  return `
+  ${headerHtml('Topics', 'topics', ['Unread', 'Assigned to me'], null)}
+  <div class="listScroll">${
+    PRIORITIES.map((p) => groupHtml(
+      `tp-${p.key}`,
+      p.key === 'none' ? 'No priority' : p.label,
+      icon(p.icon), p.key,
+      state.topicsList.filter((row) => row.priority === p.key),
+      topicRowHtml,
+    )).join('')
+  }</div>`;
+}
+
+function topicRowHtml(row) {
+  return `
+  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="">
+    <span class="itemUnread"></span>
+    <span class="itemMarks">
+      <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
+      <span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>
+    </span>
+    <span class="itemFace">
+      <span class="itemTitle">${esc(row.name)}</span>
+      <span class="itemPreview">${esc(row.preview)}</span>
+    </span>
+    <span class="itemOpen">${esc(row.open)}</span>
+    <span class="itemFaces">${faceStack(row.faces)}</span>
+    <span class="itemActivity">${esc(row.activity)}</span>
+  </button>`;
+}
+
+function dmsHtml() {
+  return `
+  ${headerHtml('DMs', 'dms', ['Unread'], null)}
+  <div class="listScroll">${
+    PRIORITIES.map((p) => groupHtml(
+      `dm-${p.key}`,
+      p.key === 'none' ? 'No priority' : p.label,
+      icon(p.icon), p.key,
+      state.dmsList.filter((row) => row.priority === p.key),
+      dmRowHtml,
+    )).join('')
+  }</div>`;
+}
+
+function dmRowHtml(row) {
+  return `
+  <button class="item" type="button" data-act="open-row" data-room="${row.room || ''}" data-thread="">
+    <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
+    <span class="itemMarks">
+      <span class="itemMark" data-priority="${row.priority}">${icon('priority-' + row.priority)}</span>
+    </span>
+    <span class="itemFace">
+      <span class="itemLead">${markFor(row.member, 'mark')}</span>
+      <span class="itemTitle">${esc(PEOPLE[row.member].name)}</span>
+      <span class="itemPreview">${esc(row.preview)}</span>
+    </span>
+    <span class="itemActivity">${esc(row.activity)}</span>
+  </button>`;
+}
+
+function teamsHtml() {
+  return `
+  ${headerHtml('Teams', 'team', ['My teams'], 'My teams')}
+  <div class="listScroll">
+    <div class="groupRows">${state.teamsList.map(teamRowHtml).join('')}</div>
+  </div>`;
+}
+
+function teamRowHtml(row) {
+  return `
+  <button class="item" type="button" data-act="noop">
+    <span class="itemMarks"><span class="itemMark" data-kind>${icon(row.glyph)}</span></span>
+    <span class="itemFace"><span class="itemTitle">${esc(row.name)}</span></span>
+    <span class="itemPeople">${faceStack(row.people, parseInt(row.peopleLabel, 10))}<span class="itemCount">${esc(row.peopleLabel)}</span></span>
+    <span class="itemTopics"><span class="itemCount">${icon('topics', 'compact')} ${esc(row.topics)}</span></span>
+  </button>`;
+}
+
+/* ── the agent ───────────────────────────────────────────────────────────── */
+const SUGGESTIONS = [
+  'What did we decide about the retry ceiling?',
+  'What changed in the indexing pipeline this week?',
+  'Who owns the Electron client?',
+  'What is still open and assigned to me?',
+];
+
+function agentHtml() {
+  const head = `
+  <div class="pageHeader">
+    <div class="pathRow">
+      <div class="crumbs">
+        <button class="crumb" type="button" data-act="new-chat">${icon('agent')} Agents</button><span class="crumbSep">/</span>
+        <span class="crumb" data-last>${state.agent.turns.length ? 'Retry ceiling' : 'New chat'}</span>
+      </div>
+      <div class="headerActions">
+        <button class="iconBtn" type="button" data-act="new-chat" title="New chat">${icon('plus')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Copy link">${icon('link')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
+      </div>
+    </div>
+  </div>`;
+
+  if (!state.agent.turns.length) {
+    return `${head}
+    <div class="agentCentred">
+      <div class="agentOpening">
+        <h1 class="greeting">Ask anything.</h1>
+        ${composerHtml('agent', 'Ask anything', false, 'large')}
+        <div class="suggestions">${
+          SUGGESTIONS.map((s, i) => `<button class="suggestion" type="button" data-act="ask" data-value="${i}">${esc(s)}</button>`).join('')
+        }</div>
+      </div>
+    </div>`;
+  }
+
+  return `${head}
+  <div class="conversation">
+    <div class="agentScroll" data-scroll="agent">
+      <ol class="turns">${state.agent.turns.map(turnHtml).join('')}</ol>
+    </div>
+    <div class="agentComposerWrap">${composerHtml('agent', 'Ask anything', false, 'large')}</div>
+  </div>`;
+}
+
+function turnHtml(turn) {
+  if (turn.role === 'you') {
+    return `<li class="turnYou">${esc(turn.text)}</li>`;
+  }
+  const running = turn.state === 'running';
+  const stepsOpen = Boolean(turn.stepsOpen);
+  return `
+  <li class="turnAgent">
+    ${running
+      ? `<p class="activity" aria-live="polite"><span class="pulse" aria-hidden="true"></span>${esc(turn.activity)}</p>`
+      : `<button class="summary" type="button" data-act="toggle-steps" data-value="${turn.id}" aria-expanded="${stepsOpen}">${esc(turn.workLabel)}<span class="turnChevron">${icon('chevron-right', 'compact')}</span></button>`}
+    ${!running && stepsOpen ? `<ol class="steps">${turn.steps.map(stepHtml).join('')}</ol>` : ''}
+    ${turn.blocks ? `<div class="answer">${turn.blocks.map(blockHtml).join('')}</div>` : ''}
+  </li>`;
+}
+
+function stepHtml(step) {
+  return `
+  <li class="step">
+    ${step.title ? `<span class="stepHeadPlain">${esc(step.title)}</span>` : ''}
+    ${step.reasoning ? `<p class="reasoning">${esc(step.reasoning)}</p>` : ''}
+    ${step.tool ? `<p class="stepTool"><span class="toolLabel">${esc(step.tool.label)}</span><span class="toolDetail">${esc(step.tool.detail)}</span></p>` : ''}
+  </li>`;
+}
+
+function blockHtml(block) {
+  if (block.kind === 'bullets') {
+    return `<ul class="bullets">${block.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+  }
+  return `<p class="paragraph">${esc(block.text)}</p>`;
+}
+
+/*
+ * Four canned answers and a fallback. Each is shaped like a real turn — what it
+ * was doing while it ran, how long it took, the steps behind the answer — so
+ * the disclosure has something real to disclose.
+ */
+const ANSWERS = [
+  {
+    activity: ['Reading Real-Time Indexing Pipeline', 'Reading Dead letter queue handling', 'Checking earlier decisions'],
+    workLabel: 'Worked for 6s',
+    steps: [
+      { title: 'Finding where this was decided', reasoning: '"Retry ceiling" appears in two topics. The one with a thread somebody closed is the decision; the other is the request that led to it.', tool: { label: 'search', detail: 'retry ceiling' } },
+      { title: null, tool: { label: 'read', detail: 'Dead letter queue handling — 4 replies' } },
+      { title: 'Checking nothing supersedes it', reasoning: 'An October decision set a ceiling of 5 under single-partition ingest, which no longer holds.', tool: { label: 'read', detail: 'Backpressure on the ingest worker' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Five retries, then the event is parked in a dedicated DLQ topic with a 14-day retention.' },
+      { kind: 'bullets', items: [
+        'Ceiling: 5 retries — David Kim, in Dead letter queue handling',
+        'Parked events: a dedicated DLQ topic, 14 days',
+        'Owner: Elena Ruiz is taking the retention config',
+      ] },
+      { kind: 'p', text: 'This replaces the October decision on Backpressure on the ingest worker, which assumed single-partition ingest.' },
+    ],
+  },
+  {
+    activity: ['Reading Real-Time Indexing Pipeline', 'Collecting this week’s threads'],
+    workLabel: 'Worked for 4s',
+    steps: [
+      { title: 'Narrowing to the last seven days', tool: { label: 'list', detail: 'Real-Time Indexing Pipeline — 3 threads' } },
+      { title: 'Reading what closed', reasoning: 'Two threads moved. One is still waiting on a number.', tool: { label: 'read', detail: 'Dead letter queue handling, Batching the writes' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Three things moved in the indexing pipeline this week.' },
+      { kind: 'bullets', items: [
+        'The retry policy was settled: 5 retries, then a dedicated DLQ with 14-day retention',
+        'Micro-batching is agreed in principle; the window has to be a setting, not 50ms everywhere',
+        'Marco Bianchi picked up the DLQ topic and the retention job',
+      ] },
+      { kind: 'p', text: 'Still open: nobody has written the decision up, and Priya Nair asked you to before the batching work starts.' },
+    ],
+  },
+  {
+    activity: ['Searching topics', 'Reading Create Electron desktop client'],
+    workLabel: 'Worked for 3s',
+    steps: [
+      { title: 'Finding the topic', tool: { label: 'search', detail: 'Electron desktop client' } },
+      { title: 'Reading who answers in it', reasoning: 'Ownership is not a field here, so it is whoever the room keeps handing the work to.', tool: { label: 'read', detail: 'Create Electron desktop client — 4 open' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Sarah Chen. She opened the topic, took the native context menus, and has answered every open thread in it.' },
+      { kind: 'p', text: 'Marco Bianchi is second on it for anything to do with the icon grid.' },
+    ],
+  },
+  {
+    activity: ['Reading My Threads', 'Checking follow-ups'],
+    workLabel: 'Worked for 5s',
+    steps: [
+      { title: 'Collecting what is assigned to you', tool: { label: 'list', detail: 'assignee:me status:open' } },
+      { title: 'Sorting by what is actually waiting', reasoning: 'Two of these have somebody waiting on a reply; the rest are yours to start.' },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Four open and assigned to you, and two of them have someone waiting.' },
+      { kind: 'bullets', items: [
+        'Write up the retry decision — Priya Nair asked, in Real-Time Indexing Pipeline',
+        'Dead letter queue handling — yours, resolved but not written up',
+        'The three things — AI Team Weekly Sync, before Thursday',
+        'Burst allowance number — the agent nudges the owner tomorrow if it is still open',
+      ] },
+    ],
+  },
+];
+
+const FALLBACK = {
+  activity: ['Searching the workspace', 'Reading what came back'],
+  workLabel: 'Worked for 4s',
+  steps: [
+    { title: 'Looking across topics and DMs', tool: { label: 'search', detail: 'the workspace' } },
+    { title: 'Weighing what is a decision', reasoning: 'A decision is something somebody resolved a thread on. Everything else is discussion, and it is quoted as such.' },
+  ],
+  blocks: [
+    { kind: 'p', text: 'Nothing in the workspace answers that directly, so here is the closest thing to it.' },
+    { kind: 'p', text: 'The indexing work is the live thread this week: a retry ceiling of five, a dedicated DLQ with 14-day retention, and a write-up that has not happened yet.' },
+    { kind: 'p', text: 'Ask me to open a thread on it and I will put the question where the people who can answer it will see it.' },
+  ],
+};
+
 /* ── the shell ───────────────────────────────────────────────────────────── */
-function sidebarRow({ label, iconName, initials, view, count, color, active }) {
-  /* A person's row wears their face; everything else wears a glyph. */
+function sidebarRow({ label, iconName, initials, act, value, count, color, active }) {
   const mark = initials
     ? `<span class="mk" data-size="small" data-identity-color="${color}">${esc(initials)}</span>`
     : `<span class="rowMark">${icon(iconName)}</span>`;
   return `
-  <button class="row" type="button" data-act="view" data-value="${view || ''}"${active ? ' data-active' : ''}${color ? ` data-identity-color="${color}"` : ''}>
+  <button class="row" type="button" data-act="${act}" data-value="${value}"${active ? ' data-active' : ''}${color ? ` data-identity-color="${color}"` : ''}>
     ${mark}
     <span class="rowLabel">${esc(label)}</span>
     ${count ? `<span class="rowTrailing">${count}</span>` : ''}
   </button>`;
 }
 
+function sectionHead(key, label) {
+  const isOpen = state.open[key] !== false;
+  return `
+  <button class="sideLabel" type="button" data-act="toggle-section" data-value="${key}" aria-expanded="${isOpen}">
+    <span class="sideChevron">${icon('chevron-down', 'compact')}</span>
+    <span class="rowLabel">${esc(label)}</span>
+  </button>`;
+}
+
 function sidebarHtml() {
-  const openFollowUps = state.followUps.length;
+  const inRoom = (key) => state.view === 'room' && state.room === key;
+  const favorites = Object.values(state.rooms).filter((r) => r.favorite);
+
   return `
   <div class="side">
     <div class="sideHeader">
@@ -1423,26 +1954,35 @@ function sidebarHtml() {
     </div>
     <div class="sideScroll">
       <div class="sideGroup">
-        ${sidebarRow({ label: 'My Threads', iconName: 'my-threads', view: 'my-threads', count: 6, active: state.view === 'my-threads' })}
-        ${sidebarRow({ label: 'Follow Ups', iconName: 'follow-ups', view: 'follow-ups', count: openFollowUps, active: state.view === 'follow-ups' })}
-        ${sidebarRow({ label: 'Agents', iconName: 'agent', view: '' })}
+        ${sidebarRow({ label: 'My Threads', iconName: 'my-threads', act: 'view', value: 'my-threads', count: 6, active: state.view === 'my-threads' })}
+        ${sidebarRow({ label: 'Follow Ups', iconName: 'follow-ups', act: 'view', value: 'follow-ups', count: state.followUps.length, active: state.view === 'follow-ups' })}
+        ${sidebarRow({ label: 'Agents', iconName: 'agent', act: 'view', value: 'agents', active: state.view === 'agents' })}
       </div>
       <div class="sideGroup">
-        ${sidebarRow({ label: 'Topics', iconName: 'topics', view: '' })}
-        ${sidebarRow({ label: 'DMs', iconName: 'dms', view: '' })}
-        ${sidebarRow({ label: 'Teams', iconName: 'team', view: '' })}
+        ${sidebarRow({ label: 'Topics', iconName: 'topics', act: 'view', value: 'topics', active: state.view === 'topics' })}
+        ${sidebarRow({ label: 'DMs', iconName: 'dms', act: 'view', value: 'dms', active: state.view === 'dms' })}
+        ${sidebarRow({ label: 'Teams', iconName: 'team', act: 'view', value: 'teams', active: state.view === 'teams' })}
       </div>
       <div class="sideGroup">
-        <div class="sideLabel">Favorites</div>
-        ${sidebarRow({ label: 'Real-Time Indexing Pipeline', iconName: 'type-dev', view: 'topic', count: 2, color: 'yellow', active: state.view === 'topic' })}
-        ${sidebarRow({ label: 'AI Team Weekly Sync', iconName: 'type-sync', view: '', count: 2, color: 'pink' })}
-        ${sidebarRow({ label: 'David Kim', initials: 'DK', view: '', color: 'blue' })}
-        ${sidebarRow({ label: 'API Rate Limiting', iconName: 'type-dev', view: '', count: 2, color: 'yellow' })}
-        ${sidebarRow({ label: 'Q4 Roadmap', iconName: 'type-sync', view: '', count: 1, color: 'pink' })}
-        ${sidebarRow({ label: 'Priya Nair', initials: 'PN', view: '', color: 'orange' })}
+        ${sectionHead('favorites', 'Favorites')}
+        ${state.open.favorites ? favorites.map((r) => sidebarRow({
+          label: r.name,
+          iconName: r.kind === 'dm' ? null : 'type-' + r.type,
+          initials: r.kind === 'dm' ? PEOPLE[r.member].initials : null,
+          color: r.kind === 'dm' ? PEOPLE[r.member].color : (r.type === 'sync' ? 'pink' : 'yellow'),
+          act: 'open-room', value: r.key,
+          count: r.kind === 'dm' ? null : r.messages.filter((m) => m.thread).length,
+          active: inRoom(r.key),
+        })).join('') : ''}
       </div>
       <div class="sideGroup">
-        <div class="sideLabel">Your teams <span style="display:inline-flex">${icon('chevron-right', 'compact')}</span></div>
+        ${sectionHead('teams', 'Your teams')}
+        ${state.open.teams ? state.teamsList.map((team) => `
+          <button class="row rowNested" type="button" data-act="view" data-value="teams">
+            <span class="rowMark">${icon(team.glyph)}</span>
+            <span class="rowLabel">${esc(team.name)}</span>
+            <span class="rowTrailing">${esc(team.topics.split(' ')[0])}</span>
+          </button>`).join('') : ''}
       </div>
     </div>
   </div>`;
@@ -1451,18 +1991,20 @@ function sidebarHtml() {
 function dialogHtml() {
   const d = state.dialog;
   if (!d) return '';
+  const kind = FOLLOW_UP_KINDS.find((k) => k.key === d.kind) || FOLLOW_UP_KINDS[0];
+  const r = state.rooms[d.roomKey];
   return `
   <div class="scrim" data-act="close-dialog">
     <div class="dialog" role="dialog" aria-modal="true" aria-label="Set a follow-up" data-act="noop">
       <div class="dialogHead">
-        <span class="dialogCrumb">Engineering</span><span class="crumbSep">›</span>
-        <span class="dialogCrumb">Topics</span><span class="crumbSep">›</span>
-        <span class="dialogCrumb">Real-Time Indexing Pipeline</span><span class="crumbSep">›</span>
+        ${r.kind === 'dm' ? '<span class="dialogCrumb">DMs</span>' : `<span class="dialogCrumb">${esc(r.team)}</span><span class="crumbSep">›</span><span class="dialogCrumb">Topics</span>`}
+        <span class="crumbSep">›</span>
+        <span class="dialogCrumb">${esc(r.name)}</span><span class="crumbSep">›</span>
         <span class="dialogCrumb" data-last>Follow up</span>
       </div>
       <div class="dialogChips">
-        <button class="dialogChip" type="button" data-act="cycle-kind">${icon('timer')}${esc(d.type)}</button>
-        <button class="dialogChip" type="button" data-act="cycle-when">${icon('timer')}${esc(d.when)}</button>
+        <button class="dialogChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="cycle-kind" title="What happens when it comes due">${icon(kind.icon)}${esc(kind.label)}</button>
+        <button class="dialogChip" type="button" data-act="cycle-when" title="When it comes due">${icon('timer')}${esc(d.when)}</button>
       </div>
       <div class="dialogFoot">
         <span class="dialogHint">Enter to set</span>
@@ -1496,21 +2038,47 @@ function restoreDrafts(drafts) {
   });
 }
 
+function canvasHtml() {
+  switch (state.view) {
+    case 'my-threads':  return myThreadsHtml();
+    case 'follow-ups':  return followUpsHtml();
+    case 'topics':      return topicsHtml();
+    case 'dms':         return dmsHtml();
+    case 'teams':       return teamsHtml();
+    case 'agents':      return agentHtml();
+    default:            return roomHtml();
+  }
+}
+
+function tabLabel() {
+  switch (state.view) {
+    case 'my-threads': return { label: 'My Threads', glyph: icon('my-threads', 'compact'), colour: 'var(--icon-default)' };
+    case 'follow-ups': return { label: 'Follow Ups', glyph: icon('follow-ups', 'compact'), colour: 'var(--icon-default)' };
+    case 'topics':     return { label: 'Topics', glyph: icon('topics', 'compact'), colour: 'var(--icon-default)' };
+    case 'dms':        return { label: 'DMs', glyph: icon('dms', 'compact'), colour: 'var(--icon-default)' };
+    case 'teams':      return { label: 'Teams', glyph: icon('team', 'compact'), colour: 'var(--icon-default)' };
+    case 'agents':     return { label: 'Agents', glyph: icon('agent', 'compact'), colour: 'var(--accent)' };
+    default: {
+      const r = room();
+      return r.kind === 'dm'
+        ? { label: r.name, glyph: icon('dms', 'compact'), colour: 'var(--icon-default)' }
+        : { label: r.name, glyph: icon('type-' + r.type, 'compact'), colour: `var(--topic-type-${r.type})` };
+    }
+  }
+}
+
 function render() {
   const drafts = captureDrafts();
-  const canvas =
-    state.view === 'topic' ? roomHtml() :
-    state.view === 'my-threads' ? myThreadsHtml() :
-    followUpsHtml();
+  const tab = tabLabel();
 
   app.innerHTML = `
     <div class="winBar">
       <span class="lights"><span class="light" data-l="r"></span><span class="light" data-l="y"></span><span class="light" data-l="g"></span></span>
-      <span class="winTab"><span style="color:var(--topic-type-dev);display:inline-flex">${icon('type-dev', 'compact')}</span><span class="rowLabel">Real-Time Indexing Pipeline</span></span>
+      <span class="winTab"><span style="color:${tab.colour};display:inline-flex">${tab.glyph}</span><span class="rowLabel">${esc(tab.label)}</span></span>
     </div>
     <div class="winBody">
       ${sidebarHtml()}
-      <div class="canvas">${canvas}</div>
+      <div class="canvas">${canvasHtml()}</div>
     </div>
     <div class="utilityBar">
       <span class="utilityChip">${icon('linear', 'compact')} Connect to Linear</span>
@@ -1535,7 +2103,7 @@ function restoreScroll() {
     else if (scrollTops[key] != null) el.scrollTop = scrollTops[key];
     /* A room opens where it was left off — at the newest thing said. A thread
        opens at the message it is about, which is the top of it. */
-    else el.scrollTop = key === 'room' ? el.scrollHeight : 0;
+    else el.scrollTop = state.rooms[key] || key === 'agent' ? el.scrollHeight : 0;
     el.addEventListener('scroll', () => { scrollTops[key] = el.scrollTop; }, { passive: true });
   });
   scrollTarget = null;
@@ -1544,30 +2112,29 @@ function restoreScroll() {
 /* ══════════════════════════════════════════════════════════════════════════
    What pressing things does.
    ══════════════════════════════════════════════════════════════════════════ */
-function findMessage(stream, id) {
-  return state.streams[stream].find((m) => m.id === id);
-}
-
 function now() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function send(stream, text) {
+function send(streamKey, text) {
   const body = text.replace(/\s+/g, ' ').trim();
   if (!body) return;
   /* Empty the box before the render, so the draft it hands back is this one. */
-  const sent = app.querySelector(`[data-editor="${stream}"]`);
+  const sent = app.querySelector(`[data-editor="${streamKey}"]`);
   if (sent) sent.innerHTML = '';
-  state.streams[stream].push({
-    id: nextId(), author: ME, time: now(), day: 'Today', status: null,
+
+  if (streamKey === 'agent') { ask(body, null); return; }
+
+  streamOf(streamKey).push({
+    id: nextId(), author: ME, time: now(), day: 'Today', status: null, priority: null,
     spans: [t(body)], reactions: [], thread: null, followUp: null,
   });
   state.menu = null;
-  scrollTarget = stream;
+  scrollTarget = streamKey;
   render();
-  const editor = app.querySelector(`[data-editor="${stream}"]`);
-  if (editor) { editor.focus(); }
+  const editor = app.querySelector(`[data-editor="${streamKey}"]`);
+  if (editor) editor.focus();
 }
 
 function readEditor(el) {
@@ -1582,12 +2149,52 @@ function syncEditor(el) {
   if (btn) btn.disabled = empty;
 }
 
+/*
+ * Asking the agent, and watching it work.
+ *
+ * The turn is written the moment the question is: a running line that swaps in
+ * place, then the answer where the work was. Timers stand in for a stream —
+ * everything the real screen does with tokens, this does with three beats.
+ */
+const timers = [];
+function clearTimers() { timers.splice(0).forEach(clearTimeout); }
+
+function ask(text, suggestionIndex) {
+  const answer = suggestionIndex === null ? FALLBACK : ANSWERS[suggestionIndex];
+  const turn = {
+    id: nextId(), role: 'agent', state: 'running',
+    activity: answer.activity[0], workLabel: answer.workLabel,
+    steps: answer.steps, blocks: null, stepsOpen: false,
+  };
+  state.agent.turns.push({ role: 'you', text });
+  state.agent.turns.push(turn);
+  state.agent.busy = true;
+  scrollTarget = 'agent';
+  render();
+
+  clearTimers();
+  answer.activity.slice(1).forEach((line, i) => {
+    timers.push(setTimeout(() => {
+      turn.activity = line;
+      scrollTarget = 'agent';
+      render();
+    }, 700 * (i + 1)));
+  });
+  timers.push(setTimeout(() => {
+    turn.state = 'done';
+    turn.blocks = answer.blocks;
+    state.agent.busy = false;
+    scrollTarget = 'agent';
+    render();
+  }, 700 * answer.activity.length + 400));
+}
+
 app.addEventListener('click', (event) => {
   const hit = event.target.closest('[data-act]');
   /*
    * Everything the handler needs is read off the element *before* anything
    * renders — a render replaces the node the click arrived on, and reaching
-   * back through it afterwards reads a element that is no longer in the page.
+   * back through it afterwards reads an element no longer in the page.
    */
   const act = hit ? hit.dataset.act : null;
   const data = hit ? Object.assign({}, hit.dataset) : {};
@@ -1608,22 +2215,48 @@ app.addEventListener('click', (event) => {
       if (dirty) render();
       break;
 
-    case 'view': {
-      const value = data.value;
-      if (!value) { if (dirty) render(); break; }
-      state.view = value;
+    case 'view':
+      state.view = data.value;
+      state.menu = null;
+      render();
+      break;
+
+    case 'open-room':
+      state.view = 'room';
+      state.room = data.value;
+      state.threadOpen = null;
+      state.menu = null;
+      render();
+      break;
+
+    case 'open-row': {
+      if (!data.room) { if (dirty) render(); break; }
+      state.view = 'room';
+      state.room = data.room;
+      state.threadOpen = data.thread || null;
       state.menu = null;
       render();
       break;
     }
 
+    case 'toggle-section':
+    case 'toggle-group':
+      state.open[data.value] = state.open[data.value] === false;
+      render();
+      break;
+
     case 'favorite':
-      state.favorite = !state.favorite;
+      room().favorite = !room().favorite;
+      render();
+      break;
+
+    case 'toggle-open-filter':
+      state.openOnly[state.room] = !state.openOnly[state.room];
       render();
       break;
 
     case 'open-thread':
-      state.view = 'topic';
+      state.view = 'room';
       state.threadOpen = data.thread;
       state.menu = null;
       render();
@@ -1635,30 +2268,18 @@ app.addEventListener('click', (event) => {
       render();
       break;
 
-    case 'open-row': {
-      state.view = 'topic';
-      state.threadOpen = data.thread || null;
-      render();
-      break;
-    }
-
     case 'menu': {
       const kind = data.menu;
-      const same = state.menu && state.menu.kind === kind && state.menu.msgId === msgId && state.menu.stream === stream;
-      state.menu = same ? null : { kind, msgId, stream };
+      const same = state.menu && state.menu.kind === kind && state.menu.msgId === msgId
+        && state.menu.stream === stream && state.menu.place === data.place;
+      state.menu = same ? null : { kind, msgId, stream, place: data.place };
       render();
       break;
     }
-
-    case 'close-menu':
-      state.menu = null;
-      render();
-      break;
 
     case 'set-status': {
       const msg = findMessage(stream, msgId);
-      if (msg && msg.thread) state.threads[msg.thread.id].status = data.value;
-      else if (msg) msg.status = data.value;
+      if (msg) msg.status = data.value;
       state.menu = null;
       render();
       break;
@@ -1666,8 +2287,15 @@ app.addEventListener('click', (event) => {
 
     case 'reset-status': {
       const msg = findMessage(stream, msgId);
-      if (msg && msg.thread) state.threads[msg.thread.id].status = 'open';
-      else if (msg) msg.status = 'open';
+      if (msg) msg.status = 'open';
+      render();
+      break;
+    }
+
+    case 'set-priority': {
+      const msg = findMessage(stream, msgId);
+      if (msg) msg.priority = data.value === 'none' ? null : data.value;
+      state.menu = null;
       render();
       break;
     }
@@ -1698,7 +2326,7 @@ app.addEventListener('click', (event) => {
 
     case 'follow-up':
       state.menu = null;
-      state.dialog = { kind: 'follow-up', msgId, stream, when: FOLLOW_UP_WHENS[0], type: FOLLOW_UP_KINDS[0] };
+      state.dialog = { msgId, stream, roomKey: state.room, kind: FOLLOW_UP_KINDS[0].key, when: FOLLOW_UP_WHENS[0] };
       render();
       break;
 
@@ -1710,8 +2338,8 @@ app.addEventListener('click', (event) => {
     }
 
     case 'cycle-kind': {
-      const i = FOLLOW_UP_KINDS.indexOf(state.dialog.type);
-      state.dialog.type = FOLLOW_UP_KINDS[(i + 1) % FOLLOW_UP_KINDS.length];
+      const i = FOLLOW_UP_KINDS.findIndex((k) => k.key === state.dialog.kind);
+      state.dialog.kind = FOLLOW_UP_KINDS[(i + 1) % FOLLOW_UP_KINDS.length].key;
       render();
       break;
     }
@@ -1733,6 +2361,23 @@ app.addEventListener('click', (event) => {
       render();
       break;
     }
+
+    case 'ask':
+      ask(SUGGESTIONS[Number(data.value)], Number(data.value));
+      break;
+
+    case 'new-chat':
+      clearTimers();
+      state.agent = { turns: [], busy: false };
+      render();
+      break;
+
+    case 'toggle-steps': {
+      const turn = state.agent.turns.find((t2) => t2.id === data.value);
+      if (turn) turn.stepsOpen = !turn.stepsOpen;
+      render();
+      break;
+    }
   }
 });
 
@@ -1741,14 +2386,19 @@ function confirmFollowUp() {
   if (!d) return;
   const msg = findMessage(d.stream, d.msgId);
   if (msg) {
-    msg.followUp = d.when;
+    const kind = FOLLOW_UP_KINDS.find((k) => k.key === d.kind) || FOLLOW_UP_KINDS[0];
+    msg.followUp = { kind: kind.key, when: d.when };
     const title = msg.spans.map((s) => s.text || s.ref || s.topic || '').join('').trim().slice(0, 52) || 'Follow up';
     const id = `fu_${msg.id}`;
     state.followUps = state.followUps.filter((f) => f.id !== id);
     state.followUps.push({
-      id, title, preview: `${d.type} · set by ${PEOPLE[ME].name}`,
-      priority: 'medium', owner: ME, due: `Due ${d.when.toLowerCase()}`,
-      overdue: false, unread: 0, kind: d.type === 'Reminder' ? 'timer' : 'agent',
+      id, title,
+      preview: kind.agentic ? `${kind.label} — set by you` : `Reminder — set by you`,
+      priority: msg.priority || 'medium', owner: ME,
+      due: `Due ${d.when.toLowerCase()}`, overdue: false, unread: 0,
+      agentic: kind.agentic,
+      room: state.rooms[d.stream] ? d.stream : d.roomKey,
+      thread: state.threads[d.stream] ? d.stream : null,
     });
   }
   state.dialog = null;
@@ -1759,6 +2409,23 @@ function confirmFollowUp() {
 app.addEventListener('input', (event) => {
   const editor = event.target.closest('[data-editor]');
   if (editor) syncEditor(editor);
+});
+
+app.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = event.target.closest('.composer');
+  if (!form) return;
+  const editor = form.querySelector('[data-editor]');
+  send(editor.dataset.editor, readEditor(editor));
+});
+
+/* Paste as text: a pasted heading should not arrive as a heading. */
+app.addEventListener('paste', (event) => {
+  const editor = event.target.closest('[data-editor]');
+  if (!editor) return;
+  event.preventDefault();
+  const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text.replace(/\s+/g, ' '));
 });
 
 /* ── the About panel, which is the page's and not the app's ──────────────── */
@@ -1802,28 +2469,8 @@ document.addEventListener('keydown', (event) => {
   if (state.threadOpen) { state.threadOpen = null; render(); }
 });
 
-app.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const form = event.target.closest('.composer');
-  if (!form) return;
-  const editor = form.querySelector('[data-editor]');
-  send(editor.dataset.editor, readEditor(editor));
-});
-
-/* Paste as text: a pasted heading should not arrive as a heading. */
-app.addEventListener('paste', (event) => {
-  const editor = event.target.closest('[data-editor]');
-  if (!editor) return;
-  event.preventDefault();
-  const text = (event.clipboardData || window.clipboardData).getData('text/plain');
-  document.execCommand('insertText', false, text.replace(/\s+/g, ' '));
-});
-
 /* ══════════════════════════════════════════════════════════════════════════
    Fitting the window to whatever room the frame has.
-
-   The window is drawn once at a fixed size, so a 13px row is the same row at
-   every viewport; the frame scales it rather than reflowing it.
    ══════════════════════════════════════════════════════════════════════════ */
 const scaler = document.getElementById('scaler');
 const artEl = document.querySelector('.art');
