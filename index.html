@@ -842,6 +842,8 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 }
 .dialogChip:hover,.dialogChip[aria-expanded='true']{box-shadow:inset 0 0 0 1px var(--border-strong)}
 .dialogChip svg{color:var(--icon-tertiary);flex:none}
+.dialogChip[aria-expanded='true']{background:var(--surface-subtle)}
+.dialogChip .menu{cursor:default;text-align:left;font-weight:var(--text-weight-regular)}
 .dialogChip[data-agentic] svg{color:var(--accent)}
 .dialogFoot{
   display:flex;align-items:center;gap:var(--space-3);
@@ -1199,9 +1201,10 @@ const REACTIONS = [
  * land — on the message, and in the Follow Ups list.
  */
 const FOLLOW_UP_KINDS = [
-  { key: 'reminder', label: 'Remind me',        icon: 'timer', agentic: false },
-  { key: 'nudge',    label: 'Agent nudges the thread', icon: 'agent', agentic: true },
-  { key: 'answer',   label: 'Agent answers it for me', icon: 'agent', agentic: true },
+  /* The agentic one first, because it is the one worth having: a follow-up you
+     have to come back and action yourself is just a reminder. */
+  { key: 'agent',    label: 'Agent follow up', icon: 'agent', agentic: true },
+  { key: 'reminder', label: 'Remind me',       icon: 'timer', agentic: false },
 ];
 const FOLLOW_UP_WHENS = ['Tomorrow', 'In 2 days', 'Next week'];
 
@@ -2353,8 +2356,27 @@ function dialogHtml() {
                value="${esc(d.note)}" aria-label="Follow-up instruction">
       </div>
       <div class="dialogChips">
-        <button class="dialogChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="cycle-kind" title="What happens when it comes due">${icon(kind.icon)}${esc(kind.label)}</button>
-        <button class="dialogChip" type="button" data-act="cycle-when" title="When it comes due">${icon('timer')}${esc(d.when)}</button>
+        <button class="dialogChip" type="button"${kind.agentic ? ' data-agentic' : ''} data-act="dialog-menu" data-menu="kind" aria-expanded="${d.menu === 'kind'}" title="What happens when it comes due">
+          ${icon(kind.icon)}${esc(kind.label)}${icon('chevron-down', 'compact')}
+          ${d.menu === 'kind' ? `<span class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
+            FOLLOW_UP_KINDS.map((k) => `
+              <span class="menuItem" role="button" tabindex="0" data-act="set-follow-kind" data-value="${k.key}"${k.key === d.kind ? ' data-on' : ''}>
+                <span class="menuMark"${k.agentic ? ' style="color:var(--accent)"' : ''}>${icon(k.icon)}</span>
+                <span class="menuLabel">${esc(k.label)}</span>
+                ${k.key === d.kind ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+              </span>`).join('')
+          }</span>` : ''}
+        </button>
+        <button class="dialogChip" type="button" data-act="dialog-menu" data-menu="when" aria-expanded="${d.menu === 'when'}" title="When it comes due">
+          ${icon('timer')}${esc(d.when)}${icon('chevron-down', 'compact')}
+          ${d.menu === 'when' ? `<span class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
+            FOLLOW_UP_WHENS.map((w) => `
+              <span class="menuItem" role="button" tabindex="0" data-act="set-follow-when" data-value="${esc(w)}"${w === d.when ? ' data-on' : ''}>
+                <span class="menuLabel">${esc(w)}</span>
+                ${w === d.when ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+              </span>`).join('')
+          }</span>` : ''}
+        </button>
       </div>
       <div class="dialogFoot">
         <span class="dialogHint">Enter to set</span>
@@ -2451,7 +2473,11 @@ let scrollTarget = null;
 function restoreScroll() {
   app.querySelectorAll('[data-scroll]').forEach((el) => {
     const key = el.dataset.scroll;
-    if (scrollTarget === key) { el.scrollTop = el.scrollHeight; scrollTops[key] = el.scrollTop; }
+    if (scrollTarget === key) {
+      /* Start where the reader was, then glide to what was just said. */
+      el.scrollTop = scrollTops[key] != null ? scrollTops[key] : el.scrollHeight;
+      tweenScroll(el, el.scrollHeight, 480).then(() => { scrollTops[key] = el.scrollTop; });
+    }
     else if (scrollTops[key] != null) el.scrollTop = scrollTops[key];
     /* A room opens where it was left off — at the newest thing said. A thread
        opens at the message it is about, which is the top of it. */
@@ -2572,6 +2598,7 @@ app.addEventListener('click', (event) => {
   const insideMenu = Boolean(event.target.closest('[data-menu-body]'));
   if (state.menu && !insideMenu && act !== 'menu') { state.menu = null; dirty = true; }
   if (state.rowMenu && !insideMenu && act !== 'row-priority-menu') { state.rowMenu = null; dirty = true; }
+  if (state.dialog && state.dialog.menu && !insideMenu && act !== 'dialog-menu') { state.dialog.menu = null; dirty = true; }
   if (!act) { if (dirty) render(); return; }
 
   switch (act) {
@@ -2715,23 +2742,26 @@ app.addEventListener('click', (event) => {
 
     case 'follow-up':
       state.menu = null;
-      state.dialog = { msgId, stream, roomKey: state.room, kind: FOLLOW_UP_KINDS[0].key, when: FOLLOW_UP_WHENS[0], note: '' };
+      state.dialog = { msgId, stream, roomKey: state.room, kind: FOLLOW_UP_KINDS[0].key, when: FOLLOW_UP_WHENS[0], note: '', menu: null };
       render();
       break;
 
-    case 'cycle-when': {
-      const i = FOLLOW_UP_WHENS.indexOf(state.dialog.when);
-      state.dialog.when = FOLLOW_UP_WHENS[(i + 1) % FOLLOW_UP_WHENS.length];
+    case 'dialog-menu':
+      state.dialog.menu = state.dialog.menu === data.menu ? null : data.menu;
       render();
       break;
-    }
 
-    case 'cycle-kind': {
-      const i = FOLLOW_UP_KINDS.findIndex((k) => k.key === state.dialog.kind);
-      state.dialog.kind = FOLLOW_UP_KINDS[(i + 1) % FOLLOW_UP_KINDS.length].key;
+    case 'set-follow-kind':
+      state.dialog.kind = data.value;
+      state.dialog.menu = null;
       render();
       break;
-    }
+
+    case 'set-follow-when':
+      state.dialog.when = data.value;
+      state.dialog.menu = null;
+      render();
+      break;
 
     case 'confirm-follow-up':
       confirmFollowUp();
@@ -2879,6 +2909,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
 
   /* Innermost first. */
+  if (state.dialog && state.dialog.menu) { state.dialog.menu = null; render(); return; }
   if (state.dialog) { state.dialog = null; render(); return; }
   if (state.menu || state.rowMenu) { state.menu = null; state.rowMenu = null; render(); return; }
   if (state.threadOpen) { state.threadOpen = null; render(); }
@@ -3084,61 +3115,10 @@ function stepCost(step) {
 /* ── the chapters ────────────────────────────────────────────────────────── */
 const CHAPTERS = [
   {
-    id: 'triage',
-    label: 'Triage a thread',
-    /* Arrives showing everything, so the filters have something to do at the end. */
-    open: () => { state.view = 'my-threads'; filterState('my-threads').on = []; },
-    steps: () => [
-      /* A beat on the list first: this is the queue, and it is what changes. */
-      pause(2200),
-      click(saying('.itemFace', 'Burst allowance for the ingest endpoint')),
-      pause(READ_MS),
-      write(one('[data-editor="t_301"]'), 'Going with per-org. @pri'),
-      pause(520),
-      click(one('[data-mention="m_priya"]')),
-      write(one('[data-editor="t_301"]'), 'can you land the sub-limit today?'),
-      pause(360),
-      click(one('.panel .composer .send')),
-      pause(READ_MS),
-      /* Handed over, not finished — this one is still open, and stays open. */
-      hover(one('.panel .msg[data-msg="r2"]')),
-      click(one('.panel .msg[data-msg="r2"] [data-menu="assignee"]')),
-      pause(520),
-      click(one('[data-act="set-assignee"][data-value="m_priya"]')),
-      pause(1500),
-
-      /* The second one is already answered. Say thanks and close it. */
-      click(one('[data-act="view"][data-value="my-threads"]')),
-      pause(1300),
-      click(saying('.itemFace', 'Dead letter queue handling')),
-      pause(READ_MS),
-      hover(newest('.panel .messages .msg')),
-      click({ find: () => {
-        const all = app.querySelectorAll('.panel .messages .msg');
-        const el = all[all.length - 1];
-        return el && el.querySelector('[data-menu="reaction"]');
-      } }),
-      pause(560),
-      click(one('[data-act="add-reaction"][data-value="thanks"]')),
-      pause(1000),
-      hover(one('.panel .msg[data-msg="x3"]')),
-      click(one('.panel .msg[data-msg="x3"] [data-menu="status"]')),
-      pause(520),
-      click(one('[data-act="set-status"][data-value="resolved"]')),
-      pause(1200),
-
-      /* Now ask the list what is actually yours and still live. */
-      click(one('[data-act="view"][data-value="my-threads"]')),
-      pause(1500),
-      click(saying('.pill', 'Assigned to me')),
-      pause(1600),
-      click(saying('.pill', 'Open')),
-      pause(2600),
-    ],
-  },
-  {
     id: 'follow-up',
-    label: 'Set an agentic follow-up',
+    label: 'Agentic follow ups',
+    /* First, because it is the one with something to type: ask once, then hand
+       the chasing to the agent. */
     open: () => { state.view = 'room'; state.room = 'rate-limits'; },
     steps: () => [
       pause(1400),
@@ -3149,6 +3129,7 @@ const CHAPTERS = [
       pause(360),
       click(one('.stream .composer .send')),
       pause(READ_MS),
+
       hover(newest('.stream .messages .msg')),
       click({ find: () => {
         const msgs = app.querySelectorAll('.stream .messages .msg');
@@ -3156,16 +3137,51 @@ const CHAPTERS = [
         return msg && msg.querySelector('[data-act="follow-up"]');
       } }),
       pause(READ_MS),
-      /* Who does it, when, and — the part that matters — what they should do. */
-      click(one('[data-act="cycle-kind"]')),
+      /* It arrives agentic. Pick when, then say what it should actually do. */
+      click(one('[data-act="dialog-menu"][data-menu="when"]')),
       pause(620),
-      click(one('[data-act="cycle-when"]')),
-      pause(620),
+      click(one('[data-act="set-follow-when"][data-value="In 2 days"]')),
+      pause(700),
       write(one('[data-followup-note]'), 'If Tom has not given a number, ask him again in the thread.'),
       pause(800),
       click(one('[data-act="confirm-follow-up"]')),
       pause(1200),
       click(one('[data-act="view"][data-value="follow-ups"]')),
+      pause(2600),
+    ],
+  },
+  {
+    id: 'triage',
+    label: 'Thread triage',
+    /* Arrives showing everything, so the filters have something to do at the end. */
+    open: () => { state.view = 'my-threads'; filterState('my-threads').on = []; },
+    steps: () => [
+      /* A beat on the list first: this is the queue, and it is what changes. */
+      pause(2200),
+      click(saying('.itemFace', 'Dead letter queue handling')),
+      pause(READ_MS),
+      /* It was answered days ago. Say so, and close it. */
+      hover(newest('.panel .messages .msg')),
+      click({ find: () => {
+        const all = app.querySelectorAll('.panel .messages .msg');
+        const el = all[all.length - 1];
+        return el && el.querySelector('[data-menu="reaction"]');
+      } }),
+      pause(560),
+      click(one('[data-act="add-reaction"][data-value="thanks"]')),
+      pause(1100),
+      hover(one('.panel .msg[data-msg="x3"]')),
+      click(one('.panel .msg[data-msg="x3"] [data-menu="status"]')),
+      pause(560),
+      click(one('[data-act="set-status"][data-value="resolved"]')),
+      pause(1300),
+
+      /* Now ask the list what is actually yours and still live. */
+      click(one('[data-act="view"][data-value="my-threads"]')),
+      pause(1500),
+      click(saying('.pill', 'Assigned to me')),
+      pause(1600),
+      click(saying('.pill', 'Open')),
       pause(2600),
     ],
   },
@@ -3226,19 +3242,63 @@ function placeCursor(el) {
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
 /*
+ * Scrolling, as a movement rather than a jump.
+ *
+ * A demo that snaps a conversation from one end to the other loses the reader:
+ * they cannot tell whether the panel moved or the content changed under them.
+ * Easing it makes the direction of travel readable, which is the whole point of
+ * showing a thread rather than describing one.
+ */
+function tweenScroll(box, to, ms) {
+  return new Promise((done) => {
+    const target = Math.max(0, Math.min(to, box.scrollHeight - box.clientHeight));
+    const from = box.scrollTop;
+    const delta = target - from;
+    if (REDUCED || ms <= 0 || Math.abs(delta) < 1) { box.scrollTop = target; done(); return; }
+    const start = performance.now();
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
+      box.scrollTop = target;
+      done();
+    };
+    /*
+     * A hidden tab stops handing out frames, and a tween that waits for one
+     * would hold the whole chapter until somebody looked at the page again.
+     * The deadline lands it where it was going and lets the reel carry on.
+     */
+    const deadline = setTimeout(finish, ms + 500);
+    const step = (now) => {
+      if (settled) return;
+      const t = Math.min(1, (now - start) / ms);
+      /* ease-in-out cubic: leaves slowly, arrives slowly. */
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      box.scrollTop = from + delta * eased;
+      if (t < 1) requestAnimationFrame(step);
+      else finish();
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+/*
  * Bring a target into view before the cursor goes for it.
  *
  * Sending a message scrolls a stream to the newest thing in it, so the message
  * a thread is *about* is then somewhere above the fold — and a pointer clicking
  * a control nobody can see reads as a bug rather than as a demo.
  */
-function reveal(el) {
+async function reveal(el) {
   const box = el.closest('.scroll, .listScroll, .agentScroll, .sideScroll');
   if (!box) return false;
   const outer = box.getBoundingClientRect();
   const inner = el.getBoundingClientRect();
   if (inner.top >= outer.top + 8 && inner.bottom <= outer.bottom - 8) return false;
-  box.scrollTop += (inner.top - outer.top) - 24;
+  /* How far it travels sets how long it takes, within reason. */
+  const distance = Math.abs((inner.top - outer.top) - 24);
+  await tweenScroll(box, box.scrollTop + (inner.top - outer.top) - 24, Math.min(760, 260 + distance * 0.8));
   if (box.dataset.scroll) scrollTops[box.dataset.scroll] = box.scrollTop;
   return true;
 }
@@ -3256,7 +3316,7 @@ async function doStep(step, token) {
   if (step.kind === 'type') {
     const editor = step.target.find();
     if (!editor) { console.warn('[demo] nothing to write into', step); return; }
-    if (reveal(editor)) await sleep(300);
+    if (await reveal(editor)) await sleep(180);
     if (token.cancelled) return;
     placeCursor(editor);
     await sleep(MOVE_MS);
@@ -3286,7 +3346,7 @@ async function doStep(step, token) {
    */
   if (!el) { console.warn('[demo] step target missing', step); return; }
 
-  if (reveal(el)) await sleep(340);
+  if (await reveal(el)) await sleep(180);
   if (token.cancelled) return;
 
   placeCursor(el);
