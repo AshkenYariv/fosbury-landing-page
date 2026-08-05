@@ -596,19 +596,25 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .time{color:var(--text-quaternary);font-size:var(--text-size-micro);font-variant-numeric:tabular-nums}
 .text{color:var(--text-secondary);font-size:var(--text-size-medium);line-height:var(--line-height-reading)}
 .text strong{font-weight:var(--text-weight-bold);color:var(--text-primary)}
-.mention{
-  display:inline-flex;align-items:baseline;gap:var(--space-1);
-  color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);
-  text-underline-offset:2px;
+.mention,.mentionChip,.refChip{
+  display:inline-flex;align-items:center;gap:var(--space-1);
+  vertical-align:middle;
 }
-.mention .mk{transform:translateY(2px)}
+.mention{
+  color:var(--text-primary);
+  text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:2px;
+}
 .refLink{
   display:inline;color:var(--text-primary);
   text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:2px;
 }
-.refIcon{display:inline-flex;transform:translateY(2px);color:var(--icon-tertiary);margin-right:2px}
-.topicRef{color:var(--text-tertiary)}
-.topicRef svg{display:inline-block;vertical-align:-2px;color:var(--topic-type,var(--icon-tertiary))}
+.refLink{align-items:center}
+.refIcon{display:inline-flex;align-items:center;color:var(--icon-tertiary);margin-right:2px}
+.topicRef{
+  display:inline-flex;align-items:center;gap:var(--space-1);
+  vertical-align:middle;color:var(--text-tertiary);
+}
+.topicRef svg{color:var(--topic-type,var(--icon-tertiary));flex:none}
 .marks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);margin-top:var(--space-2)}
 .chip,.chipMine,.statusChip,.followChip{
   display:inline-flex;align-items:center;gap:var(--space-1);
@@ -764,12 +770,10 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .typeaheadDetail{color:var(--text-quaternary);font-size:var(--text-size-small)}
 /* A mention already made, sitting in the box you are still writing in. */
 .mentionChip{
-  display:inline-flex;align-items:baseline;gap:var(--space-1);
   color:var(--text-primary);font-weight:var(--text-weight-medium);
   text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:2px;
   white-space:nowrap;
 }
-.mentionChip .mk{transform:translateY(2px)}
 
 /* ── menus and dialogs inside the window ─────────────────────────────────── */
 .menu{
@@ -984,6 +988,14 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 .stepTool{display:flex;align-items:baseline;gap:var(--space-2);font-size:var(--text-size-small)}
 .toolLabel{color:var(--text-tertiary)}
 .toolDetail{color:var(--text-quaternary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.refChip{
+  padding:0 6px 0 4px;margin:0 1px;
+  border-radius:var(--radius-medium);
+  background:var(--surface-subtle);
+  color:var(--text-primary);font-weight:var(--text-weight-medium);
+  white-space:nowrap;
+}
+.refChipMark{display:inline-flex;align-items:center;color:var(--topic-type,var(--icon-tertiary))}
 .answer{display:flex;flex-direction:column;gap:var(--space-2);color:var(--text-primary)}
 .paragraph{font-size:var(--text-size-regular);line-height:var(--line-height-reading)}
 .bullets{
@@ -1398,10 +1410,10 @@ function initialState() {
 
     /* Rows in the two list screens that are not threads in a room we hold. */
     extraThreads: [
-      { title: 'Per-key or per-org rate limits?', preview: 'Priya Nair: I will put the sub-limit at 40% of the org ceiling unless somebody has a better number.', priority: 'urgent', type: 'dev', owner: 'm_david', unread: 4, activity: '2d', room: 'rate-limits', thread: 't_301' },
-      { title: 'Are you using Cursor', preview: 'Yariv Ashkenazy: ?', priority: 'high', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', room: null, thread: null },
+      { title: 'Per-key or per-org rate limits?', preview: 'Priya Nair: I will put the sub-limit at 40% of the org ceiling unless somebody has a better number.', priority: 'high', type: 'dev', owner: 'm_david', unread: 4, activity: '2d', room: 'rate-limits', thread: 't_301' },
+      { id: 'ex-cursor', title: 'Are you using Cursor', preview: 'Yariv Ashkenazy: ?', priority: 'low', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', room: null, thread: null },
       { title: 'Newport Agent is in the building', preview: 'Yariv Ashkenazy: Build auto-prioritization', priority: 'high', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', room: null, thread: null },
-      { title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', priority: 'high', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', room: null, thread: null },
+      { id: 'ex-icons', title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', priority: 'low', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', room: null, thread: null },
     ],
 
     /*
@@ -1476,6 +1488,27 @@ function spanHtml(span) {
   }
   if (span.topic) {
     return `<span class="topicRef" data-topic-type="${span.topicType}">${icon('type-' + span.topicType, 'compact')} ${esc(span.topic)}</span>`;
+  }
+  /*
+   * The four the agent talks in. A summary that says "the Tom Okafor one" is a
+   * summary you have to decode; these are the same marks the room itself wears,
+   * so what it is referring to and what it proposes doing are both legible.
+   */
+  if (span.roomRef) {
+    const r = state.rooms[span.roomRef];
+    return r.kind === 'dm'
+      ? `<span class="refChip">${markFor(r.member, 'small')}${esc(r.name)}</span>`
+      : `<span class="refChip" data-topic-type="${r.type}"><span class="refChipMark">${icon('type-' + r.type, 'compact')}</span>${esc(r.name)}</span>`;
+  }
+  if (span.threadRef) {
+    return `<span class="refChip"><span class="refChipMark">${icon('thread', 'compact')}</span>${esc(span.threadRef)}</span>`;
+  }
+  if (span.statusRef) {
+    const meta = STATUSES.find((st) => st.key === span.statusRef) || STATUSES[0];
+    return `<span class="refChip" data-status="${span.statusRef}"><span class="refChipMark" style="color:var(--status)">${icon(meta.icon, 'compact')}</span>${meta.label}</span>`;
+  }
+  if (span.assignRef) {
+    return `<span class="refChip">${markFor(span.assignRef, 'small')}${esc(PEOPLE[span.assignRef].name)}</span>`;
   }
   if (span.strong) return `<strong>${esc(span.text)}</strong>`;
   return esc(span.text);
@@ -1969,13 +2002,21 @@ const SUGGESTIONS = [
   'What is still open and assigned to me?',
 ];
 
+/* A chat is named by what was asked first, the way the product's history is. */
+function chatTitle() {
+  const first = state.agent.turns.find((turn) => turn.role === 'you');
+  if (!first) return 'New chat';
+  const words = first.text.replace(/[?.]+$/, '').split(/\s+/);
+  return words.length > 6 ? `${words.slice(0, 6).join(' ')}…` : words.join(' ');
+}
+
 function agentHtml() {
   const head = `
   <div class="pageHeader">
     <div class="pathRow">
       <div class="crumbs">
         <button class="crumb" type="button" data-act="new-chat">${icon('agent')} Agents</button><span class="crumbSep">/</span>
-        <span class="crumb" data-last>${state.agent.turns.length ? 'Retry ceiling' : 'New chat'}</span>
+        <span class="crumb" data-last>${esc(chatTitle())}</span>
       </div>
       <div class="headerActions">
         <button class="iconBtn" type="button" data-act="new-chat" title="New chat">${icon('plus')}</button>
@@ -2032,11 +2073,13 @@ function stepHtml(step) {
   </li>`;
 }
 
+const runHtml = (run) => (typeof run === 'string' ? esc(run) : run.map(spanHtml).join(''));
+
 function blockHtml(block) {
   if (block.kind === 'bullets') {
-    return `<ul class="bullets">${block.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+    return `<ul class="bullets">${block.items.map((i) => `<li>${runHtml(i)}</li>`).join('')}</ul>`;
   }
-  return `<p class="paragraph">${esc(block.text)}</p>`;
+  return `<p class="paragraph">${runHtml(block.spans || block.text)}</p>`;
 }
 
 /*
@@ -2114,32 +2157,76 @@ const ANSWERS = [
 /* Asked in the demo, and the only one not offered as a chip. */
 const CANNED = {
   /*
-   * The one the agent is asked to *do* rather than answer.
-   *
-   * `effect` is the work itself — the same mutations the controls make, run by
-   * the agent instead of by a pointer. The turn then reports what it did, which
-   * is why this answer never leaves the agent screen.
+   * The agent chapter is a conversation, not a command: what is left, then what
+   * you would say to each, then do it. Every answer points at things with the
+   * marks the rooms themselves wear, and proposes changes with the status and
+   * assignee marks the controls use — so a suggestion looks like the thing it
+   * would become.
    */
-  'clear what is low priority in my threads': {
-    activity: ['Reading My Threads', 'Reading 2 low-priority threads', 'Drafting a reply to Tom Okafor', 'Closing what is answered'],
-    workLabel: 'Worked for 11s',
+  'what are my low priority threads that are left': {
+    activity: ['Reading My Threads', 'Filtering to low priority'],
+    workLabel: 'Worked for 4s',
     steps: [
       { title: 'Collecting what is low', tool: { label: 'list', detail: 'priority:low status:open' } },
-      { title: 'Deciding what can be answered without you', reasoning: 'One is waiting on a decision that has already been made elsewhere in the workspace, so it can be answered and closed. The other is somebody else drafting, and nothing is waiting on you.' },
-      { title: null, tool: { label: 'reply', detail: 'Tom Okafor — parallel for a week, then cut over' } },
-      { title: null, tool: { label: 'resolve', detail: 'Tom Okafor' } },
+      { title: 'Checking what each is waiting on', reasoning: 'None of the three is waiting on a decision. Two are waiting on a sentence and one is waiting on an owner.' },
     ],
     blocks: [
-      { kind: 'p', text: 'Two were low priority. One is closed, one needs nothing from you.' },
+      { kind: 'p', text: 'Three, and none of them needs a decision from you.' },
       { kind: 'bullets', items: [
-        'Tom Okafor asked about a parallel run — answered from the limiter decision and closed',
-        'Levelling guide — Elena Ruiz is drafting it and has not asked you for anything',
+        [{ roomRef: 'dm-tom' }, { text: ' asked whether the limiter runs in parallel for a week or you cut over' }],
+        [{ threadRef: 'Icon grid is inconsistent at 16px' }, { text: ' — Marco Bianchi is already redrawing them and it has no owner' }],
+        [{ threadRef: 'Are you using Cursor' }, { text: ' — answered a week ago and never closed' }],
       ] },
-      { kind: 'p', text: 'Nothing low priority is open. I will leave the levelling guide alone until she asks.' },
+    ],
+  },
+
+  'craft me suggested responses and actions for each thread': {
+    activity: ['Reading each thread in full', 'Checking earlier decisions', 'Drafting three replies'],
+    workLabel: 'Worked for 9s',
+    steps: [
+      { title: 'Finding what each answer depends on', reasoning: 'The parallel-run question was settled in the limiter thread on Tuesday, so it can be answered from what is already written down rather than from an opinion.', tool: { label: 'read', detail: 'API Rate Limiting — Burst allowance' } },
+      { title: null, tool: { label: 'draft', detail: '3 replies' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Here is what I would say, and what I would do to each.' },
+      { kind: 'spans', spans: [
+        { roomRef: 'dm-tom' },
+        { text: ' — "Parallel for a week, then cut over. That is the limiter decision from Tuesday." Then ' },
+        { statusRef: 'resolved' },
+      ] },
+      { kind: 'spans', spans: [
+        { threadRef: 'Icon grid is inconsistent at 16px' },
+        { text: ' — "Twelve of them, and you are already on it. Yours." Then assign ' },
+        { assignRef: 'm_marco' },
+      ] },
+      { kind: 'spans', spans: [
+        { threadRef: 'Are you using Cursor' },
+        { text: ' — nothing to say; it was answered a week ago. Just ' },
+        { statusRef: 'resolved' },
+      ] },
+      { kind: 'p', text: 'Say the word and I will do all three.' },
+    ],
+  },
+
+  'execute this': {
+    activity: ['Replying to Tom Okafor', 'Assigning the icon grid', 'Closing what is answered'],
+    workLabel: 'Worked for 7s',
+    steps: [
+      { title: null, tool: { label: 'reply', detail: 'Tom Okafor — parallel for a week, then cut over' } },
+      { title: null, tool: { label: 'assign', detail: 'Icon grid is inconsistent at 16px → Marco Bianchi' } },
+      { title: null, tool: { label: 'resolve', detail: '2 threads' } },
+    ],
+    blocks: [
+      { kind: 'p', text: 'Done. Three off your list.' },
+      { kind: 'bullets', items: [
+        [{ roomRef: 'dm-tom' }, { text: ' — replied and ' }, { statusRef: 'resolved' }],
+        [{ threadRef: 'Icon grid is inconsistent at 16px' }, { text: ' — now ' }, { assignRef: 'm_marco' }],
+        [{ threadRef: 'Are you using Cursor' }, { text: ' — ' }, { statusRef: 'resolved' }],
+      ] },
+      { kind: 'p', text: 'Nothing low priority is open. I will keep out of the way unless one of them comes back.' },
     ],
     effect: () => {
       const room = state.rooms['dm-tom'];
-      const asked = room.messages.find((m) => m.id === 'o2');
       room.messages.push({
         id: nextId(), author: 'm_agent', time: now(), day: 'Today', status: null,
         spans: [
@@ -2148,24 +2235,14 @@ const CANNED = {
         ],
         reactions: [], thread: null, followUp: null,
       });
+      const asked = room.messages.find((m) => m.id === 'o2');
       if (asked) asked.status = 'resolved';
+
+      const icons = state.extraThreads.find((row) => row.id === 'ex-icons');
+      if (icons) icons.owner = 'm_marco';
+      const cursor = state.extraThreads.find((row) => row.id === 'ex-cursor');
+      if (cursor) cursor.status = 'resolved';
     },
-  },
-  'what is low priority in my threads': {
-    activity: ['Reading My Threads', 'Reading 2 low-priority threads'],
-    workLabel: 'Worked for 5s',
-    steps: [
-      { title: 'Collecting what is low', tool: { label: 'list', detail: 'priority:low status:open' } },
-      { title: 'Reading what each is waiting on', reasoning: 'Both are waiting on a sentence from you rather than on a decision from anyone else.' },
-    ],
-    blocks: [
-      { kind: 'p', text: 'Two things are low priority, and both are waiting on you.' },
-      { kind: 'bullets', items: [
-        'Tom Okafor asked whether the old limiter runs in parallel for a week or you cut over',
-        'Levelling guide — Elena Ruiz is drafting it and does not need you yet',
-      ] },
-      { kind: 'p', text: 'The first one you can answer now: parallel for a week, then cut over. Say so and close it.' },
-    ],
   },
 };
 
@@ -3009,12 +3086,12 @@ const CHAPTERS = [
   {
     id: 'triage',
     label: 'Triage a thread',
-    /* Arrives showing everything, so the filter has something to do at the end. */
+    /* Arrives showing everything, so the filters have something to do at the end. */
     open: () => { state.view = 'my-threads'; filterState('my-threads').on = []; },
     steps: () => [
       /* A beat on the list first: this is the queue, and it is what changes. */
       pause(2200),
-      click(saying('.itemFace', 'Per-key or per-org rate limits?')),
+      click(saying('.itemFace', 'Burst allowance for the ingest endpoint')),
       pause(READ_MS),
       write(one('[data-editor="t_301"]'), 'Going with per-org. @pri'),
       pause(520),
@@ -3023,33 +3100,40 @@ const CHAPTERS = [
       pause(360),
       click(one('.panel .composer .send')),
       pause(READ_MS),
+      /* Handed over, not finished — this one is still open, and stays open. */
       hover(one('.panel .msg[data-msg="r2"]')),
       click(one('.panel .msg[data-msg="r2"] [data-menu="assignee"]')),
       pause(520),
       click(one('[data-act="set-assignee"][data-value="m_priya"]')),
-      pause(760),
-      hover(one('.panel .msg[data-msg="r2"]')),
-      click(one('.panel .msg[data-msg="r2"] [data-menu="status"]')),
-      pause(520),
-      click(one('[data-act="set-status"][data-value="resolved"]')),
-      pause(1100),
+      pause(1500),
 
-      /* Back to the queue, and a second one closed without a word typed. */
+      /* The second one is already answered. Say thanks and close it. */
       click(one('[data-act="view"][data-value="my-threads"]')),
       pause(1300),
       click(saying('.itemFace', 'Dead letter queue handling')),
       pause(READ_MS),
+      hover(newest('.panel .messages .msg')),
+      click({ find: () => {
+        const all = app.querySelectorAll('.panel .messages .msg');
+        const el = all[all.length - 1];
+        return el && el.querySelector('[data-menu="reaction"]');
+      } }),
+      pause(560),
+      click(one('[data-act="add-reaction"][data-value="thanks"]')),
+      pause(1000),
       hover(one('.panel .msg[data-msg="x3"]')),
       click(one('.panel .msg[data-msg="x3"] [data-menu="status"]')),
       pause(520),
       click(one('[data-act="set-status"][data-value="resolved"]')),
-      pause(1100),
-      click(one('[data-act="view"][data-value="my-threads"]')),
-      pause(1600),
+      pause(1200),
 
-      /* Two are done. Ask for what is still open and watch them go. */
+      /* Now ask the list what is actually yours and still live. */
+      click(one('[data-act="view"][data-value="my-threads"]')),
+      pause(1500),
+      click(saying('.pill', 'Assigned to me')),
+      pause(1600),
       click(saying('.pill', 'Open')),
-      pause(2400),
+      pause(2600),
     ],
   },
   {
@@ -3078,7 +3162,7 @@ const CHAPTERS = [
       click(one('[data-act="cycle-when"]')),
       pause(620),
       write(one('[data-followup-note]'), 'If Tom has not given a number, ask him again in the thread.'),
-      pause(700),
+      pause(800),
       click(one('[data-act="confirm-follow-up"]')),
       pause(1200),
       click(one('[data-act="view"][data-value="follow-ups"]')),
@@ -3088,14 +3172,23 @@ const CHAPTERS = [
   {
     id: 'agent',
     label: 'Ask the agent',
-    /* This one never leaves the agent: it is asked, and it goes and does it. */
+    /* Never leaves the agent: asked what is left, asked what to say, then told
+       to go and do it. Three exchanges, and the last one is the work. */
     open: () => { state.view = 'agents'; },
     steps: () => [
       pause(1200),
-      write(one('[data-editor="agent"]'), 'Clear what is low priority in my threads'),
+      write(one('[data-editor="agent"]'), 'What are my low priority threads that are left?'),
       pause(400),
       click(one('.composer[data-size="large"] .send')),
-      pause(9000),
+      pause(5200),
+      write(one('[data-editor="agent"]'), 'Craft me suggested responses and actions for each thread'),
+      pause(400),
+      click(one('.composer[data-size="large"] .send')),
+      pause(7000),
+      write(one('[data-editor="agent"]'), 'Execute this'),
+      pause(400),
+      click(one('.composer[data-size="large"] .send')),
+      pause(7000),
     ],
   },
 ];
