@@ -871,21 +871,6 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   list-style:disc;
 }
 
-/* ── about dialog (page level, not the app) ──────────────────────────────── */
-.aboutScrim{
-  position:fixed;inset:0;z-index:200;
-  display:none;place-items:center;padding:var(--space-6);
-  background:rgb(20 20 22 / .32);
-}
-.aboutScrim[data-open]{display:grid}
-.aboutCard{
-  width:min(460px,100%);padding:var(--space-6);
-  border-radius:14px;background:#fff;box-shadow:var(--shadow-modal);
-}
-.aboutTitle{font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--text-primary)}
-.aboutBody{margin-top:var(--space-3);color:var(--text-secondary);font-size:15px;line-height:var(--line-height-reading)}
-.aboutClose{margin-top:var(--space-5);display:flex;justify-content:flex-end}
-
 /* ── motion ──────────────────────────────────────────────────────────────── */
 #script{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .95s .15s cubic-bezier(.55,.05,.35,1) forwards}
 #crossbar{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .38s .95s cubic-bezier(.3,0,.15,1) forwards}
@@ -929,7 +914,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
     </a>
 
     <nav class="nav">
-      <button class="navLink" type="button" data-about>About</button>
+      <a class="navLink" href="/about.html">About</a>
     </nav>
 
     <a class="openApp" href="https://app.fosbury.ai">Open app</a>
@@ -949,14 +934,6 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
     </div>
   </main>
 
-</div>
-
-<div class="aboutScrim" id="aboutScrim" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-  <div class="aboutCard">
-    <h2 class="aboutTitle" id="aboutTitle">About</h2>
-    <p class="aboutBody">Fosbury is being built. This page will carry the full story shortly.</p>
-    <div class="aboutClose"><button class="btnPrimary" type="button" data-about-close>Close</button></div>
-  </div>
 </div>
 
 <script>
@@ -2537,17 +2514,6 @@ app.addEventListener('paste', (event) => {
   document.execCommand('insertText', false, text.replace(/\s+/g, ' '));
 });
 
-/* ── the About panel, which is the page's and not the app's ──────────────── */
-const aboutScrim = document.getElementById('aboutScrim');
-document.querySelector('[data-about]').addEventListener('click', () => {
-  aboutScrim.setAttribute('data-open', '');
-});
-aboutScrim.addEventListener('click', (event) => {
-  if (event.target === aboutScrim || event.target.closest('[data-about-close]')) {
-    aboutScrim.removeAttribute('data-open');
-  }
-});
-
 /*
  * One listener, on the document rather than on the app.
  *
@@ -2571,8 +2537,7 @@ document.addEventListener('keydown', (event) => {
 
   if (event.key !== 'Escape') return;
 
-  /* Innermost first, and the page's own panel is outside all of it. */
-  if (aboutScrim.hasAttribute('data-open')) { aboutScrim.removeAttribute('data-open'); return; }
+  /* Innermost first. */
   if (state.dialog) { state.dialog = null; render(); return; }
   if (state.menu || state.rowMenu) { state.menu = null; state.rowMenu = null; render(); return; }
   if (state.threadOpen) { state.threadOpen = null; render(); }
