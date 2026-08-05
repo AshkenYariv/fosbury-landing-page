@@ -4,109 +4,785 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fosbury</title>
-<meta name="description" content="Fosbury">
+<meta name="description" content="Resolve every conversation your team runs on, without ever being online at the same time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;510;600;620;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-  :root{
-    --paper:#F3EEE5;
-    --ink:#201C18;
-    --muted:#7C7266;
-    --line:#D6CCBB;
-    --display:"Archivo",system-ui,sans-serif;
-    --mono:"JetBrains Mono",ui-monospace,monospace;
-    --gut:clamp(20px,5vw,56px);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:var(--mono);
-    overflow:hidden;
-    -webkit-font-smoothing:antialiased;
-  }
-  svg{display:block}
+/* ══════════════════════════════════════════════════════════════════════════
+   Tokens.
 
-  .page{
-    height:100dvh;
-    display:grid;
-    grid-template-rows:auto 1fr auto;
-    padding:clamp(20px,3.4vh,34px) var(--gut);
-    gap:clamp(12px,2.2vh,26px);
-  }
+   The block below is the product's own `styles/tokens.css`, light theme only,
+   trimmed to what this page draws. The mock is the app, so it is painted with
+   the app's values rather than with approximations of them.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --font-family-app:'Inter',system-ui,-apple-system,sans-serif;
+  --font-family-code:ui-monospace,'SF Mono',Menlo,monospace;
+  --text-size-mini:10px;
+  --text-size-micro:11px;
+  --text-size-small:12px;
+  --text-size-regular:13px;
+  --text-size-medium:14px;
+  --text-size-large:15px;
+  --text-weight-regular:400;
+  --text-weight-medium:500;
+  --text-weight-heading:510;
+  --text-weight-bold:620;
+  --line-height-tight:1.3;
+  --line-height-ui:1.45;
+  --line-height-reading:1.65;
 
-  /* --- top --- */
-  .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-  .mark{height:clamp(24px,3.2vh,30px);width:auto;color:var(--ink)}
-  .meta{
-    margin:0;
-    font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);
-  }
+  --surface-chrome:#f4f4f5;
+  --surface-canvas:#ffffff;
+  --surface-raised:#ffffff;
+  --surface-subtle:rgb(0 0 0 / .035);
+  --surface-hover:rgb(0 0 0 / .045);
+  --surface-hover-strong:rgb(0 0 0 / .09);
+  --surface-selected:rgb(0 0 0 / .068);
+  --surface-sunken:rgb(0 0 0 / .055);
+  --surface-scrim:rgb(20 20 22 / .28);
+  --surface-code:rgb(0 0 0 / .025);
 
-  /* --- stage --- */
-  .stage{
-    min-height:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:clamp(18px,3.6vh,42px);
-  }
-  .signature{
-    height:clamp(150px,40vh,330px);
-    width:auto;
-    max-width:100%;
-    color:var(--ink);
-    overflow:visible;
-  }
-  .wordmark{
-    font-family:var(--display);
-    font-variation-settings:"wdth" 112;
-    font-weight:650;
-    letter-spacing:-.04em;
-    font-size:clamp(30px,5.4vw,64px);
-    line-height:1;
-    margin:0;
-    white-space:nowrap;
-    opacity:0;
-    transform:translateY(10px);
-    animation:rise .9s 1.9s cubic-bezier(.2,.7,.2,1) forwards;
-  }
+  --border-subtle:rgb(0 0 0 / .07);
+  --border-strong:rgb(0 0 0 / .12);
 
-  /* --- bottom --- */
-  .bottom{
-    border-top:1px solid var(--line);
-    padding-top:clamp(12px,1.8vh,18px);
-    display:flex;align-items:center;
-    font-size:12px;color:var(--muted);
-    opacity:0;
-    animation:rise .9s 2.05s cubic-bezier(.2,.7,.2,1) forwards;
-  }
-  @media(max-width:560px){.bottom{font-size:11px}}
+  --text-primary:#282a30;
+  --text-secondary:#4b4e55;
+  --text-tertiary:#8a8f98;
+  --text-quaternary:#a8abb2;
 
-  :focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:2px}
+  --icon-default:#6b6f76;
+  --icon-tertiary:#8a8f98;
 
-  /* --- motion: it writes itself, crossbar last --- */
-  #script{
-    stroke-dasharray:100;stroke-dashoffset:100;
-    animation:draw 1.35s .25s cubic-bezier(.55,.05,.35,1) forwards;
-  }
-  #crossbar{
-    stroke-dasharray:100;stroke-dashoffset:100;
-    animation:draw .5s 1.6s cubic-bezier(.3,0,.15,1) forwards;
-  }
-  .top{opacity:0;animation:rise .9s 1.85s cubic-bezier(.2,.7,.2,1) forwards}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  @media(prefers-reduced-motion:reduce){
-    #script,#crossbar,.top,.bottom,.wordmark{
-      animation:none;stroke-dashoffset:0;opacity:1;transform:none;
-    }
-  }
+  --accent:#5e6ad2;
+  --focus-ring:rgb(94 106 210 / .55);
+
+  --success:#4cb782;
+  --danger:#eb5757;
+
+  --status-open:#8a8f98;
+  --status-resolved:#3a8f68;
+  --status-closed:#a4abb3;
+
+  --priority-urgent:#e07b3c;
+
+  --identity-gray:#6b7280;
+  --identity-purple:#6a5bd0;
+  --identity-blue:#3b7ad4;
+  --identity-teal:#1c8c96;
+  --identity-green:#2f8b62;
+  --identity-yellow:#a3781f;
+  --identity-orange:#bd6c39;
+  --identity-red:#c2524f;
+  --identity-pink:#bb5589;
+  --identity-wash:12%;
+
+  --unread:#5f95e4;
+  --unread-wash:14%;
+  --favorite:#e2a03f;
+
+  --reaction-acknowledged:var(--identity-teal);
+  --reaction-agree:var(--identity-green);
+  --reaction-disagree:var(--identity-red);
+  --reaction-done:var(--status-resolved);
+  --reaction-question:var(--identity-purple);
+  --reaction-thanks:var(--identity-yellow);
+
+  --topic-type-dev:#a3781f;
+  --topic-type-ask:#0f8a97;
+  --topic-type-general:#6b7280;
+  --topic-type-sync:#b8508c;
+  --topic-type-broadcast:#5b53cf;
+
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-8:48px;
+
+  --radius-small:4px; --radius-medium:6px; --radius-large:8px;
+  --radius-canvas:10px; --radius-pill:999px;
+
+  --row-height-compact:28px;
+  --row-height-default:32px;
+  --row-height-issue:36px;
+  --row-height-table:40px;
+  --icon-size-compact:12px;
+  --icon-size-default:14px;
+  --icon-size-prominent:16px;
+
+  --sidebar-width:244px;
+  --utilitybar-height:34px;
+  --chrome-gap:8px;
+  --duration-panel:180ms;
+  --ease-panel:cubic-bezier(.32,.72,0,1);
+
+  --shadow-canvas:0 0 0 1px rgb(0 0 0 / .055), 0 1px 2px rgb(0 0 0 / .04);
+  --shadow-menu:0 0 0 1px rgb(0 0 0 / .06), 0 12px 32px -12px rgb(0 0 0 / .32);
+  --shadow-modal:0 0 0 1px rgb(0 0 0 / .06), 0 24px 60px -20px rgb(0 0 0 / .34);
+}
+
+/* Domain value → token. Copied from the product: nothing below names a colour. */
+[data-identity-color='gray']{--identity:var(--identity-gray)}
+[data-identity-color='purple']{--identity:var(--identity-purple)}
+[data-identity-color='blue']{--identity:var(--identity-blue)}
+[data-identity-color='teal']{--identity:var(--identity-teal)}
+[data-identity-color='green']{--identity:var(--identity-green)}
+[data-identity-color='yellow']{--identity:var(--identity-yellow)}
+[data-identity-color='orange']{--identity:var(--identity-orange)}
+[data-identity-color='red']{--identity:var(--identity-red)}
+[data-identity-color='pink']{--identity:var(--identity-pink)}
+
+[data-status='open']{--status:var(--status-open)}
+[data-status='resolved']{--status:var(--status-resolved)}
+[data-status='closed']{--status:var(--status-closed)}
+
+[data-reaction='acknowledged']{--reaction:var(--reaction-acknowledged)}
+[data-reaction='agree']{--reaction:var(--reaction-agree)}
+[data-reaction='disagree']{--reaction:var(--reaction-disagree)}
+[data-reaction='done']{--reaction:var(--reaction-done)}
+[data-reaction='question']{--reaction:var(--reaction-question)}
+[data-reaction='thanks']{--reaction:var(--reaction-thanks)}
+
+[data-topic-type='dev']{--topic-type:var(--topic-type-dev)}
+[data-topic-type='ask']{--topic-type:var(--topic-type-ask)}
+[data-topic-type='general']{--topic-type:var(--topic-type-general)}
+[data-topic-type='sync']{--topic-type:var(--topic-type-sync)}
+[data-topic-type='broadcast']{--topic-type:var(--topic-type-broadcast)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The page.
+   ══════════════════════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  /* Plain white, as the ticket asks. The chrome grey belongs to the app, not the page. */
+  background:#fff;
+  color:var(--text-primary);
+  font-family:var(--font-family-app);
+  font-size:var(--text-size-regular);
+  line-height:var(--line-height-ui);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+svg{display:block}
+button{appearance:none;border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+ul,ol{margin:0;padding:0;list-style:none}
+h1,h2,p{margin:0}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:var(--radius-small)}
+
+.page{
+  height:100dvh;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  /* One gutter for the whole page, so the mark, the sentence and the frame share an edge. */
+  --gut:clamp(20px,3.2vw,48px);
+  padding:clamp(16px,2.4vh,26px) var(--gut) clamp(18px,3vh,38px);
+  /* The frame grows to fill this row, so the bar above it needs a gap of its
+     own or the two end up sharing an edge. */
+  row-gap:clamp(12px,2.2vh,26px);
+  overflow:hidden;
+}
+
+/* ── top bar ─────────────────────────────────────────────────────────────── */
+.top{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:var(--space-4);
+  flex:none;
+}
+.brand{display:inline-flex;align-items:center;gap:10px;justify-self:start}
+.mark{height:clamp(24px,2.6vw,30px);width:auto;color:var(--text-primary);overflow:visible}
+.wordmark{
+  font-size:clamp(19px,2vw,23px);
+  font-weight:700;
+  letter-spacing:-.035em;
+  line-height:1;
+  color:var(--text-primary);
+  opacity:0;
+  animation:rise .7s 1.05s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.nav{display:flex;align-items:center;gap:var(--space-2);justify-self:center}
+.navLink{
+  display:inline-flex;align-items:center;
+  height:36px;padding:0 var(--space-4);
+  border-radius:var(--radius-pill);
+  color:var(--text-secondary);
+  font-size:clamp(14px,1.1vw,15px);
+  font-weight:var(--text-weight-medium);
+}
+.navLink:hover{background:var(--surface-hover);color:var(--text-primary)}
+.openApp{
+  justify-self:end;
+  display:inline-flex;align-items:center;
+  height:40px;padding:0 var(--space-5);
+  border-radius:var(--radius-pill);
+  background:var(--text-primary);
+  color:#fff;
+  font-size:clamp(14px,1.1vw,15px);
+  font-weight:var(--text-weight-medium);
+  letter-spacing:-.005em;
+  transition:background .16s ease;
+}
+.openApp:hover{background:#3d4048}
+.top .nav,.top .openApp{opacity:0;animation:rise .7s 1.15s cubic-bezier(.2,.7,.2,1) forwards}
+
+/* ── the two halves ──────────────────────────────────────────────────────── */
+.hero{
+  display:grid;
+  grid-template-columns:minmax(280px,0.78fr) minmax(0,1.7fr);
+  align-items:center;
+  gap:clamp(22px,2.6vw,40px);
+  min-height:0;
+}
+.copy{
+  min-width:0;
+  opacity:0;
+  animation:rise .8s 1.25s cubic-bezier(.2,.7,.2,1) forwards;
+}
+/* A single sentence. Nothing above it, nothing under it. */
+.headline{
+  font-size:clamp(28px,2.9vw,46px);
+  font-weight:600;
+  letter-spacing:-.035em;
+  line-height:1.06;
+  color:var(--text-primary);
+  text-wrap:balance;
+}
+
+/* ── the frame ───────────────────────────────────────────────────────────── */
+/*
+ * The painting is a mount, not a backdrop: it sits close around the window
+ * rather than spreading behind it, so the app stays the subject.
+ */
+.art{
+  position:relative;
+  display:grid;
+  place-items:center;
+  align-self:center;
+  justify-self:center;
+  min-width:0;min-height:0;
+  padding:clamp(12px,1.5vw,26px);
+  border-radius:clamp(16px,1.6vw,26px);
+  background:#8fb3c9 url('assets/wheatfield-with-cypresses.jpg') center/cover no-repeat;
+  box-shadow:0 1px 2px rgb(0 0 0 / .06), 0 24px 60px -28px rgb(0 0 0 / .38);
+  overflow:hidden;
+  opacity:0;
+  animation:rise .9s 1.35s cubic-bezier(.2,.7,.2,1) forwards;
+}
+/* The scaler is the window's footprint *after* scaling; the window itself is
+   drawn once at a fixed size and scaled from its top-left corner into it. So a
+   13px row stays a 13px row in the same proportion at every viewport, and the
+   frame never has to reflow the app to fit it. */
+.artScaler{position:relative}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The app, in a window.
+   ══════════════════════════════════════════════════════════════════════════ */
+.win{
+  position:absolute;
+  top:0;left:0;
+  width:var(--win-w,1120px);
+  height:var(--win-h,760px);
+  transform:scale(var(--k,1));
+  transform-origin:top left;
+  display:flex;
+  flex-direction:column;
+  border-radius:12px;
+  background:var(--surface-chrome);
+  box-shadow:0 0 0 1px rgb(0 0 0 / .1), 0 30px 60px -20px rgb(0 0 0 / .45);
+  overflow:hidden;
+  font-size:var(--text-size-regular);
+  color:var(--text-secondary);
+  line-height:var(--line-height-ui);
+}
+.winBar{
+  display:flex;align-items:center;gap:var(--space-3);
+  flex:none;height:38px;padding:0 var(--space-3);
+}
+.lights{display:inline-flex;align-items:center;gap:8px;flex:none}
+.light{width:12px;height:12px;border-radius:var(--radius-pill)}
+.light[data-l='r']{background:#ff5f57}
+.light[data-l='y']{background:#febc2e}
+.light[data-l='g']{background:#28c840}
+.winTab{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  width:200px;height:var(--row-height-compact);
+  padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  background:var(--surface-canvas);
+  box-shadow:var(--shadow-canvas);
+  color:var(--text-primary);
+  font-size:var(--text-size-small);
+  font-weight:var(--text-weight-medium);
+  min-width:0;
+}
+.winBody{
+  display:grid;
+  grid-template-columns:var(--sidebar-width) minmax(0,1fr);
+  flex:1;min-height:0;
+}
+.win[data-compact] .winBody{grid-template-columns:minmax(0,1fr)}
+.win[data-compact] .side{display:none}
+.canvas{
+  display:flex;flex-direction:column;
+  min-width:0;min-height:0;
+  margin-right:var(--space-2);
+  border-radius:var(--radius-canvas);
+  background:var(--surface-canvas);
+  box-shadow:var(--shadow-canvas);
+  overflow:hidden;
+}
+.utilityBar{
+  display:flex;align-items:center;justify-content:flex-end;
+  flex:none;height:var(--utilitybar-height);padding:0 var(--space-3);
+  gap:var(--space-1);
+}
+.utilityChip{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-compact);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-tertiary);font-size:var(--text-size-small);white-space:nowrap;
+}
+.utilityChip:hover{background:var(--surface-hover);color:var(--text-primary)}
+
+/* ── sidebar ─────────────────────────────────────────────────────────────── */
+.side{
+  display:flex;flex-direction:column;gap:var(--space-1);
+  min-height:0;padding:0 var(--space-2) var(--space-2);
+}
+.sideHeader{display:flex;align-items:center;gap:var(--space-1);flex:none;height:var(--row-height-default)}
+.workspace{
+  display:flex;align-items:center;gap:var(--space-2);flex:1;
+  height:var(--row-height-default);padding:0 var(--space-2) 0 var(--space-1);
+  border-radius:var(--radius-medium);
+  color:var(--text-primary);font-weight:var(--text-weight-medium);min-width:0;
+}
+.workspace:hover{background:var(--surface-hover)}
+.workspaceName{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconBtn{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:var(--row-height-compact);height:var(--row-height-compact);
+  border-radius:var(--radius-medium);color:var(--icon-default);
+}
+.iconBtn:hover{background:var(--surface-hover);color:var(--text-primary)}
+.sideScroll{
+  display:flex;flex-direction:column;gap:var(--space-5);
+  flex:1;min-height:0;overflow:hidden;
+  padding-top:var(--space-3);padding-bottom:var(--space-4);
+}
+.sideGroup{display:flex;flex-direction:column}
+.sideLabel{
+  display:flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-default);padding:0 var(--space-2);
+  color:var(--text-tertiary);font-size:var(--text-size-small);
+}
+.row{
+  display:flex;align-items:center;gap:var(--space-2);
+  width:100%;height:var(--row-height-default);
+  padding-left:var(--space-2);padding-right:var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-secondary);font-size:var(--text-size-regular);
+  min-width:0;text-align:left;
+}
+.row:hover{background:var(--surface-hover);color:var(--text-primary)}
+.row[data-active]{background:var(--surface-selected);color:var(--text-primary);font-weight:var(--text-weight-medium)}
+.rowMark{flex:none;color:var(--identity,var(--icon-default))}
+.row[data-active] .rowMark{color:var(--identity,var(--accent))}
+.rowLabel{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowTrailing{
+  flex:none;color:var(--text-tertiary);
+  font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;
+}
+
+/* ── page header inside the canvas ───────────────────────────────────────── */
+.pageHeader{display:flex;flex-direction:column;flex:none}
+.pathRow{
+  display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+  min-height:var(--row-height-table);padding:var(--space-2) var(--space-3) 0;
+}
+.crumbs{display:flex;align-items:center;min-width:0}
+.crumb{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-compact);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--text-tertiary);font-size:var(--text-size-regular);white-space:nowrap;
+}
+.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
+.crumb[data-last]{color:var(--text-primary);font-weight:var(--text-weight-medium)}
+.crumbSep{color:var(--text-quaternary);padding:0 2px;font-size:var(--text-size-regular)}
+.crumbMark{flex:none;color:var(--topic-type,var(--icon-tertiary))}
+.favBtn{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:var(--row-height-compact);height:var(--row-height-compact);
+  border-radius:var(--radius-small);color:var(--icon-tertiary);
+}
+.favBtn:hover{background:var(--surface-hover);color:var(--text-primary)}
+.favBtn[data-on]{color:var(--favorite)}
+.members{flex:none;color:var(--text-tertiary);font-size:var(--text-size-small)}
+.headerActions{display:flex;align-items:center;gap:var(--space-1);flex:none;margin-left:auto}
+.filterRow{
+  display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;
+  min-height:var(--row-height-issue);padding:0 var(--space-3) var(--space-1);
+}
+.searchBox{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  flex:0 1 180px;min-width:108px;height:var(--row-height-compact);
+  padding:0 var(--space-3);border-radius:var(--radius-pill);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+}
+.searchBox svg{color:var(--icon-tertiary);flex:none}
+.searchBox input{flex:1;min-width:0;border:0;outline:none;background:none;font-size:var(--text-size-small)}
+.searchBox input::placeholder{color:var(--text-quaternary)}
+.pill{
+  display:inline-flex;align-items:center;gap:var(--space-2);flex:none;
+  height:var(--row-height-compact);padding:0 var(--space-3);
+  border-radius:var(--radius-pill);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--text-secondary);font-size:var(--text-size-small);white-space:nowrap;
+}
+.pill:hover{box-shadow:inset 0 0 0 1px var(--border-strong);color:var(--text-primary)}
+.pill[aria-pressed='true'],.pill[aria-pressed='true']:hover{
+  background:var(--surface-selected);box-shadow:inset 0 0 0 1px transparent;
+  color:var(--text-primary);font-weight:var(--text-weight-medium);
+}
+.pill[data-muted]{color:var(--text-tertiary);cursor:default}
+.spacer{flex:1;min-width:var(--space-2)}
+
+/* ── identity marks ──────────────────────────────────────────────────────── */
+.mk{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  border-radius:var(--radius-pill);
+  background:color-mix(in srgb, var(--identity,var(--identity-gray)) var(--identity-wash), transparent);
+  color:var(--identity,var(--identity-gray));
+  font-weight:var(--text-weight-medium);letter-spacing:.02em;line-height:1;
+  overflow:hidden;
+}
+.mk[data-size='small']{width:var(--icon-size-prominent);height:var(--icon-size-prominent);font-size:var(--text-size-mini);letter-spacing:0}
+.mk[data-size='mark']{width:var(--space-5);height:var(--space-5);font-size:var(--text-size-mini)}
+.mk[data-size='large']{width:var(--space-6);height:var(--space-6);font-size:var(--text-size-micro)}
+
+/* ── messages ────────────────────────────────────────────────────────────── */
+.stream{display:flex;flex-direction:column;min-width:0;min-height:0}
+.chatBody{
+  display:grid;flex:1;min-width:0;min-height:0;overflow:hidden;
+  --panel-width:380px;
+  grid-template-columns:minmax(0,1fr) 0px;
+  transition:grid-template-columns var(--duration-panel) var(--ease-panel);
+}
+.chatBody[data-panel='open']{grid-template-columns:minmax(0,1fr) var(--panel-width)}
+.scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--space-2)}
+/* A room that has not filled its height still reads from the bottom up: the
+   newest thing said sits against the composer, not adrift under the header. */
+.scroll[data-anchor='bottom']{display:flex;flex-direction:column}
+.scroll[data-anchor='bottom'] > .messages{margin-top:auto}
+.scroll::-webkit-scrollbar{width:8px}
+.scroll::-webkit-scrollbar-thumb{background:rgb(0 0 0 / .13);border-radius:var(--radius-pill);border:2px solid transparent;background-clip:content-box}
+.messages{display:flex;flex-direction:column;gap:2px;width:100%}
+.msg{
+  position:relative;display:flex;align-items:flex-start;gap:var(--space-3);
+  padding:var(--space-2) var(--space-3);border-radius:var(--radius-medium);
+}
+.msgBody{flex:1;padding-right:var(--space-3);min-width:0}
+.byline{display:flex;align-items:baseline;gap:var(--space-2)}
+.author{color:var(--text-primary);font-size:var(--text-size-regular);font-weight:var(--text-weight-medium)}
+.time{color:var(--text-quaternary);font-size:var(--text-size-micro);font-variant-numeric:tabular-nums}
+.text{color:var(--text-secondary);font-size:var(--text-size-medium);line-height:var(--line-height-reading)}
+.text strong{font-weight:var(--text-weight-bold);color:var(--text-primary)}
+.mention{
+  display:inline-flex;align-items:baseline;gap:var(--space-1);
+  color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);
+  text-underline-offset:2px;
+}
+.mention .mk{transform:translateY(2px)}
+.refLink{
+  display:inline;color:var(--text-primary);
+  text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:2px;
+}
+.refIcon{display:inline-flex;transform:translateY(2px);color:var(--icon-tertiary);margin-right:2px}
+.topicRef{color:var(--text-tertiary)}
+.topicRef svg{display:inline-block;vertical-align:-2px;color:var(--topic-type,var(--icon-tertiary))}
+.marks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);margin-top:var(--space-2)}
+.chip,.chipMine,.statusChip,.followChip{
+  display:inline-flex;align-items:center;gap:var(--space-1);
+  height:var(--space-5);padding:0 var(--space-2);
+  border-radius:var(--radius-pill);
+  font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;
+}
+.chip{box-shadow:inset 0 0 0 1px var(--border-subtle);color:var(--text-tertiary)}
+.chip:hover{background:var(--surface-hover-strong)}
+.chipMine{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+.chipMine:hover{background:var(--surface-hover-strong)}
+.chipMark{color:var(--reaction,currentColor);display:inline-flex}
+.chipEmoji{font-size:var(--text-size-small);line-height:1}
+.statusChip{
+  background:color-mix(in srgb, var(--status) 14%, transparent);
+  color:var(--status);font-weight:var(--text-weight-medium);
+}
+.statusChip:hover{background:color-mix(in srgb, var(--status) 22%, transparent)}
+.followChip{
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--text-tertiary);
+}
+.followChip:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
+.threadRow{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);margin-left:calc(var(--space-2) * -1)}
+.replies{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-compact);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);
+  color:var(--accent);font-size:var(--text-size-small);font-weight:var(--text-weight-medium);
+}
+.replies:hover{background:var(--surface-hover-strong)}
+.tools{
+  position:absolute;top:calc(var(--space-2) * -1);right:var(--space-2);
+  display:none;align-items:center;gap:1px;padding:2px;
+  border-radius:var(--radius-medium);
+  background:var(--surface-raised);box-shadow:var(--shadow-canvas);
+  z-index:5;
+}
+.msg:hover .tools,.msg[data-busy] .tools,.tools:focus-within{display:flex}
+.tool{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--space-6);height:var(--space-6);
+  border-radius:var(--radius-pill);color:var(--icon-default);
+}
+.tool:hover,.tool[aria-expanded='true']{background:var(--surface-hover-strong);color:var(--text-primary)}
+.tool[data-status]{color:var(--status)}
+.toolDivider{width:1px;height:14px;background:var(--border-subtle);margin:0 2px;flex:none}
+.divider{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-3) var(--space-2)}
+.dividerLabel{color:var(--text-quaternary);font-size:var(--text-size-micro);flex:none}
+.divider::after{content:'';flex:1;height:1px;background:var(--border-subtle)}
+
+/* ── thread panel ────────────────────────────────────────────────────────── */
+.panel{
+  display:flex;flex-direction:column;min-width:0;min-height:0;
+  width:var(--panel-width);border-left:1px solid var(--border-subtle);
+}
+.panelHeader{
+  display:flex;align-items:center;justify-content:flex-end;flex:none;
+  height:var(--row-height-issue);padding:0 var(--space-2);
+}
+.panelClose{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:var(--row-height-compact);height:var(--row-height-compact);
+  border-radius:var(--radius-medium);color:var(--icon-default);
+}
+.panelClose:hover{background:var(--surface-hover);color:var(--text-primary)}
+.panelCount{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-2) var(--space-3);
+  color:var(--text-tertiary);font-size:var(--text-size-micro);
+}
+.panelCount::after{content:'';flex:1;height:1px;background:var(--border-subtle)}
+
+/* ── composer ────────────────────────────────────────────────────────────── */
+.composer{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;
+  align-items:center;flex:none;
+  margin:var(--space-3);padding:var(--space-1);gap:var(--space-1);
+  border-radius:var(--radius-pill);
+  background:var(--surface-canvas);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+}
+.composer:focus-within{box-shadow:inset 0 0 0 1px var(--border-strong)}
+.editor{
+  min-width:0;max-height:96px;padding:var(--space-1) var(--space-2);
+  overflow-y:auto;overscroll-behavior:contain;
+  color:var(--text-primary);font-size:var(--text-size-medium);
+  line-height:var(--line-height-ui);white-space:pre-wrap;word-break:break-word;
+  outline:none;
+}
+.editor[data-empty='true']::before{content:attr(data-placeholder);color:var(--text-quaternary);pointer-events:none}
+.attach{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--row-height-compact);height:var(--row-height-compact);
+  border-radius:var(--radius-pill);color:var(--icon-default);
+}
+.attach:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
+.properties{display:inline-flex;align-items:center;gap:var(--space-1);height:var(--row-height-compact)}
+.propBtn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--space-6);height:var(--space-6);
+  border-radius:var(--radius-medium);color:var(--icon-tertiary);
+}
+.propBtn:hover{background:var(--surface-hover-strong);color:var(--text-primary)}
+.send{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:var(--row-height-compact);height:var(--row-height-compact);
+  border-radius:var(--radius-pill);
+  background:var(--text-primary);color:var(--surface-canvas);
+}
+.send:hover{background:var(--text-secondary)}
+.send[disabled]{background:var(--surface-sunken);color:var(--text-quaternary);cursor:default}
+
+/* ── menus and dialogs inside the window ─────────────────────────────────── */
+.menu{
+  position:absolute;z-index:60;
+  min-width:168px;padding:var(--space-1);
+  border-radius:var(--radius-large);
+  background:var(--surface-raised);box-shadow:var(--shadow-menu);
+}
+.menuItem{
+  display:flex;align-items:center;gap:var(--space-2);
+  width:100%;height:var(--row-height-compact);
+  padding:0 var(--space-2);border-radius:var(--radius-medium);
+  color:var(--text-secondary);font-size:var(--text-size-regular);text-align:left;
+}
+.menuItem:hover{background:var(--surface-hover)}
+.menuItem[data-on]{color:var(--text-primary)}
+.menuMark{flex:none;color:var(--status,var(--icon-default))}
+.menuLabel{flex:1}
+.menuCheck{flex:none;color:var(--icon-tertiary)}
+.reactionMenu{display:flex;align-items:center;gap:2px;padding:var(--space-1);min-width:0}
+.reactionOpt{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--space-6);height:var(--space-6);
+  border-radius:var(--radius-medium);color:var(--reaction,var(--icon-default));
+}
+.reactionOpt:hover{background:var(--surface-hover)}
+
+.scrim{
+  position:absolute;inset:0;z-index:80;
+  display:grid;place-items:center;
+  background:var(--surface-scrim);
+  border-radius:12px;
+  padding:var(--space-6);
+}
+.dialog{
+  width:min(560px,100%);
+  border-radius:var(--radius-large);
+  background:var(--surface-raised);box-shadow:var(--shadow-modal);
+  overflow:hidden;
+}
+.dialogHead{
+  display:flex;align-items:center;gap:var(--space-1);
+  padding:var(--space-3) var(--space-4) 0;
+  white-space:nowrap;overflow:hidden;
+}
+.dialogCrumb{color:var(--text-tertiary);font-size:var(--text-size-regular);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dialogCrumb[data-last]{color:var(--text-primary);font-weight:var(--text-weight-medium)}
+.dialogChips{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4) var(--space-4)}
+.dialogChip{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-default);padding:0 var(--space-3);
+  border-radius:var(--radius-medium);
+  box-shadow:inset 0 0 0 1px var(--border-subtle);
+  color:var(--text-primary);font-size:var(--text-size-regular);
+}
+.dialogChip:hover{box-shadow:inset 0 0 0 1px var(--border-strong)}
+.dialogChip svg{color:var(--icon-tertiary);flex:none}
+.dialogFoot{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-3) var(--space-4);
+  border-top:1px solid var(--border-subtle);
+}
+.dialogHint{flex:1;color:var(--text-quaternary);font-size:var(--text-size-small)}
+.btnGhost{
+  display:inline-flex;align-items:center;height:var(--row-height-default);
+  padding:0 var(--space-3);border-radius:var(--radius-medium);
+  color:var(--text-secondary);font-size:var(--text-size-regular);
+}
+.btnGhost:hover{background:var(--surface-hover);color:var(--text-primary)}
+.btnPrimary{
+  display:inline-flex;align-items:center;height:var(--row-height-default);
+  padding:0 var(--space-4);border-radius:var(--radius-medium);
+  background:var(--text-primary);color:var(--surface-canvas);
+  font-size:var(--text-size-regular);font-weight:var(--text-weight-medium);
+}
+.btnPrimary:hover{background:var(--text-secondary)}
+
+/* ── list screens ────────────────────────────────────────────────────────── */
+.listScroll{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;padding:0 var(--space-4) var(--space-6)}
+.group{display:flex;flex-direction:column}
+.groupHead{
+  display:flex;align-items:center;gap:var(--space-2);
+  height:var(--row-height-table);padding:0 var(--space-2);
+  border-radius:var(--radius-medium);text-align:left;
+}
+.groupHead:hover{background:var(--surface-hover)}
+.groupChevron{color:var(--icon-tertiary);flex:none;display:inline-flex}
+.groupMark{color:var(--priority,var(--icon-default));flex:none;display:inline-flex}
+.groupLabel{color:var(--text-primary);font-size:var(--text-size-regular);font-weight:var(--text-weight-medium)}
+.groupCount{color:var(--text-quaternary);font-size:var(--text-size-small);font-variant-numeric:tabular-nums}
+.groupRows{display:flex;flex-direction:column;padding-bottom:var(--space-4)}
+.item{
+  position:relative;display:flex;align-items:center;
+  width:100%;height:var(--row-height-issue);
+  padding-left:var(--space-2);border-radius:var(--radius-medium);
+  text-align:left;
+}
+.item:hover{background:var(--surface-hover)}
+.itemUnread{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;margin-right:var(--space-1)}
+.unreadBadge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:16px;padding:0 5px;border-radius:var(--radius-pill);
+  background:color-mix(in srgb, var(--unread) var(--unread-wash), transparent);
+  color:var(--unread);font-size:var(--text-size-mini);font-weight:var(--text-weight-medium);
+  font-variant-numeric:tabular-nums;line-height:1;
+}
+.itemMarks{display:flex;align-items:center;flex:none}
+.itemMark{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--space-6);height:var(--space-6);
+  color:var(--status,var(--priority,var(--icon-default)));
+}
+.itemMark[data-kind]{color:var(--topic-type,var(--icon-tertiary))}
+.itemFace{display:flex;align-items:center;gap:var(--space-3);flex:1;height:100%;padding:0 var(--space-2);min-width:0}
+.itemTitle{
+  flex:0 1 auto;min-width:0;max-width:320px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--text-primary);font-size:var(--text-size-regular);font-weight:var(--text-weight-medium);
+}
+.itemPreview{
+  flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--text-quaternary);font-size:var(--text-size-regular);
+}
+.itemAvatar{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--space-5);margin-left:auto}
+.itemActivity{flex:none;width:40px;color:var(--text-quaternary);font-size:var(--text-size-micro);font-variant-numeric:tabular-nums;text-align:right}
+.itemDue{flex:none;width:132px;font-size:var(--text-size-micro);text-align:right;color:var(--text-tertiary)}
+.itemDue[data-overdue]{color:var(--priority-urgent);font-weight:var(--text-weight-medium)}
+/* ── about dialog (page level, not the app) ──────────────────────────────── */
+.aboutScrim{
+  position:fixed;inset:0;z-index:200;
+  display:none;place-items:center;padding:var(--space-6);
+  background:rgb(20 20 22 / .32);
+}
+.aboutScrim[data-open]{display:grid}
+.aboutCard{
+  width:min(460px,100%);padding:var(--space-6);
+  border-radius:14px;background:#fff;box-shadow:var(--shadow-modal);
+}
+.aboutTitle{font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--text-primary)}
+.aboutBody{margin-top:var(--space-3);color:var(--text-secondary);font-size:15px;line-height:var(--line-height-reading)}
+.aboutClose{margin-top:var(--space-5);display:flex;justify-content:flex-end}
+
+/* ── motion ──────────────────────────────────────────────────────────────── */
+#script{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .95s .15s cubic-bezier(.55,.05,.35,1) forwards}
+#crossbar{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .38s .95s cubic-bezier(.3,0,.15,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  #script,#crossbar{animation:none;stroke-dashoffset:0}
+  .wordmark,.nav,.openApp,.copy,.art{animation:none;opacity:1;transform:none}
+  .chatBody{transition:none}
+}
+
+/* ── the page on a narrower screen ───────────────────────────────────────── */
+@media(max-width:1080px){
+  .hero{grid-template-columns:minmax(0,1fr);align-content:center;gap:clamp(16px,2.4vh,28px)}
+  .headline{font-size:clamp(26px,4.4vw,40px)}
+  .copy{text-align:center}
+}
+@media(max-width:760px){
+  .top{grid-template-columns:auto 1fr auto;gap:var(--space-2)}
+  .nav{justify-self:center}
+  .navLink{padding:0 var(--space-2)}
+  .openApp{height:36px;padding:0 var(--space-4)}
+}
 </style>
 </head>
 <body>
@@ -114,31 +790,1109 @@
 <div class="page">
 
   <header class="top">
-    <svg class="mark" viewBox="0 0 110 150" role="img" aria-label="Fosbury">
-      <g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
-        <path d="M6 108 H104"/>
-      </g>
-    </svg>
-    <p class="meta">Coming soon</p>
+    <a class="brand" href="/" aria-label="Fosbury">
+      <svg class="mark" viewBox="0 0 110 150" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+          <path id="script" pathLength="100"
+                d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+          <path id="crossbar" pathLength="100" d="M6 108 H104"/>
+        </g>
+      </svg>
+      <span class="wordmark">Fosbury</span>
+    </a>
+
+    <nav class="nav">
+      <button class="navLink" type="button" data-about>About</button>
+    </nav>
+
+    <a class="openApp" href="https://app.fosbury.ai">Open app</a>
   </header>
 
-  <div class="stage">
-    <svg class="signature" viewBox="0 0 110 150" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round">
-        <path id="script" pathLength="100"
-              d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
-        <path id="crossbar" pathLength="100" d="M6 108 H104"/>
-      </g>
-    </svg>
-    <h1 class="wordmark">Fosbury</h1>
-  </div>
+  <main class="hero">
+    <div class="copy">
+      <h1 class="headline">Resolve every conversation your team runs on, without ever being online at the same time.</h1>
+    </div>
 
-  <footer class="bottom">
-    <span>© 2027 Fosbury</span>
-  </footer>
+    <div class="art">
+      <div class="artScaler" id="scaler">
+        <!-- The product, drawn with the product's own tokens. Mock data, in memory only. -->
+        <div class="win" id="app" role="application" aria-label="Fosbury product demo"></div>
+      </div>
+    </div>
+  </main>
 
 </div>
+
+<div class="aboutScrim" id="aboutScrim" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="aboutCard">
+    <h2 class="aboutTitle" id="aboutTitle">About</h2>
+    <p class="aboutBody">Fosbury is being built. This page will carry the full story shortly.</p>
+    <div class="aboutClose"><button class="btnPrimary" type="button" data-about-close>Close</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Glyphs.
+
+   The registry is the product's `components/icon/iconPaths.tsx`, on the same
+   16px grid: outline glyphs are 1.5 round-cap strokes in `currentColor`,
+   status and priority marks are fills.
+   ══════════════════════════════════════════════════════════════════════════ */
+const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+const QUESTION = `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M6.3 6.3a1.75 1.75 0 1 1 2.4 1.62c-.42.17-.7.57-.7 1.02v.36"/><path d="M8 11.6h.01"/></g>`;
+const bars = (n) => [[2,9.5,4],[6.5,6.5,7],[11,3.5,10]]
+  .map(([x,y,h],i)=>`<rect x="${x}" y="${y}" width="3" height="${h}" rx="1" fill="currentColor" fill-opacity="${i<n?1:0.28}"/>`).join('');
+
+const ICONS = {
+  'my-threads': `<g ${S}><path d="M13.6 9.2a1.6 1.6 0 0 1-1.6 1.6H6.2L3.1 13.4V4.3a1.6 1.6 0 0 1 1.6-1.6h7.3a1.6 1.6 0 0 1 1.6 1.6z"/><path d="M6 6.1h4.4M6 8.4h2.8"/></g>`,
+  'follow-ups': `<g ${S}><circle cx="8" cy="9" r="5.2"/><path d="M8 6.4V9l1.8 1.1"/><path d="M6.2 1.9h3.6"/></g>`,
+  topics: `<g ${S}><path d="M7.6 2.4H3.4a1 1 0 0 0-1 1v4.2a1 1 0 0 0 .3.7l5.6 5.6a1 1 0 0 0 1.4 0l4.2-4.2a1 1 0 0 0 0-1.4L8.3 2.7a1 1 0 0 0-.7-.3z"/><circle cx="5.6" cy="5.6" r=".9" fill="currentColor" stroke="none"/></g>`,
+  dms: `<g ${S}><circle cx="8" cy="8" r="6.1"/><circle cx="8" cy="6.4" r="2"/><path d="M4.6 12.4a3.7 3.7 0 0 1 6.8 0"/></g>`,
+  team: `<g ${S}><circle cx="6.2" cy="6" r="2.4"/><path d="M2.4 13.2a3.9 3.9 0 0 1 7.6 0"/><path d="M10.6 4.1a2.2 2.2 0 0 1 0 4.1M11.6 13.2a3.9 3.9 0 0 0-1-2.7"/></g>`,
+  agent: `<path d="M5.2 2.9 13 7.6a.45.45 0 0 1 0 .78L5.2 13.1a.45.45 0 0 1-.68-.39V3.28a.45.45 0 0 1 .68-.38z" ${S}/>`,
+  star: `<path d="M8 2.4l1.6 3.44 3.76.5-2.74 2.66.67 3.74L8 10.98l-3.29 1.76.67-3.74L2.64 6.34l3.76-.5z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>`,
+  'star-outline': `<path d="M8 2.4l1.6 3.44 3.76.5-2.74 2.66.67 3.74L8 10.98l-3.29 1.76.67-3.74L2.64 6.34l3.76-.5z" ${S}/>`,
+  search: `<g ${S}><circle cx="7.2" cy="7.2" r="4.5"/><path d="M10.6 10.6 13.6 13.6"/></g>`,
+  filter: `<path d="M2.4 3.6h11.2l-4.3 5.1v4.3l-2.6 1.4V8.7z" ${S}/>`,
+  compose: `<g ${S}><path d="M13.4 8.4v3.4a1.7 1.7 0 0 1-1.7 1.7H4.3a1.7 1.7 0 0 1-1.7-1.7V4.3a1.7 1.7 0 0 1 1.7-1.7h3.4"/><path d="M11.2 2.4 13.6 4.8 9 9.4l-2.9.5.5-2.9z"/></g>`,
+  'chevron-down': `<path d="M3.8 6.2 8 10.4l4.2-4.2" ${S}/>`,
+  'chevron-right': `<path d="M6.2 3.8 10.4 8l-4.2 4.2" ${S}/>`,
+  close: `<path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" ${S}/>`,
+  plus: `<path d="M8 3.2v9.6M3.2 8h9.6" ${S}/>`,
+  ellipsis: `<g fill="currentColor"><circle cx="3.6" cy="8" r="1.15"/><circle cx="8" cy="8" r="1.15"/><circle cx="12.4" cy="8" r="1.15"/></g>`,
+  check: `<path d="M3.2 8.4 6.4 11.6 12.8 4.8" ${S}/>`,
+  history: `<g ${S}><path d="M2.6 8a5.4 5.4 0 1 0 1.6-3.8"/><path d="M2.2 2.9v2.7h2.7"/><path d="M8 5.2V8l2 1.3"/></g>`,
+  timer: `<g ${S}><circle cx="8" cy="9" r="5.2"/><path d="M8 6.4V9l1.8 1.1"/></g>`,
+  bell: `<g ${S}><path d="M12.2 10.4V7.1a4.2 4.2 0 1 0-8.4 0v3.3L2.6 12.1h10.8z"/><path d="M6.5 12.1a1.6 1.6 0 0 0 3 0"/></g>`,
+  link: `<g ${S}><path d="M6.6 9.4a2.6 2.6 0 0 0 3.68 0l2.1-2.1a2.6 2.6 0 0 0-3.68-3.68l-1.1 1.1"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.68 0l-2.1 2.1a2.6 2.6 0 0 0 3.68 3.68l1.1-1.1"/></g>`,
+  thread: `<path d="M2.6 4.4h10.8M2.6 8h10.8M2.6 11.6h6.2" ${S}/>`,
+  /* Sending is upward, not outward: the same arrow the product's composer wears. */
+  send: `<path d="M8 12.8V3.6M4.1 7.5 8 3.6l3.9 3.9" ${S}/>`,
+  attach: `<path d="M12.6 7.2 8 11.8a2.7 2.7 0 0 1-3.8-3.8l4.9-4.9a1.8 1.8 0 0 1 2.55 2.55L6.7 10.6a.9.9 0 0 1-1.27-1.27L9.7 5.05" ${S}/>`,
+  emoji: `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.6 9.4a2.9 2.9 0 0 0 4.8 0"/><path d="M6.2 6.2h.01M9.8 6.2h.01"/></g>`,
+  tag: `<g ${S}><path d="M2.6 7.4V3.4a.8.8 0 0 1 .8-.8h4l6 6a.9.9 0 0 1 0 1.3l-3.7 3.7a.9.9 0 0 1-1.3 0l-6-6z"/><path d="M5.4 5.4h.01"/></g>`,
+  linear: `<g fill="currentColor"><rect x="2" y="10.6" width="12" height="1.7" rx=".85"/><rect x="4.6" y="7.15" width="9.4" height="1.7" rx=".85"/><rect x="7.2" y="3.7" width="6.8" height="1.7" rx=".85"/></g>`,
+  mcp: `<g ${S}><path d="M2.4 11.6 7.4 6.6a1.6 1.6 0 0 1 2.3 0l.3.3"/><path d="M5.4 11.6 10 7a1.6 1.6 0 0 1 2.3 0 1.6 1.6 0 0 1 0 2.3l-4 4"/></g>`,
+  'type-dev': `<path d="M5.6 4.4 2.2 8l3.4 3.6M10.4 4.4 13.8 8l-3.4 3.6" ${S}/>`,
+  'type-ask': QUESTION,
+  'type-general': `<path d="M13.6 9.2a1.6 1.6 0 0 1-1.6 1.6H6.2L3.1 13.4V4.3a1.6 1.6 0 0 1 1.6-1.6h7.3a1.6 1.6 0 0 1 1.6 1.6z" ${S}/>`,
+  'type-sync': `<g ${S}><path d="M13.2 8a5.2 5.2 0 1 1-1.6-3.75"/><path d="M13.4 2.6v2.9h-2.9"/></g>`,
+  'status-open': `<circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4"/>`,
+  'status-resolved': `<g><circle cx="8" cy="8" r="6.9" fill="currentColor"/><path d="M4.9 8.2 7 10.3l4.1-4.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+  'status-closed': `<g><circle cx="8" cy="8" r="6.9" fill="currentColor"/><path d="M5.4 8h5.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>`,
+  'priority-urgent': `<g><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></g>`,
+  'priority-high': bars(3),
+  'priority-medium': bars(2),
+  'priority-low': bars(1),
+  'priority-none': `<g fill="currentColor" fill-opacity=".55"><rect x="1.8" y="7.2" width="3.2" height="1.6" rx=".8"/><rect x="6.4" y="7.2" width="3.2" height="1.6" rx=".8"/><rect x="11" y="7.2" width="3.2" height="1.6" rx=".8"/></g>`,
+  'reaction-agree': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.6 8.8 8 6.4l2.4 2.4"/></g>`,
+  'reaction-disagree': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.6 7.2 8 9.6l2.4-2.4"/></g>`,
+  'reaction-thanks': `<path d="M8 2.4l1.6 3.44 3.76.5-2.74 2.66.67 3.74L8 10.98l-3.29 1.76.67-3.74L2.64 6.34l3.76-.5z" ${S}/>`,
+  'reaction-done': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.2 8.2 7.1 10.1l3.7-4"/></g>`,
+  'reaction-acknowledged': `<g ${S}><circle cx="8" cy="8" r="6"/><path d="M5.4 8h5.2"/></g>`,
+  'reaction-question': QUESTION,
+};
+
+const SIZE = { compact: 12, default: 14, prominent: 16 };
+function icon(name, size = 'default', cls = '') {
+  const glyph = ICONS[name];
+  if (!glyph) return '';
+  const s = SIZE[size] || 14;
+  return `<svg viewBox="0 0 16 16" width="${s}" height="${s}" aria-hidden="true"${cls ? ` class="${cls}"` : ''}>${glyph}</svg>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The workspace. In memory, and only in memory: a refresh starts it over.
+   ══════════════════════════════════════════════════════════════════════════ */
+const ME = 'm_yariv';
+const PEOPLE = {
+  m_yariv: { name: 'Yariv Ashkenazy', initials: 'YA', color: 'purple' },
+  m_david: { name: 'David Kim',       initials: 'DK', color: 'blue' },
+  m_elena: { name: 'Elena Ruiz',      initials: 'ER', color: 'pink' },
+  m_sarah: { name: 'Sarah Chen',      initials: 'SC', color: 'teal' },
+  m_priya: { name: 'Priya Nair',      initials: 'PN', color: 'orange' },
+  m_marco: { name: 'Marco Bianchi',   initials: 'MB', color: 'green' },
+  m_agent: { name: 'Newport Agent',   initials: 'NA', color: 'gray' },
+};
+
+const STATUSES = [
+  { key: 'open',     label: 'Open',     icon: 'status-open' },
+  { key: 'resolved', label: 'Resolved', icon: 'status-resolved' },
+  { key: 'closed',   label: 'Closed',   icon: 'status-closed' },
+];
+
+const REACTIONS = [
+  { key: 'acknowledged', label: 'Acknowledged' },
+  { key: 'agree',        label: 'Agree' },
+  { key: 'disagree',     label: 'Disagree' },
+  { key: 'done',         label: 'Done' },
+  { key: 'question',     label: 'Question' },
+  { key: 'thanks',       label: 'Thanks' },
+];
+
+const FOLLOW_UP_WHENS = ['Tomorrow', 'In 2 days', 'Next week'];
+const FOLLOW_UP_KINDS = ['Reminder', 'Nudge the owner'];
+
+/* A span is already read: the bold, the mention and the reference were decided
+   before they got here, exactly as the product hands them to a component. */
+const t  = (text) => ({ text });
+const at = (id)   => ({ mention: id });
+
+let uid = 0;
+const nextId = () => `m_new_${++uid}`;
+
+function initialState() {
+  return {
+    view: 'topic',
+    threadOpen: null,
+    menu: null,     // { kind, msgId, stream }
+    dialog: null,   // { kind, msgId, stream, when, type }
+    favorite: true,
+    streams: {
+      room: [
+        {
+          id: 'x1', author: 'm_david', time: '17:58', day: '3 days ago', status: null,
+          spans: [
+            t('Pulled the numbers on the indexer — we are dropping about '),
+            { text: '0.4%', strong: true },
+            t(' of events under load. '),
+            at('m_elena'),
+            t(' the dead letter path is the bulk of it, same as '),
+            { ref: 'Burst allowance for the ingest endpoint', refIcon: 'thread' },
+            t(' ('),
+            { topic: 'API Rate Limiting', topicType: 'dev' },
+            t(').'),
+          ],
+          reactions: [], thread: null, followUp: null,
+        },
+        {
+          id: 'x2', author: 'm_elena', time: '18:38', day: '3 days ago', status: null,
+          spans: [t('That tracks. The queue has no retry ceiling, so a poisoned event blocks the partition until someone notices.')],
+          reactions: [
+            { key: 'agree', count: 2, mine: false },
+            { emoji: '👀', count: 1, mine: false },
+          ],
+          thread: null, followUp: null,
+        },
+        {
+          id: 'x3', author: 'm_yariv', time: '19:18', day: '3 days ago', status: 'open',
+          spans: [t('Opening a thread for this — I want the retry policy decided before we touch the batching.')],
+          reactions: [],
+          thread: { id: 't_101', label: 'Dead letter queue handling' },
+          followUp: null,
+        },
+        {
+          id: 'x4', author: 'm_agent', time: '19:58', day: '3 days ago', status: null,
+          spans: [t('Related: "Backpressure on the ingest worker" was resolved on Oct 12 with a fixed ceiling of 5 retries. That decision assumed single-partition ingest, which no longer holds.')],
+          reactions: [{ key: 'thanks', count: 1, mine: false }],
+          thread: null, followUp: null,
+        },
+        {
+          id: 'x5', author: 'm_sarah', time: '21:48', day: '3 days ago', status: null,
+          spans: [t('Micro-batching for better throughput. Pure streaming is costing us more in round trips than it saves in latency.')],
+          reactions: [],
+          thread: { id: 't_102', label: 'Batching the writes' },
+          followUp: null,
+        },
+        {
+          id: 'x6', author: 'm_marco', time: '22:12', day: '3 days ago', status: null,
+          spans: [t('I can take the DLQ topic and the retention job this week. Both are small next to the batching change.')],
+          reactions: [{ key: 'acknowledged', count: 1, mine: false }],
+          thread: null, followUp: null,
+        },
+        {
+          id: 'x7', author: 'm_priya', time: '22:31', day: '3 days ago', status: null,
+          spans: [
+            t('Then the plan is a ceiling of five, a dedicated DLQ and fourteen days. '),
+            at('m_yariv'),
+            t(' can you write it up before the batching work starts?'),
+          ],
+          reactions: [], thread: null, followUp: null,
+        },
+      ],
+      t_101: [
+        {
+          id: 'y1', author: 'm_yariv', time: '19:18', day: '3 days ago', status: null,
+          spans: [t('Two open questions: how many retries before we park an event, and where parked events go.')],
+          reactions: [], thread: null, followUp: null,
+        },
+        {
+          id: 'y2', author: 'm_david', time: '19:48', day: '3 days ago', status: null,
+          spans: [t('Five, then a dedicated DLQ topic with a 14-day retention. Anything still there after 14 days is a bug we did not fix.')],
+          reactions: [{ key: 'agree', count: 1, mine: false }],
+          thread: null, followUp: null,
+        },
+        {
+          id: 'y3', author: 'm_agent', time: '20:18', day: '3 days ago', status: null,
+          spans: [t('No prior decision covers DLQ retention. The closest is "Disaster recovery plan", which sets 30 days for snapshots — a different class of data.')],
+          reactions: [], thread: null, followUp: null,
+        },
+        {
+          id: 'y4', author: 'm_elena', time: '21:18', day: '3 days ago', status: null,
+          spans: [t('Fine by me. I will take the retention config.')],
+          reactions: [{ key: 'done', count: 1, mine: false }],
+          thread: null, followUp: null,
+        },
+      ],
+      t_102: [
+        {
+          id: 'z1', author: 'm_priya', time: '22:04', day: '3 days ago', status: null,
+          spans: [t('Agreed on micro-batching, but the window has to be a setting. 50ms is wrong for the audit stream.')],
+          reactions: [], thread: null, followUp: null,
+        },
+      ],
+    },
+    threads: {
+      t_101: { label: 'Dead letter queue handling', parent: 'x3', status: 'open' },
+      t_102: { label: 'Batching the writes',        parent: 'x5', status: 'open' },
+    },
+    followUps: [
+      { id: 'f1', title: 'Design approval on the composer', preview: 'Elena Ruiz: Is anyone actually using the bold shortcut?', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 0, kind: 'timer' },
+      { id: 'f2', title: 'Weekend rota funding', preview: 'Nathan Williams: Worth it. A quarter of small wins that sum to nothing is the classic failure.', priority: 'high', owner: 'm_elena', due: 'Overdue by 3 days', overdue: true, unread: 1, kind: 'timer' },
+      { id: 'f3', title: 'Burst allowance number', preview: 'If this is still open when it comes due, nudge the owner in the thread and ask for a number.', priority: 'high', owner: 'm_priya', due: 'Ran 13h', overdue: true, unread: 2, kind: 'agent' },
+      { id: 'f4', title: 'Twelve-tag proposal', preview: 'Aisha Rahman: I will wire a required minimum into the readout.', priority: 'medium', owner: 'm_sarah', due: 'Due in 10h', overdue: false, unread: 2, kind: 'timer' },
+      { id: 'f5', title: 'SOC 2 evidence export', preview: 'If nobody has replied since I set this, nudge them. If the export is done, say so and close it.', priority: 'medium', owner: 'm_marco', due: 'Due in 10h', overdue: false, unread: 2, kind: 'agent' },
+      { id: 'f6', title: 'Budget approval for Q4', preview: '', priority: 'medium', owner: 'm_david', due: 'Due in 2 days', overdue: false, unread: 0, kind: 'timer' },
+      { id: 'f7', title: 'Levelling guide', preview: 'Elena Ruiz: Template that asks what the system allowed rather than who did it. I will draft it.', priority: 'low', owner: 'm_david', due: 'Due in 7 days', overdue: false, unread: 1, kind: 'timer' },
+    ],
+    myThreads: [
+      { group: 'urgent', title: 'Per-key or per-org rate limits?', preview: 'Priya Nair: I will put the sub-limit at 40% of the org ceiling unless somebody has a better number.', type: 'dev', owner: 'm_david', unread: 4, activity: '2d', thread: null },
+      { group: 'urgent', title: 'Dead letter queue handling', preview: 'Elena Ruiz: Fine by me. I will take the retention config.', type: 'dev', owner: 'm_yariv', unread: 0, activity: '3d', thread: 't_101' },
+      { group: 'high',   title: 'Are you using Cursor', preview: 'Yariv Ashkenazy: ?', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', thread: null },
+      { group: 'high',   title: 'Newport Agent is in the building', preview: 'Yariv Ashkenazy: Build auto-prioritization', type: 'general', owner: 'm_yariv', unread: 0, activity: '1d', thread: null },
+      { group: 'high',   title: 'What are the three things for Q4?', preview: 'Elena Ruiz: Then three and a rider. Agreed.', type: 'sync', owner: 'm_yariv', unread: 0, activity: '2d', thread: null },
+      { group: 'high',   title: 'Icon grid is inconsistent at 16px', preview: 'Marco Bianchi: Redrawing the offenders. It is about twelve of them.', type: 'dev', owner: 'm_sarah', unread: 1, activity: '1w', thread: null },
+      { group: 'medium', title: 'Batching the writes', preview: 'Priya Nair: Agreed on micro-batching, but the window has to be a setting.', type: 'dev', owner: 'm_priya', unread: 3, activity: '2d', thread: 't_102' },
+    ],
+  };
+}
+
+let state = initialState();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Drawing.
+   ══════════════════════════════════════════════════════════════════════════ */
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function markFor(memberId, size = 'mark') {
+  const p = PEOPLE[memberId];
+  return `<span class="mk" data-size="${size}" data-identity-color="${p.color}" title="${esc(p.name)}">${esc(p.initials)}</span>`;
+}
+
+function spanHtml(span) {
+  if (span.mention) {
+    const p = PEOPLE[span.mention];
+    return `<span class="mention">${markFor(span.mention, 'small')}${esc(p.name)}</span>`;
+  }
+  if (span.ref) {
+    return `<span class="refLink"><span class="refIcon">${icon(span.refIcon || 'thread', 'compact')}</span>${esc(span.ref)}</span>`;
+  }
+  if (span.topic) {
+    return `<span class="topicRef" data-topic-type="${span.topicType}">${icon('type-' + span.topicType, 'compact')} ${esc(span.topic)}</span>`;
+  }
+  if (span.strong) return `<strong>${esc(span.text)}</strong>`;
+  return esc(span.text);
+}
+
+function statusOf(msg) {
+  if (msg.thread) return state.threads[msg.thread.id].status;
+  return msg.status;
+}
+
+function reactionChip(msg, stream, reaction, index) {
+  const mine = reaction.mine;
+  const cls = mine ? 'chipMine' : 'chip';
+  const face = reaction.emoji
+    ? `<span class="chipEmoji">${reaction.emoji}</span>`
+    : `<span class="chipMark" data-reaction="${reaction.key}">${icon('reaction-' + reaction.key, 'compact')}</span>`;
+  return `<button class="${cls}" type="button" data-act="toggle-reaction" data-stream="${stream}" data-msg="${msg.id}" data-index="${index}">${face}${reaction.count}</button>`;
+}
+
+/*
+ * `asParent` is the same message drawn at the top of its own thread. It keeps
+ * its corner bar — the thread's status is changed from there — but loses the
+ * way in, because the reply count is the line under it and a link back into
+ * the panel you are already standing in is a link to here.
+ */
+function messageHtml(msg, stream, asParent) {
+  const person = PEOPLE[msg.author];
+  const status = statusOf(msg);
+  /* Open earns no badge — the ring in the corner bar already says so. The two
+     finished states do, because a badge is also how you take one back. */
+  const showStatusChip = Boolean(status) && status !== 'open';
+  const statusMeta = STATUSES.find((s) => s.key === status) || STATUSES[0];
+
+  const marks = [];
+  if (showStatusChip) {
+    marks.push(`<button class="statusChip" type="button" data-status="${status}" data-act="reset-status" data-stream="${stream}" data-msg="${msg.id}">${icon(statusMeta.icon, 'compact')}${statusMeta.label}</button>`);
+  }
+  if (msg.followUp) {
+    marks.push(`<button class="followChip" type="button" data-act="clear-follow-up" data-stream="${stream}" data-msg="${msg.id}" title="Clear follow-up">${icon('timer', 'compact')}${esc(msg.followUp)}</button>`);
+  }
+  msg.reactions.forEach((r, i) => marks.push(reactionChip(msg, stream, r, i)));
+
+  const threadRow = msg.thread && !asParent
+    ? `<div class="threadRow"><button class="replies" type="button" data-act="open-thread" data-thread="${msg.thread.id}">${replyLabel(msg.thread.id)}</button></div>`
+    : '';
+
+  const menuOpen = state.menu && state.menu.msgId === msg.id && state.menu.stream === stream;
+
+  return `
+  <li class="msg" data-msg="${msg.id}"${menuOpen ? ' data-busy' : ''}>
+    ${markFor(msg.author, 'large')}
+    <div class="msgBody">
+      <div class="byline"><span class="author">${esc(person.name)}</span><span class="time">${esc(msg.time)}</span></div>
+      <div class="text">${msg.spans.map(spanHtml).join('')}</div>
+      ${marks.length ? `<div class="marks">${marks.join('')}</div>` : ''}
+      ${threadRow}
+    </div>
+    <div class="tools">
+      <button class="tool" type="button" data-status="${status || 'open'}" data-act="menu" data-menu="status" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'status'}" title="Status">${icon(statusMeta.icon)}</button>
+      <button class="tool" type="button" data-act="noop" title="Assignee">${markFor(ME, 'small')}</button>
+      <button class="tool" type="button" data-act="noop" title="Tag">${icon('tag')}</button>
+      <span class="toolDivider"></span>
+      <button class="tool" type="button" data-act="menu" data-menu="reaction" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'reaction'}" title="React">${icon('emoji')}</button>
+      <button class="tool" type="button" data-act="menu" data-menu="priority" data-stream="${stream}" data-msg="${msg.id}" aria-expanded="${menuOpen && state.menu.kind === 'priority'}" title="Priority">${icon('priority-medium')}</button>
+      <button class="tool" type="button" data-act="follow-up" data-stream="${stream}" data-msg="${msg.id}" title="Set a follow-up">${icon('timer')}</button>
+      <button class="tool" type="button" data-act="noop" title="More">${icon('ellipsis')}</button>
+      ${menuOpen ? menuHtml(state.menu, msg, stream) : ''}
+    </div>
+  </li>`;
+}
+
+function menuHtml(menu, msg, stream) {
+  if (menu.kind === 'status') {
+    const current = statusOf(msg);
+    return `<div class="menu" style="top:calc(100% + 4px);left:0" data-menu-body>${
+      STATUSES.map((s) => `
+        <button class="menuItem" type="button" data-act="set-status" data-stream="${stream}" data-msg="${msg.id}" data-value="${s.key}"${s.key === current ? ' data-on' : ''}>
+          <span class="menuMark" data-status="${s.key}">${icon(s.icon)}</span>
+          <span class="menuLabel">${s.label}</span>
+          ${s.key === current ? `<span class="menuCheck">${icon('check', 'compact')}</span>` : ''}
+        </button>`).join('')
+    }</div>`;
+  }
+  if (menu.kind === 'reaction') {
+    return `<div class="menu reactionMenu" style="top:calc(100% + 4px);right:0" data-menu-body>${
+      REACTIONS.map((r) => `
+        <button class="reactionOpt" type="button" data-reaction="${r.key}" data-act="add-reaction" data-stream="${stream}" data-msg="${msg.id}" data-value="${r.key}" title="${r.label}">${icon('reaction-' + r.key)}</button>`).join('')
+    }</div>`;
+  }
+  if (menu.kind === 'priority') {
+    const items = [
+      { key: 'urgent', label: 'Urgent' }, { key: 'high', label: 'High' },
+      { key: 'medium', label: 'Medium' }, { key: 'low', label: 'Low' }, { key: 'none', label: 'No priority' },
+    ];
+    return `<div class="menu" style="top:calc(100% + 4px);right:0" data-menu-body>${
+      items.map((p) => `
+        <button class="menuItem" type="button" data-act="close-menu">
+          <span class="menuMark" style="color:${p.key === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + p.key)}</span>
+          <span class="menuLabel">${p.label}</span>
+        </button>`).join('')
+    }</div>`;
+  }
+  return '';
+}
+
+function replyLabel(threadId) {
+  const n = state.streams[threadId].length;
+  return n === 1 ? '1 reply' : `${n} replies`;
+}
+
+function streamHtml(stream) {
+  const list = state.streams[stream];
+  const out = [];
+  let day = null;
+  list.forEach((msg) => {
+    if (msg.day !== day) {
+      day = msg.day;
+      out.push(`<li class="divider"><span class="dividerLabel">${esc(day)}</span></li>`);
+    }
+    out.push(messageHtml(msg, stream));
+  });
+  return out.join('');
+}
+
+function composerHtml(stream, placeholder, withProperties) {
+  return `
+  <form class="composer" data-composer="${stream}">
+    <button class="attach" type="button" data-act="noop" title="Attach files">${icon('attach')}</button>
+    <div class="editor" contenteditable="true" role="textbox" aria-label="${esc(placeholder)}"
+         data-empty="true" data-placeholder="${esc(placeholder)}" data-editor="${stream}"></div>
+    ${withProperties ? `<div class="properties">
+      <button class="propBtn" type="button" data-act="noop" title="Assignee: Yariv Ashkenazy">${markFor(ME, 'small')}</button>
+      <button class="propBtn" type="button" data-act="noop" title="Tag">${icon('tag')}</button>
+    </div>` : '<span></span>'}
+    <button class="send" type="submit" data-send="${stream}" title="Send" disabled>${icon('send')}</button>
+  </form>`;
+}
+
+/* ── the room ────────────────────────────────────────────────────────────── */
+function roomHtml() {
+  const open = state.threadOpen;
+  const thread = open ? state.threads[open] : null;
+  const parent = open ? state.streams.room.find((m) => m.id === thread.parent) : null;
+
+  return `
+  <div class="pageHeader">
+    <div class="pathRow">
+      <div class="crumbs">
+        <span class="crumb">${icon('team')} Engineering</span><span class="crumbSep">/</span>
+        <span class="crumb">${icon('topics')} Topics</span><span class="crumbSep">/</span>
+        <span class="crumb" data-last><span class="crumbMark" data-topic-type="dev">${icon('type-dev')}</span> Real-Time Indexing Pipeline</span>
+      </div>
+      <button class="favBtn" type="button" data-act="favorite"${state.favorite ? ' data-on' : ''} title="Favorite">${icon(state.favorite ? 'star' : 'star-outline')}</button>
+      <span class="members">4 members</span>
+      <div class="headerActions">
+        <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Search this conversation">${icon('search')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="More actions">${icon('ellipsis')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatBody" data-panel="${open ? 'open' : 'closed'}">
+    <section class="stream">
+      <div class="scroll" data-scroll="room" data-anchor="bottom"><ul class="messages">${streamHtml('room')}</ul></div>
+      ${composerHtml('room', 'Message Real-Time Indexing Pipeline', true)}
+    </section>
+    ${open ? `
+    <aside class="panel" aria-label="${esc(thread.label)}">
+      <header class="panelHeader">
+        <button class="panelClose" type="button" data-act="close-thread" title="Close thread">${icon('close')}</button>
+      </header>
+      <div class="scroll" data-scroll="${open}">
+        <ul class="messages">${messageHtml(parent, 'room', true)}</ul>
+        <p class="panelCount">${replyLabel(open)}</p>
+        <ul class="messages">${streamHtml(open)}</ul>
+      </div>
+      ${composerHtml(open, 'Reply in thread', false)}
+    </aside>` : ''}
+  </div>`;
+}
+
+/* ── the lists ───────────────────────────────────────────────────────────── */
+const PRIORITY_GROUPS = [
+  { key: 'urgent', label: 'Urgent' },
+  { key: 'high',   label: 'High' },
+  { key: 'medium', label: 'Medium' },
+];
+
+function myThreadsHtml() {
+  const groups = PRIORITY_GROUPS.map((g) => {
+    const rows = state.myThreads.filter((r) => r.group === g.key);
+    if (!rows.length) return '';
+    return `
+    <section class="group">
+      <div class="groupHead">
+        <span class="groupChevron">${icon('chevron-down', 'compact')}</span>
+        <span class="groupMark" style="color:${g.key === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + g.key)}</span>
+        <span class="groupLabel">${g.label}</span>
+        <span class="groupCount">${rows.length}</span>
+      </div>
+      <div class="groupRows">${rows.map(threadRowHtml).join('')}</div>
+    </section>`;
+  }).join('');
+
+  return `
+  <div class="pageHeader">
+    <div class="pathRow">
+      <div class="crumbs"><span class="crumb" data-last>${icon('my-threads')} My Threads</span></div>
+      <div class="headerActions">
+        <button class="iconBtn" type="button" data-act="noop" title="New">${icon('plus')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Copy link">${icon('link')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
+      </div>
+    </div>
+    <div class="filterRow">
+      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search threads"></span>
+      <button class="pill" type="button" data-muted data-act="noop">Tagged in</button>
+      <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
+      <button class="pill" type="button" data-act="noop">Assigned to me</button>
+      <button class="pill" type="button" data-act="noop">Unread</button>
+      <span class="spacer"></span>
+      <button class="iconBtn" type="button" data-act="noop" title="Filter">${icon('filter')}</button>
+    </div>
+  </div>
+  <div class="listScroll">${groups}</div>`;
+}
+
+function threadRowHtml(row) {
+  return `
+  <button class="item" type="button" data-act="open-row" data-thread="${row.thread || ''}">
+    <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
+    <span class="itemMarks">
+      <span class="itemMark" style="color:${row.group === 'urgent' ? 'var(--priority-urgent)' : 'var(--icon-default)'}">${icon('priority-' + row.group)}</span>
+      <span class="itemMark" data-status="open">${icon('status-open')}</span>
+      <span class="itemMark" data-kind data-topic-type="${row.type}">${icon('type-' + row.type)}</span>
+    </span>
+    <span class="itemFace">
+      <span class="itemTitle">${esc(row.title)}</span>
+      <span class="itemPreview">${esc(row.preview)}</span>
+    </span>
+    <span class="itemAvatar">${markFor(row.owner, 'mark')}</span>
+    <span class="itemActivity">${esc(row.activity)}</span>
+  </button>`;
+}
+
+function followUpsHtml() {
+  const overdue = state.followUps.filter((f) => f.overdue);
+  const upcoming = state.followUps.filter((f) => !f.overdue);
+  const section = (label, rows) => rows.length ? `
+    <section class="group">
+      <div class="groupHead">
+        <span class="groupChevron">${icon('chevron-down', 'compact')}</span>
+        <span class="groupLabel">${label}</span>
+        <span class="groupCount">${rows.length}</span>
+      </div>
+      <div class="groupRows">${rows.map(followUpRowHtml).join('')}</div>
+    </section>` : '';
+
+  return `
+  <div class="pageHeader">
+    <div class="pathRow">
+      <div class="crumbs"><span class="crumb" data-last>${icon('follow-ups')} Follow Ups</span></div>
+      <div class="headerActions">
+        <button class="iconBtn" type="button" data-act="noop" title="New">${icon('plus')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Copy link">${icon('link')}</button>
+        <button class="iconBtn" type="button" data-act="noop" title="Notifications">${icon('bell')}</button>
+      </div>
+    </div>
+    <div class="filterRow">
+      <span class="searchBox">${icon('search', 'compact')}<input type="text" placeholder="Search" aria-label="Search follow-ups"></span>
+      <button class="pill" type="button" data-act="noop">Unread</button>
+      <button class="pill" type="button" data-act="noop">Overdue</button>
+      <button class="pill" type="button" aria-pressed="true" data-act="noop">Open</button>
+      <span class="spacer"></span>
+      <button class="iconBtn" type="button" data-act="noop" title="Filter">${icon('filter')}</button>
+    </div>
+  </div>
+  <div class="listScroll">${section('Overdue', overdue)}${section('Upcoming', upcoming)}</div>`;
+}
+
+function followUpRowHtml(row) {
+  return `
+  <button class="item" type="button" data-act="open-row" data-thread="">
+    <span class="itemUnread">${row.unread ? `<span class="unreadBadge">${row.unread}</span>` : ''}</span>
+    <span class="itemMarks">
+      <span class="itemMark" style="color:var(--icon-default)">${icon('priority-' + row.priority)}</span>
+      <span class="itemMark" data-status="open">${icon('status-open')}</span>
+      <span class="itemMark" data-kind style="${row.kind === 'agent' ? 'color:var(--accent)' : ''}">${icon(row.kind === 'agent' ? 'agent' : 'timer')}</span>
+    </span>
+    <span class="itemFace">
+      <span class="itemTitle">${esc(row.title)}</span>
+      <span class="itemPreview">${esc(row.preview)}</span>
+    </span>
+    <span class="itemAvatar">${markFor(row.owner, 'mark')}</span>
+    <span class="itemDue"${row.overdue ? ' data-overdue' : ''}>${esc(row.due)}</span>
+  </button>`;
+}
+
+/* ── the shell ───────────────────────────────────────────────────────────── */
+function sidebarRow({ label, iconName, initials, view, count, color, active }) {
+  /* A person's row wears their face; everything else wears a glyph. */
+  const mark = initials
+    ? `<span class="mk" data-size="small" data-identity-color="${color}">${esc(initials)}</span>`
+    : `<span class="rowMark">${icon(iconName)}</span>`;
+  return `
+  <button class="row" type="button" data-act="view" data-value="${view || ''}"${active ? ' data-active' : ''}${color ? ` data-identity-color="${color}"` : ''}>
+    ${mark}
+    <span class="rowLabel">${esc(label)}</span>
+    ${count ? `<span class="rowTrailing">${count}</span>` : ''}
+  </button>`;
+}
+
+function sidebarHtml() {
+  const openFollowUps = state.followUps.length;
+  return `
+  <div class="side">
+    <div class="sideHeader">
+      <span class="workspace">
+        <span class="mk" data-size="mark" data-identity-color="teal">NP</span>
+        <span class="workspaceName">Newport</span>
+        <span style="color:var(--icon-tertiary);display:inline-flex">${icon('chevron-down', 'compact')}</span>
+      </span>
+      <button class="iconBtn" type="button" data-act="noop" title="Search">${icon('search')}</button>
+      <button class="iconBtn" type="button" data-act="noop" title="New message">${icon('compose')}</button>
+    </div>
+    <div class="sideScroll">
+      <div class="sideGroup">
+        ${sidebarRow({ label: 'My Threads', iconName: 'my-threads', view: 'my-threads', count: 6, active: state.view === 'my-threads' })}
+        ${sidebarRow({ label: 'Follow Ups', iconName: 'follow-ups', view: 'follow-ups', count: openFollowUps, active: state.view === 'follow-ups' })}
+        ${sidebarRow({ label: 'Agents', iconName: 'agent', view: '' })}
+      </div>
+      <div class="sideGroup">
+        ${sidebarRow({ label: 'Topics', iconName: 'topics', view: '' })}
+        ${sidebarRow({ label: 'DMs', iconName: 'dms', view: '' })}
+        ${sidebarRow({ label: 'Teams', iconName: 'team', view: '' })}
+      </div>
+      <div class="sideGroup">
+        <div class="sideLabel">Favorites</div>
+        ${sidebarRow({ label: 'Real-Time Indexing Pipeline', iconName: 'type-dev', view: 'topic', count: 2, color: 'yellow', active: state.view === 'topic' })}
+        ${sidebarRow({ label: 'AI Team Weekly Sync', iconName: 'type-sync', view: '', count: 2, color: 'pink' })}
+        ${sidebarRow({ label: 'David Kim', initials: 'DK', view: '', color: 'blue' })}
+        ${sidebarRow({ label: 'API Rate Limiting', iconName: 'type-dev', view: '', count: 2, color: 'yellow' })}
+        ${sidebarRow({ label: 'Q4 Roadmap', iconName: 'type-sync', view: '', count: 1, color: 'pink' })}
+        ${sidebarRow({ label: 'Priya Nair', initials: 'PN', view: '', color: 'orange' })}
+      </div>
+      <div class="sideGroup">
+        <div class="sideLabel">Your teams <span style="display:inline-flex">${icon('chevron-right', 'compact')}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function dialogHtml() {
+  const d = state.dialog;
+  if (!d) return '';
+  return `
+  <div class="scrim" data-act="close-dialog">
+    <div class="dialog" role="dialog" aria-modal="true" aria-label="Set a follow-up" data-act="noop">
+      <div class="dialogHead">
+        <span class="dialogCrumb">Engineering</span><span class="crumbSep">›</span>
+        <span class="dialogCrumb">Topics</span><span class="crumbSep">›</span>
+        <span class="dialogCrumb">Real-Time Indexing Pipeline</span><span class="crumbSep">›</span>
+        <span class="dialogCrumb" data-last>Follow up</span>
+      </div>
+      <div class="dialogChips">
+        <button class="dialogChip" type="button" data-act="cycle-kind">${icon('timer')}${esc(d.type)}</button>
+        <button class="dialogChip" type="button" data-act="cycle-when">${icon('timer')}${esc(d.when)}</button>
+      </div>
+      <div class="dialogFoot">
+        <span class="dialogHint">Enter to set</span>
+        <button class="btnGhost" type="button" data-act="close-dialog">Cancel</button>
+        <button class="btnPrimary" type="button" data-act="confirm-follow-up">Set follow-up</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+const app = document.getElementById('app');
+
+/*
+ * What is half-typed is not state.
+ *
+ * The composer's text lives in the DOM, the way it does in the product, so a
+ * re-render for something else — a menu opening, a status changing — has to
+ * hand it back or it would eat a sentence somebody was in the middle of.
+ */
+function captureDrafts() {
+  const drafts = {};
+  app.querySelectorAll('[data-editor]').forEach((el) => { drafts[el.dataset.editor] = el.innerText; });
+  return drafts;
+}
+
+function restoreDrafts(drafts) {
+  app.querySelectorAll('[data-editor]').forEach((el) => {
+    const text = drafts[el.dataset.editor];
+    if (text && text.trim()) el.innerText = text;
+    syncEditor(el);
+  });
+}
+
+function render() {
+  const drafts = captureDrafts();
+  const canvas =
+    state.view === 'topic' ? roomHtml() :
+    state.view === 'my-threads' ? myThreadsHtml() :
+    followUpsHtml();
+
+  app.innerHTML = `
+    <div class="winBar">
+      <span class="lights"><span class="light" data-l="r"></span><span class="light" data-l="y"></span><span class="light" data-l="g"></span></span>
+      <span class="winTab"><span style="color:var(--topic-type-dev);display:inline-flex">${icon('type-dev', 'compact')}</span><span class="rowLabel">Real-Time Indexing Pipeline</span></span>
+    </div>
+    <div class="winBody">
+      ${sidebarHtml()}
+      <div class="canvas">${canvas}</div>
+    </div>
+    <div class="utilityBar">
+      <span class="utilityChip">${icon('linear', 'compact')} Connect to Linear</span>
+      <span class="utilityChip">${icon('mcp', 'compact')} API</span>
+      <span class="utilityChip">${icon('agent', 'compact')} Agent</span>
+      <span class="utilityChip">${icon('history', 'compact')} History</span>
+    </div>
+    ${dialogHtml()}`;
+
+  restoreDrafts(drafts);
+  restoreScroll();
+}
+
+/* Where each stream was scrolled to, so a re-render does not jump the room. */
+const scrollTops = {};
+let scrollTarget = null;
+
+function restoreScroll() {
+  app.querySelectorAll('[data-scroll]').forEach((el) => {
+    const key = el.dataset.scroll;
+    if (scrollTarget === key) { el.scrollTop = el.scrollHeight; scrollTops[key] = el.scrollTop; }
+    else if (scrollTops[key] != null) el.scrollTop = scrollTops[key];
+    /* A room opens where it was left off — at the newest thing said. A thread
+       opens at the message it is about, which is the top of it. */
+    else el.scrollTop = key === 'room' ? el.scrollHeight : 0;
+    el.addEventListener('scroll', () => { scrollTops[key] = el.scrollTop; }, { passive: true });
+  });
+  scrollTarget = null;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   What pressing things does.
+   ══════════════════════════════════════════════════════════════════════════ */
+function findMessage(stream, id) {
+  return state.streams[stream].find((m) => m.id === id);
+}
+
+function now() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function send(stream, text) {
+  const body = text.replace(/\s+/g, ' ').trim();
+  if (!body) return;
+  /* Empty the box before the render, so the draft it hands back is this one. */
+  const sent = app.querySelector(`[data-editor="${stream}"]`);
+  if (sent) sent.innerHTML = '';
+  state.streams[stream].push({
+    id: nextId(), author: ME, time: now(), day: 'Today', status: null,
+    spans: [t(body)], reactions: [], thread: null, followUp: null,
+  });
+  state.menu = null;
+  scrollTarget = stream;
+  render();
+  const editor = app.querySelector(`[data-editor="${stream}"]`);
+  if (editor) { editor.focus(); }
+}
+
+function readEditor(el) {
+  return (el.innerText || '').replace(/ /g, ' ');
+}
+
+function syncEditor(el) {
+  const empty = readEditor(el).trim().length === 0;
+  el.dataset.empty = empty ? 'true' : 'false';
+  const form = el.closest('.composer');
+  const btn = form && form.querySelector('.send');
+  if (btn) btn.disabled = empty;
+}
+
+app.addEventListener('click', (event) => {
+  const hit = event.target.closest('[data-act]');
+  /*
+   * Everything the handler needs is read off the element *before* anything
+   * renders — a render replaces the node the click arrived on, and reaching
+   * back through it afterwards reads a element that is no longer in the page.
+   */
+  const act = hit ? hit.dataset.act : null;
+  const data = hit ? Object.assign({}, hit.dataset) : {};
+  const stream = data.stream;
+  const msgId = data.msg;
+
+  /* A click that is neither inside an open menu nor on its own trigger shuts it. */
+  let dirty = false;
+  if (state.menu && !event.target.closest('[data-menu-body]') && act !== 'menu') {
+    state.menu = null;
+    dirty = true;
+  }
+  if (!act) { if (dirty) render(); return; }
+
+  switch (act) {
+    case 'noop':
+      event.preventDefault();
+      if (dirty) render();
+      break;
+
+    case 'view': {
+      const value = data.value;
+      if (!value) { if (dirty) render(); break; }
+      state.view = value;
+      state.menu = null;
+      render();
+      break;
+    }
+
+    case 'favorite':
+      state.favorite = !state.favorite;
+      render();
+      break;
+
+    case 'open-thread':
+      state.view = 'topic';
+      state.threadOpen = data.thread;
+      state.menu = null;
+      render();
+      break;
+
+    case 'close-thread':
+      state.threadOpen = null;
+      state.menu = null;
+      render();
+      break;
+
+    case 'open-row': {
+      state.view = 'topic';
+      state.threadOpen = data.thread || null;
+      render();
+      break;
+    }
+
+    case 'menu': {
+      const kind = data.menu;
+      const same = state.menu && state.menu.kind === kind && state.menu.msgId === msgId && state.menu.stream === stream;
+      state.menu = same ? null : { kind, msgId, stream };
+      render();
+      break;
+    }
+
+    case 'close-menu':
+      state.menu = null;
+      render();
+      break;
+
+    case 'set-status': {
+      const msg = findMessage(stream, msgId);
+      if (msg && msg.thread) state.threads[msg.thread.id].status = data.value;
+      else if (msg) msg.status = data.value;
+      state.menu = null;
+      render();
+      break;
+    }
+
+    case 'reset-status': {
+      const msg = findMessage(stream, msgId);
+      if (msg && msg.thread) state.threads[msg.thread.id].status = 'open';
+      else if (msg) msg.status = 'open';
+      render();
+      break;
+    }
+
+    case 'add-reaction': {
+      const msg = findMessage(stream, msgId);
+      const key = data.value;
+      const existing = msg.reactions.find((r) => r.key === key);
+      if (existing) {
+        if (!existing.mine) { existing.mine = true; existing.count += 1; }
+      } else {
+        msg.reactions.push({ key, count: 1, mine: true });
+      }
+      state.menu = null;
+      render();
+      break;
+    }
+
+    case 'toggle-reaction': {
+      const msg = findMessage(stream, msgId);
+      const r = msg.reactions[Number(data.index)];
+      if (!r) break;
+      if (r.mine) { r.mine = false; r.count -= 1; if (r.count <= 0) msg.reactions.splice(msg.reactions.indexOf(r), 1); }
+      else { r.mine = true; r.count += 1; }
+      render();
+      break;
+    }
+
+    case 'follow-up':
+      state.menu = null;
+      state.dialog = { kind: 'follow-up', msgId, stream, when: FOLLOW_UP_WHENS[0], type: FOLLOW_UP_KINDS[0] };
+      render();
+      break;
+
+    case 'cycle-when': {
+      const i = FOLLOW_UP_WHENS.indexOf(state.dialog.when);
+      state.dialog.when = FOLLOW_UP_WHENS[(i + 1) % FOLLOW_UP_WHENS.length];
+      render();
+      break;
+    }
+
+    case 'cycle-kind': {
+      const i = FOLLOW_UP_KINDS.indexOf(state.dialog.type);
+      state.dialog.type = FOLLOW_UP_KINDS[(i + 1) % FOLLOW_UP_KINDS.length];
+      render();
+      break;
+    }
+
+    case 'confirm-follow-up':
+      confirmFollowUp();
+      break;
+
+    case 'close-dialog':
+      state.dialog = null;
+      render();
+      break;
+
+    case 'clear-follow-up': {
+      const msg = findMessage(stream, msgId);
+      if (!msg) break;
+      state.followUps = state.followUps.filter((f) => f.id !== `fu_${msg.id}`);
+      msg.followUp = null;
+      render();
+      break;
+    }
+  }
+});
+
+function confirmFollowUp() {
+  const d = state.dialog;
+  if (!d) return;
+  const msg = findMessage(d.stream, d.msgId);
+  if (msg) {
+    msg.followUp = d.when;
+    const title = msg.spans.map((s) => s.text || s.ref || s.topic || '').join('').trim().slice(0, 52) || 'Follow up';
+    const id = `fu_${msg.id}`;
+    state.followUps = state.followUps.filter((f) => f.id !== id);
+    state.followUps.push({
+      id, title, preview: `${d.type} · set by ${PEOPLE[ME].name}`,
+      priority: 'medium', owner: ME, due: `Due ${d.when.toLowerCase()}`,
+      overdue: false, unread: 0, kind: d.type === 'Reminder' ? 'timer' : 'agent',
+    });
+  }
+  state.dialog = null;
+  render();
+}
+
+/* Composers: typing, Enter, and the send button. */
+app.addEventListener('input', (event) => {
+  const editor = event.target.closest('[data-editor]');
+  if (editor) syncEditor(editor);
+});
+
+/* ── the About panel, which is the page's and not the app's ──────────────── */
+const aboutScrim = document.getElementById('aboutScrim');
+document.querySelector('[data-about]').addEventListener('click', () => {
+  aboutScrim.setAttribute('data-open', '');
+});
+aboutScrim.addEventListener('click', (event) => {
+  if (event.target === aboutScrim || event.target.closest('[data-about-close]')) {
+    aboutScrim.removeAttribute('data-open');
+  }
+});
+
+/*
+ * One listener, on the document rather than on the app.
+ *
+ * Escape has to work when nothing inside the app holds focus — after a click on
+ * the page, or on arrival — and a listener on the app only ever sees keys that
+ * started inside it. Enter still finds its composer through the event's target.
+ */
+document.addEventListener('keydown', (event) => {
+  const editor = event.target.closest && event.target.closest('[data-editor]');
+
+  if (event.key === 'Enter' && !event.shiftKey) {
+    if (editor) {
+      event.preventDefault();
+      send(editor.dataset.editor, readEditor(editor));
+    } else if (state.dialog) {
+      event.preventDefault();
+      confirmFollowUp();
+    }
+    return;
+  }
+
+  if (event.key !== 'Escape') return;
+
+  /* Innermost first, and the page's own panel is outside all of it. */
+  if (aboutScrim.hasAttribute('data-open')) { aboutScrim.removeAttribute('data-open'); return; }
+  if (state.dialog) { state.dialog = null; render(); return; }
+  if (state.menu) { state.menu = null; render(); return; }
+  if (state.threadOpen) { state.threadOpen = null; render(); }
+});
+
+app.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = event.target.closest('.composer');
+  if (!form) return;
+  const editor = form.querySelector('[data-editor]');
+  send(editor.dataset.editor, readEditor(editor));
+});
+
+/* Paste as text: a pasted heading should not arrive as a heading. */
+app.addEventListener('paste', (event) => {
+  const editor = event.target.closest('[data-editor]');
+  if (!editor) return;
+  event.preventDefault();
+  const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text.replace(/\s+/g, ' '));
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Fitting the window to whatever room the frame has.
+
+   The window is drawn once at a fixed size, so a 13px row is the same row at
+   every viewport; the frame scales it rather than reflowing it.
+   ══════════════════════════════════════════════════════════════════════════ */
+const scaler = document.getElementById('scaler');
+const artEl = document.querySelector('.art');
+const heroEl = document.querySelector('.hero');
+const copyEl = document.querySelector('.copy');
+
+/* How large the app is drawn before scaling, and how far the scale may go. */
+const BASE_WIDTH = { wide: 1120, stacked: 780 };
+const SCALE_MAX = 1.2;
+const WIN_H_MIN = 460;
+/* A window is wider than it is tall. Past this the mock stops reading as a
+   desktop app and starts reading as a phone drawn at desktop type sizes. */
+const WIN_ASPECT_MAX = 1.15;
+
+function fit() {
+  /*
+   * Nothing to fit into yet — a hidden pane, a tab that has never been painted.
+   * Measuring it would collapse the window and leave it collapsed until
+   * something else happened to fire this.
+   */
+  if (heroEl.clientWidth <= 0 || heroEl.clientHeight <= 0) return;
+
+  const stacked = window.innerWidth <= 1080;
+  const w = stacked ? BASE_WIDTH.stacked : BASE_WIDTH.wide;
+  if (stacked) app.setAttribute('data-compact', ''); else app.removeAttribute('data-compact');
+
+  const style = getComputedStyle(artEl);
+  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+
+  /*
+   * Both budgets are read off the row the frame sits in, never off the frame
+   * itself: the frame hugs the window, so measuring it to decide how big the
+   * window should be is how a fit routine oscillates. The track widths are the
+   * used values the grid resolved, which no amount of scaling can change.
+   */
+  const tracks = getComputedStyle(heroEl).gridTemplateColumns.split(' ').map(parseFloat);
+  const gap = parseFloat(getComputedStyle(heroEl).rowGap) || 0;
+  const availW = Math.max(0, tracks[tracks.length - 1] - padX);
+  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - padY);
+  if (availW <= 0 || availH <= 0) return;
+
+  /*
+   * The scale comes from the width, and the window's *height* then comes from
+   * whatever room is left — so the frame is filled rather than letterboxed,
+   * and a taller page simply shows more of the conversation. Only when the
+   * room is too short for a window worth showing does the scale give way.
+   */
+  let k = Math.min(availW / w, SCALE_MAX);
+  let h = availH / k;
+  if (h < WIN_H_MIN) { h = WIN_H_MIN; k = availH / WIN_H_MIN; }
+  h = Math.min(h, w * WIN_ASPECT_MAX);
+
+  app.style.setProperty('--win-w', `${Math.round(w)}px`);
+  app.style.setProperty('--win-h', `${Math.round(h)}px`);
+  app.style.setProperty('--k', k.toFixed(4));
+  scaler.style.width = `${w * k}px`;
+  scaler.style.height = `${h * k}px`;
+}
+
+const ro = new ResizeObserver(() => fit());
+ro.observe(heroEl);
+window.addEventListener('resize', fit);
+
+render();
+fit();
+
+})();
+</script>
 
 </body>
 </html>
