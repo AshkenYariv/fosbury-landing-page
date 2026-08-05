@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;510;600;620;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
+<!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
+<script defer src="https://cloud.umami.is/script.js"
+        data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
 <style>
 /* ══════════════════════════════════════════════════════════════════════════
    Tokens.
@@ -1318,6 +1321,25 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 <script>
 (() => {
 'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Counting.
+
+   Umami loads deferred, so anything clicked in the first moments of the page
+   finds no `umami` yet. That is the whole error handling: a count that cannot
+   be sent is dropped, and the click it belonged to carries on regardless —
+   nothing on this page waits on analytics, and nothing breaks without them.
+
+   Eight names, and no more: arriving, the three ways of asking for access,
+   the answer, and the call at the end of it.
+   ══════════════════════════════════════════════════════════════════════════ */
+function track(name, data) {
+  try { window.umami && window.umami.track(name, data); } catch (_) {}
+}
+
+/* This script is parsed before the deferred one that defines `umami`, so the
+   arrival is counted a beat later — once it exists to count it. */
+document.addEventListener('DOMContentLoaded', () => track('Home view'));
 
 /* ══════════════════════════════════════════════════════════════════════════
    Glyphs.
@@ -3388,11 +3410,15 @@ function closeAccess() {
 }
 
 document.addEventListener('click', (event) => {
-  /* The button in the corner and the box in the middle are the same ask. */
+  /* The button in the corner and the box in the middle are the same ask, and
+     are counted apart: which one a reader reaches for is the thing worth
+     knowing. */
   if (event.target.closest('[data-open-access], [data-get-access]')) {
+    track(event.target.closest('[data-get-access]') ? 'Get access' : 'Enter email');
     openAccess(event.target.closest('button'));
     return;
   }
+  if (event.target.closest('[data-call-link]')) { track('Schedule call'); return; }
   if (event.target.closest('[data-close-access]')) { closeAccess(); return; }
   /* The backdrop, but not the card sitting on it. */
   if (event.target === scrimEl) closeAccess();
@@ -3417,6 +3443,9 @@ accessForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = accessEmail.value.trim();
   if (!LOOKS_LIKE_EMAIL.test(email)) {
+    /* Counted, and never with the address in it: what is useful here is that
+       the send did not land, not who was trying to send it. */
+    track('Email failed', { reason: 'invalid' });
     note('That does not look like an email address.', true);
     accessEmail.focus();
     return;
@@ -3440,6 +3469,7 @@ accessForm.addEventListener('submit', async (event) => {
     }
 
     joined = true;
+    track('Email sent');
     /* Whatever the server says the booking link is. */
     if (result.call) {
       document.querySelectorAll('[data-call-link]').forEach((a) => { a.href = result.call; });
@@ -3452,6 +3482,7 @@ accessForm.addEventListener('submit', async (event) => {
     /* A dead fetch throws a TypeError with nothing readable in it — the usual
        cause is a page opened without its API behind it, so say that much. */
     const failed = error instanceof TypeError;
+    track('Email failed', { reason: failed ? 'offline' : 'server' });
     note(failed
       ? 'We could not reach the server. Check your connection and try again.'
       : (error.message || 'That did not go through. Try again in a moment.'), true);
@@ -3898,7 +3929,12 @@ async function play(index) {
 
 chaptersEl.addEventListener('click', (event) => {
   const hit = event.target.closest('[data-chapter]');
-  if (hit) play(Number(hit.dataset.chapter));
+  if (!hit) return;
+  /* Only the ones a reader picks. The reel moves itself along the rest of the
+     time, and a demo nobody chose is not a demo anybody wanted. */
+  const picked = CHAPTERS[Number(hit.dataset.chapter)];
+  if (picked) track('Use case', { name: picked.label });
+  play(Number(hit.dataset.chapter));
 });
 
 /*

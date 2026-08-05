@@ -11,6 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
+<script defer src="https://cloud.umami.is/script.js"
+        data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root{
@@ -197,8 +200,8 @@ h1,h2,p,ul,ol,figure,blockquote{margin:0}
     <p>This is why we decided to start Fosbury. Our vision is to make asynchronous communication something teams actually do, instead of something they claim to do.</p>
 
     <figure class="shot">
-      <img src="assets/fosbury-app.jpg" width="1500" height="1004" loading="lazy" decoding="async"
-           alt="The Fosbury app: a sidebar of topics and DMs beside My Threads, where conversations are grouped by priority and each one carries a status, an owner and an activity time.">
+      <img src="assets/fosbury-app-mac.jpg" width="1746" height="1134" loading="lazy" decoding="async"
+           alt="The Fosbury app on a Mac: a sidebar of topics and DMs beside My Threads, where conversations are grouped by priority and each one carries a status, an owner and an activity time.">
       <figcaption>Fosbury today: every conversation grouped by priority, with a status and an owner.</figcaption>
     </figure>
 
@@ -220,7 +223,7 @@ h1,h2,p,ul,ol,figure,blockquote{margin:0}
 
     <p>This is just the start, and much more will follow. We know this will be a long journey and we are excited to share our learnings and thinking as we make progress.</p>
 
-    <p>Today, we are opening Fosbury to teams and companies in public alpha. If you want to get in early and shape where Fosbury goes, <a href="https://fosbury.ai/">sign up here</a> and <a href="https://x.com/" rel="noopener">follow us on X</a>.</p>
+    <p>Today, we are opening Fosbury to teams and companies in public alpha. If you want to get in early and shape where Fosbury goes, <a href="https://fosbury.ai/">sign up here</a>.</p>
   </div>
 </article>
 
@@ -235,6 +238,13 @@ const top = document.getElementById('top');
 const mark = () => top.toggleAttribute('data-scrolled', window.scrollY > 4);
 window.addEventListener('scroll', mark, { passive: true });
 mark();
+
+/* Counted by the same name the landing page uses for its own arrival. Umami is
+   deferred, so this waits the one beat it takes to exist; if it never does,
+   nothing here notices. */
+document.addEventListener('DOMContentLoaded', () => {
+  try { window.umami && window.umami.track('About view'); } catch (e) {}
+});
 </script>
 
 </body>
