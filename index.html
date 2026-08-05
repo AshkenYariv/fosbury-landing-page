@@ -234,7 +234,7 @@ input{font:inherit;color:inherit}
 /* ── the two halves ──────────────────────────────────────────────────────── */
 .hero{
   display:grid;
-  grid-template-columns:minmax(300px,0.95fr) minmax(0,1.5fr);
+  grid-template-columns:minmax(280px,0.84fr) minmax(0,1.66fr);
   align-items:center;
   gap:clamp(22px,2.6vw,40px);
   min-height:0;
@@ -267,6 +267,64 @@ input{font:inherit;color:inherit}
 }
 @media(max-width:1080px){.subline{margin-inline:auto}}
 
+/* ── the waitlist ────────────────────────────────────────────────────────── */
+.signup{
+  margin-top:clamp(20px,2.8vh,32px);
+  max-width:440px;
+  opacity:0;
+  animation:rise .8s 1.35s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.signupForm{
+  display:flex;align-items:center;gap:10px;
+}
+.signupInput{
+  flex:1;min-width:0;height:56px;
+  padding:0 22px;
+  border:1px solid rgb(0 0 0 / .13);border-radius:999px;
+  background:#fff;
+  color:var(--text-primary);
+  font-size:clamp(15px,1.05vw,16px);
+  outline:none;
+  transition:border-color .16s ease, box-shadow .16s ease;
+}
+.signupInput::placeholder{color:var(--text-quaternary)}
+.signupInput:hover{border-color:rgb(0 0 0 / .2)}
+.signupInput:focus{border-color:var(--text-primary);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
+.signupGo{
+  display:grid;place-items:center;flex:none;
+  width:56px;height:56px;border-radius:999px;
+  background:var(--surface-subtle);color:var(--text-primary);
+  transition:background .16s ease, color .16s ease, transform .16s ease;
+}
+.signupGo:hover{background:var(--text-primary);color:#fff}
+.signupGo:active{transform:scale(.94)}
+.signup[data-busy] .signupGo{opacity:.5;pointer-events:none}
+.signupNote{
+  min-height:1.4em;margin-top:10px;padding-left:22px;
+  font-size:13.5px;color:var(--text-tertiary);
+}
+.signupNote[data-bad]{color:var(--danger)}
+
+.signupDone{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+/* `display` beats `hidden`, so say so rather than relying on the attribute. */
+.signupDone[hidden],.signupForm[hidden],.signupNote[hidden]{display:none}
+.signupDoneTitle{
+  font-size:clamp(16px,1.2vw,18px);font-weight:var(--text-weight-medium);
+  letter-spacing:-.015em;color:var(--text-primary);
+}
+.signupCall{
+  display:inline-flex;align-items:center;height:52px;padding:0 26px;
+  border-radius:999px;background:var(--text-primary);color:#fff;
+  font-size:clamp(14px,1.05vw,15.5px);font-weight:var(--text-weight-medium);
+  transition:background .16s ease;
+}
+.signupCall:hover{background:#3d4048}
+@media(max-width:1080px){
+  .signup{margin-inline:auto}
+  .signupDone{align-items:center}
+  .signupNote{text-align:center;padding-left:0}
+}
+
 /* ── the frame ───────────────────────────────────────────────────────────── */
 /*
  * The painting is a mount, not a backdrop: it sits close around the window
@@ -279,14 +337,25 @@ input{font:inherit;color:inherit}
   align-self:center;
   justify-self:center;
   min-width:0;min-height:0;
-  padding:clamp(12px,1.5vw,26px);
-  border-radius:clamp(16px,1.6vw,26px);
-  background:#8fb3c9 url('assets/wheatfield-with-cypresses.jpg') center/cover no-repeat;
-  box-shadow:0 1px 2px rgb(0 0 0 / .06), 0 24px 60px -28px rgb(0 0 0 / .38);
-  overflow:hidden;
   opacity:0;
   animation:rise .9s 1.35s cubic-bezier(.2,.7,.2,1) forwards;
 }
+/*
+ * The desktop, at its own size. Everything inside is positioned against these
+ * 1440×937 so the dock icon and the window keep their places, and one transform
+ * takes the whole screen down to whatever room the page has.
+ */
+.screen{
+  position:absolute;top:0;left:0;
+  width:1440px;height:937px;
+  transform:scale(var(--k,1));
+  transform-origin:top left;
+  border-radius:14px;
+  background:#8fb3c9 url('assets/mac-desktop.jpg') center/101% no-repeat;
+  box-shadow:0 1px 2px rgb(0 0 0 / .06), 0 26px 64px -28px rgb(0 0 0 / .42);
+  overflow:hidden;
+}
+
 /* The scaler is the window's footprint *after* scaling; the window itself is
    drawn once at a fixed size and scaled from its top-left corner into it. So a
    13px row stays a 13px row in the same proportion at every viewport, and the
@@ -365,11 +434,8 @@ input{font:inherit;color:inherit}
    ══════════════════════════════════════════════════════════════════════════ */
 .win{
   position:absolute;
-  top:0;left:0;
-  width:var(--win-w,1120px);
-  height:var(--win-h,760px);
-  transform:scale(var(--k,1));
-  transform-origin:top left;
+  left:58px;top:54px;
+  width:1324px;height:800px;
   display:flex;
   flex-direction:column;
   border-radius:12px;
@@ -379,7 +445,11 @@ input{font:inherit;color:inherit}
   font-size:var(--text-size-regular);
   color:var(--text-secondary);
   line-height:var(--line-height-ui);
+  transform-origin:831px 840px;   /* the dock icon it grows out of */
+  transition:opacity .34s ease, transform .42s cubic-bezier(.2,.9,.3,1);
 }
+/* Before it is opened there is only a desktop. */
+.win[data-closed]{opacity:0;transform:scale(.24);pointer-events:none}
 /*
  * The title bar is the shell's own grid, so the tab strip begins exactly where
  * the canvas does rather than trailing the traffic lights.
@@ -812,7 +882,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   width:min(560px,100%);
   border-radius:var(--radius-large);
   background:var(--surface-raised);box-shadow:var(--shadow-modal);
-  overflow:hidden;
+  /* No clipping: a menu opened on the bottom row has to be able to leave. */
 }
 .dialogHead{
   display:flex;align-items:center;gap:var(--space-1);
@@ -849,6 +919,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   display:flex;align-items:center;gap:var(--space-3);
   padding:var(--space-3) var(--space-4);
   border-top:1px solid var(--border-subtle);
+  border-radius:0 0 var(--radius-large) var(--radius-large);
 }
 .dialogHint{flex:1;color:var(--text-quaternary);font-size:var(--text-size-small)}
 .btnGhost{
@@ -1013,7 +1084,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
   #script,#crossbar{animation:none;stroke-dashoffset:0}
-  .wordmark,.nav,.openApp,.copy,.art,.chapters{animation:none;opacity:1;transform:none}
+  .wordmark,.nav,.openApp,.copy,.art,.chapters,.signup{animation:none;opacity:1;transform:none}
   .chatBody{transition:none}
   .pulse{animation:none;opacity:.6}
 }
@@ -1052,20 +1123,45 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
       <a class="navLink" href="/about.html">About</a>
     </nav>
 
-    <a class="openApp" href="https://app.fosbury.ai">Open app</a>
+    <button class="openApp" type="button" data-get-access>Get access</button>
   </header>
 
   <main class="hero">
     <div class="copy">
       <h1 class="headline">The communication layer for teams that build.</h1>
       <p class="subline">Every conversation gets an owner, a priority, and an end.</p>
+
+      <div class="signup" id="signup">
+        <form class="signupForm" id="signupForm" novalidate>
+          <input class="signupInput" id="signupEmail" type="email" name="email"
+                 placeholder="Enter your email" autocomplete="email" spellcheck="false"
+                 aria-label="Your email address">
+          <button class="signupGo" type="submit" aria-label="Join the waitlist">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8"
+                    fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="signupNote" id="signupNote" role="status" aria-live="polite"></p>
+
+        <div class="signupDone" id="signupDone" hidden>
+          <p class="signupDoneTitle">You’re on the waitlist.</p>
+          <a class="signupCall" href="https://calendar.app.google/xegK1AbmJKyEs1my9"
+             target="_blank" rel="noopener">Schedule a call</a>
+        </div>
+      </div>
     </div>
 
     <div class="stage">
       <div class="art">
         <div class="artScaler" id="scaler">
-          <!-- The product, drawn with the product's own tokens. Mock data, in memory only. -->
-          <div class="win" id="app" role="img" aria-label="Fosbury product demo"></div>
+          <!-- A desktop, and the app opened on it. One transform scales the lot. -->
+          <div class="screen" id="screen" role="img" aria-label="Fosbury running on a Mac desktop">
+            <!-- The product, drawn with the product's own tokens. Mock data, in memory only. -->
+            <div class="win" id="app" data-closed></div>
+          </div>
         </div>
       </div>
 
@@ -1218,7 +1314,7 @@ const nextId = () => `n${++uid}`;
 function initialState() {
   return {
     view: 'room',
-    room: 'indexing',
+    room: 'rate-limits',
     threadOpen: null,
     menu: null,     // { kind, msgId, stream, place }
     rowMenu: null,  // { list, id } — the priority menu on a Topics or DMs row
@@ -2462,8 +2558,6 @@ function render() {
 
   restoreDrafts(drafts);
   restoreScroll();
-  /* `innerHTML` took the cursor with it; it belongs to the window, not the view. */
-  if (cursorEl) app.appendChild(cursorEl);
 }
 
 /* Where each stream was scrolled to, so a re-render does not jump the room. */
@@ -3068,6 +3162,64 @@ app.addEventListener('mousedown', (event) => {
 });
 
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The waitlist.
+
+   The page posts an address to `/api/waitlist`; the key that turns it into an
+   email lives on the server and never comes down here. What the reader gets
+   back is a confirmation and the one thing worth doing next.
+   ══════════════════════════════════════════════════════════════════════════ */
+const signupEl = document.getElementById('signup');
+const signupForm = document.getElementById('signupForm');
+const signupEmail = document.getElementById('signupEmail');
+const signupNote = document.getElementById('signupNote');
+const signupDone = document.getElementById('signupDone');
+
+function note(text, bad) {
+  signupNote.textContent = text;
+  if (bad) signupNote.setAttribute('data-bad', ''); else signupNote.removeAttribute('data-bad');
+}
+
+document.querySelector('[data-get-access]').addEventListener('click', () => {
+  /* The button in the corner and the box in the middle are the same ask. */
+  if (signupDone.hidden) {
+    signupEmail.focus({ preventScroll: true });
+    signupEmail.select();
+  }
+});
+
+signupForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const email = signupEmail.value.trim();
+  if (!/^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(email)) {
+    note('That does not look like an email address.', true);
+    signupEmail.focus();
+    return;
+  }
+
+  signupEl.setAttribute('data-busy', '');
+  note('One moment…');
+
+  try {
+    const response = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) throw new Error(result.error || 'That did not go through.');
+
+    signupForm.hidden = true;
+    signupNote.hidden = true;
+    signupDone.hidden = false;
+  } catch (error) {
+    note(error.message || 'That did not go through. Try again in a moment.', true);
+  } finally {
+    signupEl.removeAttribute('data-busy');
+  }
+});
+
 /* ══════════════════════════════════════════════════════════════════════════
    The demo.
 
@@ -3221,15 +3373,28 @@ function makeCursor() {
   return el;
 }
 
-/* Window coordinates, undoing the scale the frame applies to everything in it. */
+/* Desktop coordinates, undoing the scale the frame applies to everything on it. */
 function pointAt(el) {
-  const win = app.getBoundingClientRect();
-  const k = win.width / app.offsetWidth || 1;
+  const box = screenEl.getBoundingClientRect();
+  const k = box.width / screenEl.offsetWidth || 1;
   const r = el.getBoundingClientRect();
   return {
-    x: (r.left + r.width / 2 - win.left) / k,
-    y: (r.top + r.height / 2 - win.top) / k,
+    x: (r.left + r.width / 2 - box.left) / k,
+    y: (r.top + r.height / 2 - box.top) / k,
   };
+}
+
+/*
+ * Where our icon sits in the desktop photograph, in the desktop's own pixels.
+ * Measured off the image rather than guessed: the tile spans x 808–855 and
+ * y 870–915, so this is its centre.
+ */
+const DOCK_ICON = { x: 831, y: 892 };
+
+function placeCursorAt(x, y) {
+  cursorEl.style.setProperty('--cx', `${Math.round(x)}px`);
+  cursorEl.style.setProperty('--cy', `${Math.round(y)}px`);
+  cursorEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
 }
 
 function placeCursor(el) {
@@ -3403,8 +3568,10 @@ async function play(index) {
 
   const ch = CHAPTERS[index];
 
-  /* Every chapter starts from the same workspace, so nothing carries over. */
+  /* Every chapter starts from the same workspace, so nothing carries over —
+     but the app stays open; only the first launch is part of the story. */
   clearTimers();
+  app.removeAttribute('data-closed');
   state = initialState();
   ch.open();
   render();
@@ -3432,11 +3599,39 @@ chaptersEl.addEventListener('click', (event) => {
   if (hit) play(Number(hit.dataset.chapter));
 });
 
-function startDemo() {
+/*
+ * The demo opens on a desktop with nothing running.
+ *
+ * The page has its own arrival to get through first — the mark draws itself and
+ * the frame fades up — so this waits for that before the cursor appears, then
+ * launches the app the way anybody would.
+ */
+async function boot() {
   app.setAttribute('data-driven', '');
   cursorEl = makeCursor();
-  app.appendChild(cursorEl);
+  screenEl.appendChild(cursorEl);
   paintChapters();
+
+  /* Somewhere neutral on the desktop, so it does not arrive on top of the dock. */
+  placeCursorAt(1120, 470);
+  await sleep(2600);
+
+  placeCursorAt(DOCK_ICON.x, DOCK_ICON.y);
+  await sleep(MOVE_MS + 300);
+
+  cursorEl.setAttribute('data-press', '');
+  await sleep(CLICK_MS);
+  cursorEl.removeAttribute('data-press');
+
+  await sleep(320);
+  /* Open it on exactly what the first demo is about, so nothing flashes past. */
+  state = initialState();
+  CHAPTERS[0].open();
+  render();
+  app.removeAttribute('data-closed');
+
+  /* Let it settle before anything starts happening inside it. */
+  await sleep(1100);
   play(0);
 }
 
@@ -3444,18 +3639,16 @@ function startDemo() {
    Fitting the window to whatever room the frame has.
    ══════════════════════════════════════════════════════════════════════════ */
 const scaler = document.getElementById('scaler');
+const screenEl = document.getElementById('screen');
 const artEl = document.querySelector('.art');
 const stageEl = document.querySelector('.stage');
 const heroEl = document.querySelector('.hero');
 const copyEl = document.querySelector('.copy');
 
-/* How large the app is drawn before scaling, and how far the scale may go. */
-const BASE_WIDTH = { wide: 1120, stacked: 780 };
-const SCALE_MAX = 1.2;
-const WIN_H_MIN = 460;
-/* A window is wider than it is tall. Past this the mock stops reading as a
-   desktop app and starts reading as a phone drawn at desktop type sizes. */
-const WIN_ASPECT_MAX = 1.15;
+/* The desktop's own size. Everything on it is placed against these. */
+const SCREEN_W = 1440;
+const SCREEN_H = 937;
+const SCALE_MAX = 1.1;
 
 function fit() {
   /*
@@ -3466,46 +3659,30 @@ function fit() {
   if (heroEl.clientWidth <= 0 || heroEl.clientHeight <= 0) return;
 
   const stacked = window.innerWidth <= 1080;
-  const w = stacked ? BASE_WIDTH.stacked : BASE_WIDTH.wide;
   if (stacked) app.setAttribute('data-compact', ''); else app.removeAttribute('data-compact');
-
-  const style = getComputedStyle(artEl);
-  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
 
   /*
    * Both budgets are read off the row the frame sits in, never off the frame
-   * itself: the frame hugs the window, so measuring it to decide how big the
-   * window should be is how a fit routine oscillates. The track widths are the
+   * itself: the frame hugs the screen, so measuring it to decide how big the
+   * screen should be is how a fit routine oscillates. The track widths are the
    * used values the grid resolved, which no amount of scaling can change.
    */
   const tracks = getComputedStyle(heroEl).gridTemplateColumns.split(' ').map(parseFloat);
   const gap = parseFloat(getComputedStyle(heroEl).rowGap) || 0;
-  const availW = Math.max(0, tracks[tracks.length - 1] - padX);
+  const availW = Math.max(0, tracks[tracks.length - 1]);
 
-  /* The chapters and their caption sit under the frame and are not scaled, so
-     their height comes off the budget before the window is sized to it. */
+  /* The chapters sit under the frame and are not scaled, so their height comes
+     off the budget before the screen is sized to it. */
   const stageGap = parseFloat(getComputedStyle(stageEl).rowGap) || 0;
   const under = chaptersEl.offsetHeight + stageGap;
-  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - under - padY);
+  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - under);
   if (availW <= 0 || availH <= 0) return;
 
-  /*
-   * The scale comes from the width, and the window's *height* then comes from
-   * whatever room is left — so the frame is filled rather than letterboxed,
-   * and a taller page simply shows more of the conversation. Only when the
-   * room is too short for a window worth showing does the scale give way.
-   */
-  let k = Math.min(availW / w, SCALE_MAX);
-  let h = availH / k;
-  if (h < WIN_H_MIN) { h = WIN_H_MIN; k = availH / WIN_H_MIN; }
-  h = Math.min(h, w * WIN_ASPECT_MAX);
-
-  app.style.setProperty('--win-w', `${Math.round(w)}px`);
-  app.style.setProperty('--win-h', `${Math.round(h)}px`);
-  app.style.setProperty('--k', k.toFixed(4));
-  scaler.style.width = `${w * k}px`;
-  scaler.style.height = `${h * k}px`;
+  /* A screen has a fixed shape, so one scale fits it and nothing reflows. */
+  const k = Math.max(0.16, Math.min(availW / SCREEN_W, availH / SCREEN_H, SCALE_MAX));
+  screenEl.style.setProperty('--k', k.toFixed(4));
+  scaler.style.width = `${SCREEN_W * k}px`;
+  scaler.style.height = `${SCREEN_H * k}px`;
 }
 
 const ro = new ResizeObserver(() => fit());
@@ -3514,7 +3691,7 @@ window.addEventListener('resize', fit);
 
 render();
 fit();
-startDemo();
+boot();
 
 })();
 </script>
