@@ -1,25 +1,33 @@
 /**
  * The waitlist.
  *
- * A form on a static page cannot send mail: the Resend key would have to be in
- * the page, and a key in a page is a key anybody can read and spend. So the
- * browser posts an address here and this — running on the server, with the key
- * in the environment — is the only thing that ever sees it.
+ * A form on a static page cannot send mail or reach a database: the keys would
+ * have to be in the page, and a key in a page is a key anybody can read and
+ * spend. So the browser posts an address here and this — running on the server,
+ * with the secrets in the environment — is the only thing that ever sees it.
  *
- * Two letters go out per sign-up, and they are not equally important:
+ * Three things happen with an address, and they are not equally important:
  *
- *   1. The notice to us. This one is the record. If it does not send, the
- *      sign-up did not happen and the page is told so.
- *   2. The confirmation to them, carrying the link to book half an hour. Best
+ *   1. The row. This is the record: `lib/signups.js` writes it and it is what
+ *      "the waitlist" now means. Everything else is a notification about it.
+ *   2. The notice to us, so a sign-up is something you find out about rather
+ *      than something you query for.
+ *   3. The confirmation to them, carrying the link to book half an hour. Best
  *      effort: Resend will only deliver to arbitrary addresses once the sending
  *      domain is verified, and somebody who has already given us their address
  *      should not be shown a failure over a DNS record they cannot see. It is
  *      logged, and the page is told whether it went, so it can say the true
  *      thing either way.
  *
- * Needs `RESEND_KEY` set on the Vercel project. Without it the endpoint says so
- * rather than pretending to have sent something.
+ * The page is told the sign-up failed only when *nothing* held on to it —
+ * neither the table nor the inbox. Either one alone is enough to be able to
+ * write back to somebody, and demanding both would mean a database hiccup
+ * turning away a lead the inbox already had.
+ *
+ * Needs `RESEND_KEY` on the Vercel project, and `DATABASE_URL` for the table.
  */
+
+import { record } from '../lib/signups.js';
 
 const NOTIFY = 'ashkenazy.jariv@gmail.com';
 const FROM = 'Fosbury <hello@fosbury.ai>';
@@ -96,36 +104,58 @@ export default async function handler(req, res) {
   }
 
   const key = process.env.RESEND_KEY;
-  if (!key) {
-    console.error('[waitlist] RESEND_KEY is not set on this deployment');
-    return res.status(500).json({ ok: false, error: 'The waitlist is not accepting sign-ups right now.' });
-  }
 
   /* What the referrer and the page can tell us, which is all we collect. */
   const source = String(req.headers['referer'] || 'fosbury.ai');
 
+  /*
+   * The row first, because it is the record and because the letters below are
+   * about it. A returning address is not news: it lands in the same row, and
+   * the notice says so rather than reading like a second person.
+   */
+  let written = { stored: false };
   try {
-    await send(key, {
-      from: FROM,
-      to: [NOTIFY],
-      /* So hitting reply goes to the person who signed up. */
-      reply_to: email,
-      subject: `Waitlist: ${email}`,
-      text: `${email} asked for access.\n\nFrom: ${source}`,
-      html: `<p><strong>${esc(email)}</strong> asked for access.</p><p style="color:#8a8f98;font-size:13px">From: ${esc(source)}</p>`,
-    });
+    written = await record(email, source);
+    if (!written.stored) console.error('[waitlist] not written down:', written.reason);
   } catch (error) {
-    console.error('[waitlist] could not record the sign-up', error);
+    console.error('[waitlist] could not write the sign-up down', error);
+  }
+
+  let notified = false;
+  if (key) {
+    try {
+      const again = written.returning ? ' (again)' : '';
+      await send(key, {
+        from: FROM,
+        to: [NOTIFY],
+        /* So hitting reply goes to the person who signed up. */
+        reply_to: email,
+        subject: `Waitlist: ${email}${again}`,
+        text: `${email} asked for access${again}.\n\nFrom: ${source}`,
+        html: `<p><strong>${esc(email)}</strong> asked for access${again}.</p><p style="color:#8a8f98;font-size:13px">From: ${esc(source)}</p>`,
+      });
+      notified = true;
+    } catch (error) {
+      console.error('[waitlist] the notice did not send', error);
+    }
+  } else {
+    console.error('[waitlist] RESEND_KEY is not set on this deployment');
+  }
+
+  /* Nothing held on to it. This is the only case the page is told no. */
+  if (!written.stored && !notified) {
     return res.status(502).json({ ok: false, error: 'We could not record that just now. Try again in a moment.' });
   }
 
-  let confirmed = true;
-  try {
-    await send(key, welcome(email));
-  } catch (error) {
-    /* Recorded, not delivered. The lead is safe; a human can follow it up. */
-    confirmed = false;
-    console.error('[waitlist] confirmation to', email, 'did not send', error);
+  let confirmed = false;
+  if (key) {
+    try {
+      await send(key, welcome(email));
+      confirmed = true;
+    } catch (error) {
+      /* Recorded, not delivered. The lead is safe; a human can follow it up. */
+      console.error('[waitlist] confirmation to', email, 'did not send', error);
+    }
   }
 
   return res.status(200).json({ ok: true, confirmed, call: CALL_URL });
