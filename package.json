@@ -1,0 +1,13 @@
+{
+  "name": "fosbury-landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The landing page. Static HTML, one endpoint, and the table it writes to.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2"
+  }
+}
