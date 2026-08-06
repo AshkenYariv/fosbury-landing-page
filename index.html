@@ -1199,6 +1199,106 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   .navLink{padding:0 var(--space-2)}
   .openApp{height:36px;padding:0 var(--space-4)}
 }
+
+/* ── a phone on its side ─────────────────────────────────────────────────── */
+/*
+ * A short viewport is nearly always a phone turned sideways. Stacking there is
+ * what broke it: the copy took the height, the frame was left with about eighty
+ * pixels, and a demo that will not go below a legible size overflowed the row
+ * it was given. Landscape has width rather than height, so the two halves go
+ * back side by side and the frame keeps the whole height of the row.
+ */
+@media(max-height:560px) and (max-width:1080px){
+  .page{padding-top:10px;padding-bottom:12px;row-gap:10px}
+  .hero{
+    grid-template-columns:minmax(0,.92fr) minmax(0,1.7fr);
+    align-content:center;
+    gap:clamp(14px,2vw,24px);
+  }
+  .copy{text-align:left}
+  .headline{font-size:clamp(17px,2.9vw,27px)}
+  .subline{margin-top:6px;margin-inline:0;font-size:clamp(12px,1.5vw,14px)}
+  .signup{margin-top:12px;margin-inline:0}
+  .signupInput{height:44px;padding:0 16px;font-size:14px}
+  .signupGo{width:44px;height:44px}
+  .mark{height:22px}
+  .wordmark{font-size:17px}
+  .openApp{height:32px;padding:0 14px;font-size:13.5px}
+}
+
+/* ── the demo, opened up ─────────────────────────────────────────────────── */
+/*
+ * A 1440-wide desktop shrunk into a phone column is a picture of an app rather
+ * than an app you can read. So on a small screen the frame can be opened over
+ * the page: the stage lifts out of the hero and takes the viewport whole. On a
+ * phone held upright it also takes a quarter turn — a landscape screen laid
+ * into a portrait one is the only way the thing gets meaningfully bigger, and
+ * a reader who turns the phone to follow it lands in the unturned layout with
+ * the demo the same way up as it was a moment ago.
+ *
+ * The demo keeps running throughout. It is the same nodes, moved, not a copy.
+ */
+.frameZoom{
+  position:absolute;z-index:6;
+  top:8px;right:8px;
+  display:none;place-items:center;
+  width:36px;height:36px;
+  border-radius:var(--radius-pill);
+  background:rgb(255 255 255 / .82);
+  color:var(--text-primary);
+  box-shadow:0 1px 2px rgb(0 0 0 / .18), 0 6px 16px -8px rgb(0 0 0 / .5);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+/*
+ * Phones only, and phones held either way up. A narrow window on a laptop is
+ * not a phone: there the frame is already as big as the room allows and the
+ * reader can simply widen the window, so an expand control there would be a
+ * button offering to do what the window already does. Kept in step with the
+ * `PHONE` query in the script — the two are one decision written twice.
+ */
+@media(pointer:coarse) and (max-width:620px),
+       (pointer:coarse) and (max-height:560px) and (max-width:1024px){
+  .frameZoom{display:grid}
+  /* The frame is the button too — 36px is a small target for a thumb. */
+  .art{cursor:zoom-in}
+}
+body[data-theater] .frameZoom{display:none}
+
+.theaterClose{
+  position:fixed;z-index:82;
+  top:max(10px,env(safe-area-inset-top));
+  right:max(10px,env(safe-area-inset-right));
+  display:grid;place-items:center;
+  width:40px;height:40px;
+  border-radius:var(--radius-pill);
+  background:rgb(255 255 255 / .9);
+  color:var(--text-primary);
+  box-shadow:0 1px 2px rgb(0 0 0 / .18), 0 8px 20px -10px rgb(0 0 0 / .5);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.theaterClose[hidden]{display:none}
+
+body[data-theater] .stage{
+  position:fixed;z-index:80;
+  inset:0;
+  padding:12px;
+  gap:10px;
+  background:#fff;
+}
+/*
+ * Turned: the stage is sized to the viewport with its sides swapped, then
+ * rotated about its top-left corner back onto the screen. `translateY(-100%)`
+ * runs before the rotation, so the two together land it at the origin.
+ */
+body[data-theater][data-turned] .stage{
+  inset:auto;top:0;left:0;
+  width:100dvh;height:100dvw;
+  transform-origin:top left;
+  transform:rotate(90deg) translateY(-100%);
+}
+/* Nothing behind it is meant to be reachable while it is up. */
+body[data-theater] .page{visibility:hidden}
+body[data-theater] .stage,body[data-theater] .theaterClose{visibility:visible}
 </style>
 </head>
 <body>
@@ -1218,7 +1318,7 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
     </a>
 
     <nav class="nav">
-      <a class="navLink" href="/about.html">About</a>
+      <a class="navLink" href="/about">About</a>
     </nav>
 
     <button class="openApp" type="button" data-get-access>Get access</button>
@@ -1260,6 +1360,16 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
             <div class="win" id="app" data-closed></div>
           </div>
         </div>
+
+        <!-- Small screens only; the frame itself opens it too. -->
+        <button class="frameZoom" type="button" data-open-theater
+                aria-label="Open the demo full screen">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+            <path d="M6.2 2.4H2.4v3.8M9.8 2.4h3.8v3.8M13.6 9.8v3.8H9.8M2.4 9.8v3.8h3.8"
+                  fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
 
       <div class="chapters" id="chapters" role="tablist" aria-label="Demos"></div>
@@ -1267,6 +1377,18 @@ button.crumb:hover{background:var(--surface-hover);color:var(--text-primary)}
   </main>
 
 </div>
+
+<!--
+  Outside `.page`, and never turned with the stage: whichever way the demo is
+  lying, the way out stays in the corner of the screen the reader is holding.
+-->
+<button class="theaterClose" type="button" data-close-theater
+        aria-label="Close full screen" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+    <path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"
+          fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </svg>
+</button>
 
 <!--
   The waitlist, asked for on its own.
@@ -3501,8 +3623,8 @@ accessForm.addEventListener('submit', async (event) => {
    the reel cannot drift from the product — if a control moves, the demo breaks
    loudly rather than showing something the app no longer does.
 
-   Three chapters, in the order the argument goes: you do it, you hand it to
-   time, you ask the agent what is left.
+   Three chapters, in the order the argument goes: you do it, you ask the agent
+   to do it, you hand what is left to time.
    ══════════════════════════════════════════════════════════════════════════ */
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOVE_MS = REDUCED ? 0 : 640;
@@ -3567,45 +3689,10 @@ function stepCost(step) {
 /* ── the chapters ────────────────────────────────────────────────────────── */
 const CHAPTERS = [
   {
-    id: 'follow-up',
-    label: 'Agentic follow ups',
-    /* First, because it is the one with something to type: ask once, then hand
-       the chasing to the agent. */
-    open: () => { state.view = 'room'; state.room = 'rate-limits'; },
-    steps: () => [
-      pause(1400),
-      write(one('[data-editor="rate-limits"]'), '@tom'),
-      pause(520),
-      click(one('[data-mention="m_tom"]')),
-      write(one('[data-editor="rate-limits"]'), 'can you confirm the burst number before Thursday?'),
-      pause(360),
-      click(one('.stream .composer .send')),
-      pause(READ_MS),
-
-      hover(newest('.stream .messages .msg')),
-      click({ find: () => {
-        const msgs = app.querySelectorAll('.stream .messages .msg');
-        const msg = msgs[msgs.length - 1];
-        return msg && msg.querySelector('[data-act="follow-up"]');
-      } }),
-      pause(READ_MS),
-      /* It arrives agentic. Pick when, then say what it should actually do. */
-      click(one('[data-act="dialog-menu"][data-menu="when"]')),
-      pause(620),
-      click(one('[data-act="set-follow-when"][data-value="In 2 days"]')),
-      pause(700),
-      write(one('[data-followup-note]'), 'If Tom has not given a number, ask him again in the thread.'),
-      pause(800),
-      click(one('[data-act="confirm-follow-up"]')),
-      pause(1200),
-      click(one('[data-act="view"][data-value="follow-ups"]')),
-      pause(2600),
-    ],
-  },
-  {
     id: 'triage',
     label: 'Thread triage',
-    /* Arrives showing everything, so the filters have something to do at the end. */
+    /* First, because it is the queue everything else is about. Arrives showing
+       everything, so the filters have something to do at the end. */
     open: () => { state.view = 'my-threads'; filterState('my-threads').on = []; },
     steps: () => [
       /* A beat on the list first: this is the queue, and it is what changes. */
@@ -3659,6 +3746,42 @@ const CHAPTERS = [
       pause(7000),
     ],
   },
+  {
+    id: 'follow-up',
+    label: 'Agentic follow ups',
+    /* Last, because it is what you do with the thing you cannot finish now: ask
+       once, then hand the chasing to the agent. */
+    open: () => { state.view = 'room'; state.room = 'rate-limits'; },
+    steps: () => [
+      pause(1400),
+      write(one('[data-editor="rate-limits"]'), '@tom'),
+      pause(520),
+      click(one('[data-mention="m_tom"]')),
+      write(one('[data-editor="rate-limits"]'), 'can you confirm the burst number before Thursday?'),
+      pause(360),
+      click(one('.stream .composer .send')),
+      pause(READ_MS),
+
+      hover(newest('.stream .messages .msg')),
+      click({ find: () => {
+        const msgs = app.querySelectorAll('.stream .messages .msg');
+        const msg = msgs[msgs.length - 1];
+        return msg && msg.querySelector('[data-act="follow-up"]');
+      } }),
+      pause(READ_MS),
+      /* It arrives agentic. Pick when, then say what it should actually do. */
+      click(one('[data-act="dialog-menu"][data-menu="when"]')),
+      pause(620),
+      click(one('[data-act="set-follow-when"][data-value="In 2 days"]')),
+      pause(700),
+      write(one('[data-followup-note]'), 'If Tom has not given a number, ask him again in the thread.'),
+      pause(800),
+      click(one('[data-act="confirm-follow-up"]')),
+      pause(1200),
+      click(one('[data-act="view"][data-value="follow-ups"]')),
+      pause(2600),
+    ],
+  },
 ];
 
 /* ── the cursor ──────────────────────────────────────────────────────────── */
@@ -3673,15 +3796,31 @@ function makeCursor() {
   return el;
 }
 
-/* Desktop coordinates, undoing the scale the frame applies to everything on it. */
+/*
+ * Desktop coordinates, undoing whatever the frame is doing to everything on it:
+ * a scale always, and a quarter turn when the demo has been opened full screen
+ * on a phone held upright. The cursor lives inside the screen and is placed in
+ * these coordinates, so it comes along with the turn for free — this is only
+ * the way back, from a box measured on the page to the desktop it came from.
+ */
 function pointAt(el) {
   const box = screenEl.getBoundingClientRect();
-  const k = box.width / screenEl.offsetWidth || 1;
   const r = el.getBoundingClientRect();
-  return {
-    x: (r.left + r.width / 2 - box.left) / k,
-    y: (r.top + r.height / 2 - box.top) / k,
-  };
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+
+  if (document.body.hasAttribute('data-turned')) {
+    /* Turned a quarter clockwise, so the desktop's x runs down the page and its
+       y runs back across it from the right edge of the box. */
+    const k = box.height / screenEl.offsetWidth || 1;
+    return {
+      x: (cy - box.top) / k,
+      y: screenEl.offsetHeight - (cx - box.left) / k,
+    };
+  }
+
+  const k = box.width / screenEl.offsetWidth || 1;
+  return { x: (cx - box.left) / k, y: (cy - box.top) / k };
 }
 
 /*
@@ -3999,36 +4138,155 @@ function fit() {
    */
   if (heroEl.clientWidth <= 0 || heroEl.clientHeight <= 0) return;
 
-  const stacked = window.innerWidth <= 1080;
-  if (stacked) app.setAttribute('data-compact', ''); else app.removeAttribute('data-compact');
+  /* Decided here rather than on `resize`, so that every path that re-measures
+     also asks the question again: a phone turned in the hand does not always
+     announce itself, but the box the stage is given always changes. */
+  turnToFit();
 
-  /*
-   * Both budgets are read off the row the frame sits in, never off the frame
-   * itself: the frame hugs the screen, so measuring it to decide how big the
-   * screen should be is how a fit routine oscillates. The track widths are the
-   * used values the grid resolved, which no amount of scaling can change.
-   */
-  const tracks = getComputedStyle(heroEl).gridTemplateColumns.split(' ').map(parseFloat);
-  const gap = parseFloat(getComputedStyle(heroEl).rowGap) || 0;
-  const availW = Math.max(0, tracks[tracks.length - 1]);
+  /* Whether the app drops its sidebar is about how wide the page is, not about
+     how the hero happens to be laid out at this size. */
+  if (window.innerWidth <= 1080) app.setAttribute('data-compact', '');
+  else app.removeAttribute('data-compact');
 
   /* The chapters sit under the frame and are not scaled, so their height comes
      off the budget before the screen is sized to it. */
   const stageGap = parseFloat(getComputedStyle(stageEl).rowGap) || 0;
   const under = chaptersEl.offsetHeight + stageGap;
-  const availH = Math.max(0, heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - under);
-  if (availW <= 0 || availH <= 0) return;
 
-  /* A screen has a fixed shape, so one scale fits it and nothing reflows. */
-  const k = Math.max(0.16, Math.min(availW / SCREEN_W, availH / SCREEN_H, SCALE_MAX));
+  let availW;
+  let availH;
+
+  if (document.body.hasAttribute('data-theater')) {
+    /*
+     * Opened up, the stage is the whole viewport. Its own content box is the
+     * budget — turned or not, the padding and the quarter turn are already in
+     * the number, so nothing here has to know which way round it is lying.
+     */
+    const pad = getComputedStyle(stageEl);
+    availW = stageEl.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
+    availH = stageEl.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom) - under;
+  } else {
+    /*
+     * In the hero, both budgets are read off the row the frame sits in, never
+     * off the frame itself: the frame hugs the screen, so measuring it to
+     * decide how big the screen should be is how a fit routine oscillates. The
+     * track widths are the used values the grid resolved, which no amount of
+     * scaling can change.
+     */
+    const tracks = getComputedStyle(heroEl).gridTemplateColumns.split(' ').map(parseFloat);
+    const gap = parseFloat(getComputedStyle(heroEl).rowGap) || 0;
+    /* One track means the copy is above the frame rather than beside it, and
+       the frame is paying for it out of the same height. Asked of the grid
+       rather than of the viewport width, so the layout cannot disagree with
+       the arithmetic about which way it went. */
+    const stacked = tracks.length === 1;
+    availW = tracks[tracks.length - 1];
+    availH = heroEl.clientHeight - (stacked ? copyEl.offsetHeight + gap : 0) - under;
+  }
+
+  if (!(availW > 0) || !(availH > 0)) return;
+
+  /*
+   * A screen has a fixed shape, so one scale fits it and nothing reflows.
+   *
+   * No floor under this. A floor is a promise the layout cannot keep: when the
+   * room is genuinely smaller than the minimum, the frame does not shrink to
+   * fit, it overflows the row and lands on top of whatever is under it — which
+   * is exactly what a phone on its side used to get.
+   */
+  const k = Math.min(availW / SCREEN_W, availH / SCREEN_H, SCALE_MAX);
   screenEl.style.setProperty('--k', k.toFixed(4));
   scaler.style.width = `${SCREEN_W * k}px`;
   scaler.style.height = `${SCREEN_H * k}px`;
 }
 
+/* ── opening it up ───────────────────────────────────────────────────────── */
+const theaterCloseEl = document.querySelector('[data-close-theater]');
+/* The same phone the stylesheet is talking about, in the same words. */
+const PHONE = window.matchMedia(
+  '(pointer:coarse) and (max-width:620px),'
+  + '(pointer:coarse) and (max-height:560px) and (max-width:1024px)');
+
+/*
+ * Decided by the viewport rather than by the orientation the device reports:
+ * what matters is that the demo is landscape and the room it has to lie in is
+ * not.
+ */
+function turnToFit() {
+  const turned = document.body.hasAttribute('data-theater')
+    && window.innerHeight > window.innerWidth;
+  document.body.toggleAttribute('data-turned', turned);
+}
+
+/*
+ * A phone being turned is the one change this must never miss: miss it and the
+ * demo is left lying on its side across a screen that is no longer that shape.
+ * The events below are the polite way to hear about it and they are enough
+ * nearly everywhere — but a viewport can change without any of them firing, so
+ * while the demo is open the size is simply watched. It is two numbers a frame,
+ * and it stops the moment the demo is closed.
+ */
+let watching = 0;
+let seen = '';
+
+function watchSize() {
+  if (!document.body.hasAttribute('data-theater')) { watching = 0; return; }
+  const now = `${window.innerWidth}x${window.innerHeight}`;
+  if (now !== seen) { seen = now; fit(); }
+  watching = requestAnimationFrame(watchSize);
+}
+
+function openTheater() {
+  if (document.body.hasAttribute('data-theater')) return;
+  document.body.setAttribute('data-theater', '');
+  theaterCloseEl.hidden = false;
+  fit();
+  seen = `${window.innerWidth}x${window.innerHeight}`;
+  if (!watching) watching = requestAnimationFrame(watchSize);
+  track('Demo full screen');
+}
+
+function closeTheater() {
+  if (!document.body.hasAttribute('data-theater')) return;
+  document.body.removeAttribute('data-theater');
+  document.body.removeAttribute('data-turned');
+  theaterCloseEl.hidden = true;
+  if (watching) { cancelAnimationFrame(watching); watching = 0; }
+  fit();
+}
+
+document.addEventListener('click', (event) => {
+  if (event.target.closest('[data-close-theater]')) { closeTheater(); return; }
+  if (event.target.closest('[data-open-theater]')) { openTheater(); return; }
+  /* The frame is its own button, but only on the screens that need one — and
+     never once it is already open. */
+  if (PHONE.matches && !document.body.hasAttribute('data-theater')
+      && event.target.closest('.art')) openTheater();
+});
+
+/*
+ * On the way down rather than on the way up, so that the state read here is the
+ * one the reader is looking at. The dialog answers Escape too, and it is in
+ * front: were this on the bubble it would run after the dialog had already
+ * closed itself, read a shut dialog, and take the demo down with it — one press
+ * closing two things.
+ */
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && scrimEl.hidden) closeTheater();
+}, true);
+
 const ro = new ResizeObserver(() => fit());
 ro.observe(heroEl);
+ro.observe(stageEl);
 window.addEventListener('resize', fit);
+/*
+ * Three ways of hearing the same news, because a turned phone is the one case
+ * where missing it leaves the demo lying on its side over a screen that is no
+ * longer shaped for it — and not every browser tells the story the same way.
+ */
+window.addEventListener('orientationchange', fit);
+window.matchMedia('(orientation:portrait)').addEventListener('change', fit);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
 
 render();
 fit();
