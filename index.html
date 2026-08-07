@@ -1304,25 +1304,30 @@ body[data-theater][data-turned] .stage{
  * same height is measured against the viewport, which the bar has already been
  * paid out of — and height is the one side the frame is short of.
  *
- * The arrangement does not move for it. The chapters stay under the frame,
- * where they are upright, because a demo that rearranges itself as the phone
- * turns is a different demo rather than the same one held differently.
+ * The arithmetic leaves one move. A sideways viewport is 345 points; a frame
+ * the height of the upright one is 341 of them, and a chapter row is 24 more.
+ * They do not both fit however little air is left between them, so as long as
+ * the chapters are costing height the frame is paying the bar's bill. Standing
+ * them beside it instead costs width, which sideways is the one thing there is
+ * plenty of — the frame uses about half of it — and the demo opens the size it
+ * opens upright.
  *
- * So what the frame gets back is every pixel that is not the chapters or the
- * frame itself. Sideways the cutout lies along a side, so the sides are what
- * has to be kept clear; above and below the frame wants only enough not to
- * touch the edge, and the chapters only enough not to touch the frame. That is
- * the whole of what there is to give: the arithmetic is 345 of screen against a
- * frame the height of upright's, a 27 chapter row, and air — and the first two
- * of those already come to more than the third can be squeezed out of.
+ * They are taken out of the flow rather than laid in a row with the frame,
+ * because a row would centre the two of them together and leave the frame
+ * sitting off to the left. Out of the flow they hang at the right-hand edge,
+ * the fit routine keeps their width clear on *both* sides, and what is centred
+ * on the screen is the frame itself.
  */
 body[data-theater]:not([data-turned]) .stage{
+  /* Kept clear either side of the frame, and read back by the fit routine. */
+  --chapters-clearance:12px;
   padding:2px max(6px,env(safe-area-inset-right)) 2px max(6px,env(safe-area-inset-left));
-  gap:6px;
 }
-/* The label and the bar it sits over, closer than they stand upright — three
-   pixels, and on the side the frame is counting them. */
-body[data-theater]:not([data-turned]) .chapter{gap:5px}
+body[data-theater]:not([data-turned]) .chapters{
+  position:absolute;top:0;bottom:0;
+  right:max(6px,env(safe-area-inset-right));
+  flex-direction:column;justify-content:center;
+}
 /* Nothing behind it is meant to be reachable while it is up. */
 body[data-theater] .page{visibility:hidden}
 body[data-theater] .stage,body[data-theater] .theaterClose{visibility:visible}
@@ -4175,10 +4180,21 @@ function fit() {
   if (window.innerWidth <= 1080) app.setAttribute('data-compact', '');
   else app.removeAttribute('data-compact');
 
-  /* The chapters sit under the frame and are not scaled, so their height comes
-     off the budget before the screen is sized to it. */
+  /* The chapters are not scaled, so whatever side of the frame they are on is
+     spent before the screen is sized to what is left. Under it they cost their
+     height once; out of the flow beside it — a phone held sideways — they cost
+     their width twice, because the room is kept on both sides so that the frame
+     ends up centred on the screen rather than centred on what is left of it.
+     Asked of the layout rather than of the viewport, so the arithmetic cannot
+     disagree with the stylesheet about where they went. */
   const stageStyle = getComputedStyle(stageEl);
-  const under = chaptersEl.offsetHeight + (parseFloat(stageStyle.rowGap) || 0);
+  const beside = getComputedStyle(chaptersEl).position === 'absolute';
+  const under = beside
+    ? 0 : chaptersEl.offsetHeight + (parseFloat(stageStyle.rowGap) || 0);
+  const aside = beside
+    ? 2 * (chaptersEl.offsetWidth
+           + (parseFloat(stageStyle.getPropertyValue('--chapters-clearance')) || 0))
+    : 0;
 
   let availW;
   let availH;
@@ -4190,7 +4206,7 @@ function fit() {
      * the number, so nothing here has to know which way round it is lying.
      */
     availW = stageEl.clientWidth
-      - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight);
+      - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight) - aside;
     availH = stageEl.clientHeight
       - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom) - under;
   } else {
