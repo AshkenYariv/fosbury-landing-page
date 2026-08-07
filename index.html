@@ -1296,6 +1296,30 @@ body[data-theater][data-turned] .stage{
   transform-origin:top left;
   transform:rotate(90deg) translateY(-100%);
 }
+/*
+ * Lying the same way up as the screen — a phone held sideways — the demo used
+ * to open smaller than it does upright, and for a reason that has nothing to do
+ * with the demo. Upright, the frame's height is measured against the phone's
+ * whole width, which no browser bar can take a bite out of. On its side that
+ * same height is measured against the viewport, which the bar has already been
+ * paid out of. Height is the side the frame is short of, so it lost every pixel
+ * of it.
+ *
+ * So here the chapters step out from under the frame and stand beside it. Width
+ * is the one thing a phone on its side has to spare — the frame was using about
+ * half of it — and the height they hand back is roughly what the bar took. The
+ * demo opens the size it opens upright, which is the size it should be either
+ * way up.
+ */
+body[data-theater]:not([data-turned]) .stage{
+  flex-direction:row;
+  /* The cutout runs along a side here rather than the top, so the sides are
+     what has to be kept clear; above and below, the frame wants only air. */
+  padding:6px max(6px,env(safe-area-inset-right)) 6px max(6px,env(safe-area-inset-left));
+}
+body[data-theater]:not([data-turned]) .chapters{
+  flex-direction:column;justify-content:center;
+}
 /* Nothing behind it is meant to be reachable while it is up. */
 body[data-theater] .page{visibility:hidden}
 body[data-theater] .stage,body[data-theater] .theaterClose{visibility:visible}
@@ -4148,10 +4172,17 @@ function fit() {
   if (window.innerWidth <= 1080) app.setAttribute('data-compact', '');
   else app.removeAttribute('data-compact');
 
-  /* The chapters sit under the frame and are not scaled, so their height comes
-     off the budget before the screen is sized to it. */
-  const stageGap = parseFloat(getComputedStyle(stageEl).rowGap) || 0;
-  const under = chaptersEl.offsetHeight + stageGap;
+  /* The chapters are not scaled, so whichever side of the frame they are on is
+     spent before the screen is sized to what is left. Beside it on a phone held
+     sideways, where height is scarce and width is not; under it everywhere
+     else. Asked of the layout rather than of the viewport, so the arithmetic
+     cannot disagree with the stylesheet about where they went. */
+  const stageStyle = getComputedStyle(stageEl);
+  const beside = stageStyle.flexDirection === 'row';
+  const under = beside
+    ? 0 : chaptersEl.offsetHeight + (parseFloat(stageStyle.rowGap) || 0);
+  const aside = beside
+    ? chaptersEl.offsetWidth + (parseFloat(stageStyle.columnGap) || 0) : 0;
 
   let availW;
   let availH;
@@ -4162,9 +4193,10 @@ function fit() {
      * budget — turned or not, the padding and the quarter turn are already in
      * the number, so nothing here has to know which way round it is lying.
      */
-    const pad = getComputedStyle(stageEl);
-    availW = stageEl.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
-    availH = stageEl.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom) - under;
+    availW = stageEl.clientWidth
+      - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight) - aside;
+    availH = stageEl.clientHeight
+      - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom) - under;
   } else {
     /*
      * In the hero, both budgets are read off the row the frame sits in, never
