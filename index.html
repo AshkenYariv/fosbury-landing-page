@@ -1297,28 +1297,22 @@ body[data-theater][data-turned] .stage{
   transform:rotate(90deg) translateY(-100%);
 }
 /*
- * Lying the same way up as the screen — a phone held sideways — the demo used
- * to open smaller than it does upright, and for a reason that has nothing to do
+ * Lying the same way up as the screen — a phone held sideways — the demo opens
+ * a little smaller than it does upright, for a reason that has nothing to do
  * with the demo. Upright, the frame's height is measured against the phone's
- * whole width, which no browser bar can take a bite out of. On its side that
+ * whole width, and no browser bar can take a bite out of that. On its side the
  * same height is measured against the viewport, which the bar has already been
- * paid out of. Height is the side the frame is short of, so it lost every pixel
- * of it.
+ * paid out of — and height is the one side the frame is short of.
  *
- * So here the chapters step out from under the frame and stand beside it. Width
- * is the one thing a phone on its side has to spare — the frame was using about
- * half of it — and the height they hand back is roughly what the bar took. The
- * demo opens the size it opens upright, which is the size it should be either
- * way up.
+ * The arrangement does not move for it. The chapters stay under the frame,
+ * where they are upright, because a demo that rearranges itself as the phone
+ * turns is a different demo rather than the same one held differently. What the
+ * frame can have back is the padding: sideways the cutout lies along a side, so
+ * the sides are what has to be kept clear, and above and below the frame wants
+ * only enough air not to touch the edge.
  */
 body[data-theater]:not([data-turned]) .stage{
-  flex-direction:row;
-  /* The cutout runs along a side here rather than the top, so the sides are
-     what has to be kept clear; above and below, the frame wants only air. */
-  padding:6px max(6px,env(safe-area-inset-right)) 6px max(6px,env(safe-area-inset-left));
-}
-body[data-theater]:not([data-turned]) .chapters{
-  flex-direction:column;justify-content:center;
+  padding:4px max(6px,env(safe-area-inset-right)) 4px max(6px,env(safe-area-inset-left));
 }
 /* Nothing behind it is meant to be reachable while it is up. */
 body[data-theater] .page{visibility:hidden}
@@ -4172,17 +4166,10 @@ function fit() {
   if (window.innerWidth <= 1080) app.setAttribute('data-compact', '');
   else app.removeAttribute('data-compact');
 
-  /* The chapters are not scaled, so whichever side of the frame they are on is
-     spent before the screen is sized to what is left. Beside it on a phone held
-     sideways, where height is scarce and width is not; under it everywhere
-     else. Asked of the layout rather than of the viewport, so the arithmetic
-     cannot disagree with the stylesheet about where they went. */
+  /* The chapters sit under the frame and are not scaled, so their height comes
+     off the budget before the screen is sized to it. */
   const stageStyle = getComputedStyle(stageEl);
-  const beside = stageStyle.flexDirection === 'row';
-  const under = beside
-    ? 0 : chaptersEl.offsetHeight + (parseFloat(stageStyle.rowGap) || 0);
-  const aside = beside
-    ? chaptersEl.offsetWidth + (parseFloat(stageStyle.columnGap) || 0) : 0;
+  const under = chaptersEl.offsetHeight + (parseFloat(stageStyle.rowGap) || 0);
 
   let availW;
   let availH;
@@ -4194,7 +4181,7 @@ function fit() {
      * the number, so nothing here has to know which way round it is lying.
      */
     availW = stageEl.clientWidth
-      - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight) - aside;
+      - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight);
     availH = stageEl.clientHeight
       - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom) - under;
   } else {
