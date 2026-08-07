@@ -1306,14 +1306,23 @@ body[data-theater][data-turned] .stage{
  *
  * The arrangement does not move for it. The chapters stay under the frame,
  * where they are upright, because a demo that rearranges itself as the phone
- * turns is a different demo rather than the same one held differently. What the
- * frame can have back is the padding: sideways the cutout lies along a side, so
- * the sides are what has to be kept clear, and above and below the frame wants
- * only enough air not to touch the edge.
+ * turns is a different demo rather than the same one held differently.
+ *
+ * So what the frame gets back is every pixel that is not the chapters or the
+ * frame itself. Sideways the cutout lies along a side, so the sides are what
+ * has to be kept clear; above and below the frame wants only enough not to
+ * touch the edge, and the chapters only enough not to touch the frame. That is
+ * the whole of what there is to give: the arithmetic is 345 of screen against a
+ * frame the height of upright's, a 27 chapter row, and air — and the first two
+ * of those already come to more than the third can be squeezed out of.
  */
 body[data-theater]:not([data-turned]) .stage{
-  padding:4px max(6px,env(safe-area-inset-right)) 4px max(6px,env(safe-area-inset-left));
+  padding:2px max(6px,env(safe-area-inset-right)) 2px max(6px,env(safe-area-inset-left));
+  gap:6px;
 }
+/* The label and the bar it sits over, closer than they stand upright — three
+   pixels, and on the side the frame is counting them. */
+body[data-theater]:not([data-turned]) .chapter{gap:5px}
 /* Nothing behind it is meant to be reachable while it is up. */
 body[data-theater] .page{visibility:hidden}
 body[data-theater] .stage,body[data-theater] .theaterClose{visibility:visible}
