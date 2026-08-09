@@ -274,11 +274,15 @@ a{color:inherit;text-decoration:none}
 /* The product's follow-up chip: a pill with an inset hairline and nothing
    filled in. Its agentic variant is the accent colour, which is one purple too
    many on this screen, so this is the plain one. */
-.chip{display:inline-flex;align-items:center;gap:4px;margin-top:9px;
-  height:20px;padding:0 8px;border-radius:999px;
-  font-size:11px;font-variant-numeric:tabular-nums;
+.chip{display:inline-flex;align-items:center;gap:5px;margin-top:10px;
+  /* Under the sentence it belongs to, not under the face: the avatar and the
+     gap beside it are what the message text is indented by, so this clears the
+     same 29 and the two line up on one edge. */
+  margin-left:calc(20px + 9px);
+  height:24px;padding:0 11px;border-radius:999px;
+  font-size:12px;font-variant-numeric:tabular-nums;
   box-shadow:inset 0 0 0 1px var(--line);color:var(--mute)}
-.chip svg{width:13px;height:13px;flex:none}
+.chip svg{width:14px;height:14px;flex:none}
 /* The clock does the work no adjective can: a question at 02:14 and an answer
    at 02:14, with nobody awake for either of them. */
 .when{margin-left:6px;font-weight:400;font-size:11px;color:var(--faint)}
@@ -306,7 +310,18 @@ a{color:inherit;text-decoration:none}
 .mention u{text-decoration:underline;text-decoration-color:var(--line);
   text-underline-offset:2.5px;text-decoration-thickness:1px}
 .av--sm{width:16px;height:16px;font-size:10px;letter-spacing:0}
-.hint{margin-top:9px;padding:9px 11px;border-radius:8px;background:rgb(0 0 0 / .035);color:var(--body);font-size:12px}
+/* More than one person on a topic: the marks overlap by a quarter and each
+   carries a ring in the paper colour so the one behind reads as behind. The
+   disc has to be opaque here — mixed into the canvas rather than transparent —
+   or the mark underneath shows through the one on top. */
+.avs{display:inline-flex;align-items:center;flex:none;padding-left:4px}
+.avs > .av{
+  margin-left:-4px;
+  background:color-mix(in srgb, var(--c,var(--id-gray)) var(--id-wash), #fff);
+  box-shadow:0 0 0 2px #fff;
+}
+.avsMore{margin-left:4px;color:var(--faint);font-size:10px;font-variant-numeric:tabular-nums}
+.hint{margin-top:9px;margin-left:calc(20px + 9px);padding:9px 11px;border-radius:8px;background:rgb(0 0 0 / .035);color:var(--body);font-size:12px}
 
 /* The command bar, drawn open with something half typed into it. Two floating
    key caps and a made-up millisecond count said nothing; a palette with a
@@ -539,12 +554,12 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>My Threads</b><span class="pill" data-s="open">Open</span><span class="pill">Assigned to me</span><span class="pill sp">9</span></div>
             <div class="grp" style="padding-left:40px">Urgent <span>2</span></div>
-            <div class="row"><span class="rowUnread"><span class="unread">4</span></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="av" style="--c:var(--id-blue)">DK</span></span></div>
-            <div class="row"><span class="rowUnread"></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span></span></div>
+            <div class="row"><span class="rowUnread"><span class="unread">4</span></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="avs"><span class="av" style="--c:var(--id-blue)">DK</span><span class="av" style="--c:var(--id-orange)">PN</span><span class="av" style="--c:var(--id-teal)">TO</span></span></span></div>
+            <div class="row"><span class="rowUnread"></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="avs"><span class="av" style="--c:var(--id-pink)">ER</span><span class="av" style="--c:var(--id-green)">MB</span></span></span></div>
             <div class="grp" style="padding-left:40px">High <span>3</span></div>
             <div class="row"><span class="rowUnread"></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span></span></div>
             <div class="row"><span class="rowUnread"><span class="unread">2</span></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span></span></div>
-            <div class="row"><span class="rowUnread"><span class="unread">1</span></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="--c:var(--id-green)">MB</span></span></div>
+            <div class="row"><span class="rowUnread"><span class="unread">1</span></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="avs"><span class="av" style="--c:var(--id-green)">MB</span><span class="av" style="--c:var(--id-purple)">YA</span><span class="av" style="--c:var(--id-pink)">ER</span><span class="avsMore">+2</span></span></span></div>
             <div class="grp" style="padding-left:40px">Closed today <span>2</span></div>
             <div class="row"><span class="rowUnread"></span><span class="prio" data-p="low"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="0.28"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="0.28"/></svg></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
           </div>
