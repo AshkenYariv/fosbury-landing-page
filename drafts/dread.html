@@ -250,14 +250,24 @@ a{color:inherit;text-decoration:none}
    at 02:14, with nobody awake for either of them. */
 .when{margin-left:6px;font-weight:400;font-size:11px;color:var(--faint)}
 /* No answer without a receipt. Every reply points at where it was decided. */
-.cite{display:inline-flex;align-items:center;gap:5px;margin-top:8px;
-  font-family:var(--mono);font-size:10.5px;color:var(--accent);
-  background:rgb(94 106 210 / .08);border-radius:5px;padding:3px 8px}
+.cite{display:inline-flex;align-items:center;gap:5px;margin-top:9px;
+  font-size:11.5px;color:var(--mute);
+  background:rgb(0 0 0 / .04);border-radius:6px;padding:4px 9px}
+.cite .mention{font-size:11.5px;text-decoration-color:rgb(17 17 20 / .22)}
 .nightly{display:flex;gap:9px;flex-wrap:wrap;align-items:center;
   margin-top:13px;padding-top:11px;border-top:1px solid var(--line);
   font-size:11.5px;color:var(--mute)}
 .nightly b{color:var(--ink);font-weight:600}
 .nightly .left{margin-left:auto;color:var(--accent);font-weight:600}
+/* Mentions, as the product draws them: the person's mark, their whole name,
+   and a hairline under both. Not a coloured handle — a handle is a string you
+   have to decode, and this is a face you recognise. */
+.mention{
+  display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;
+  color:var(--ink);font-weight:500;
+  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2.5px;
+}
+.av--sm{width:16px;height:16px;font-size:7.5px;transform:translateY(2px)}
 .hint{margin-top:9px;padding:9px 11px;border-radius:8px;background:rgb(0 0 0 / .035);color:var(--body);font-size:12px}
 
 /* The command bar, drawn open with something half typed into it. Two floating
@@ -507,7 +517,7 @@ a{color:inherit;text-decoration:none}
             <div class="uiBar"><b>Dead letter queue handling</b><span class="pill">Closed</span><span class="pill sp">You were away</span></div>
             <div class="uiPad">
               <div class="msg"><span class="av" style="--c:#2b8a9e;margin-top:2px">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
-              <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by Priya · 4 March →</span></span></div>
+              <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by <span class="mention"><span class="av av--sm" style="--c:#b57a1e">PN</span>Priya Nair</span> · 4 March →</span></span></div>
               <div class="nightly"><b>3 asked overnight</b><span>2 answered</span><span class="left">1 needs you</span></div>
             </div>
           </div>
@@ -517,7 +527,7 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>API Rate Limiting</b><span class="pill sp">4 members</span></div>
             <div class="uiPad">
-              <div class="msg"><span class="av" style="--c:#5b53b8;margin-top:2px">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><b style="color:#5e6ad2">@tom</b> can you confirm the burst number before Thursday?</span></span></div>
+              <div class="msg"><span class="av" style="--c:#5b53b8;margin-top:2px">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><span class="mention"><span class="av av--sm" style="--c:#2b8a9e">TO</span>Tom Okafor</span> can you confirm the burst number before Thursday?</span></span></div>
               <div class="chip">
                 <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.2l2 1.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                 Agent follow up · in 2 days
