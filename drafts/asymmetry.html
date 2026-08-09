@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fosbury — Writing got free. Reading didn’t.</title>
+<meta name="description" content="Every tool your team uses was built when a paragraph cost an hour.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   Option A — the asymmetry.
+
+   Not one byte crosses the network after the document. No webfont, no image,
+   no video, no framework. The two voices on this page are `ui-sans-serif` and
+   `ui-monospace`, which on the machine this is written for resolve to SF Pro
+   and SF Mono — already installed, already hinted, and free. A page whose
+   argument is that reading is expensive cannot afford to make you wait for it.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#ffffff;
+  --ink:#17181c;          /* the display weight; heavier than body ink on purpose */
+  --body:#3f434a;
+  --muted:#8a8f98;
+  --faint:#b9bcc2;
+  --drone:#767b84;      /* the bloat: plainly subordinate, still legible at AA */
+  --line:rgb(0 0 0 / .085);
+  --accent:#5e6ad2;
+
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,monospace;
+
+  /* One curve, used everywhere. Motion on this page has weight, not duration. */
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --gut:clamp(22px,5vw,64px);
+  --rail:210px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--body);
+  font-family:var(--sans);
+  font-size:17px;
+  line-height:1.62;
+  letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+
+/* ── the meter ────────────────────────────────────────────────────────────
+   The only ornament on the page, and it is not ornament: it is the count of
+   what you are being asked to read, measured off this document as it stands.
+   It has to be true, so it is read from the DOM rather than typed in.
+   ─────────────────────────────────────────────────────────────────────── */
+.rail{
+  /* A column of the grid rather than something floated near it, so the meter
+     sits on the same left edge the page is built from and stays with you as
+     the argument gets longer. */
+  grid-column:1;position:sticky;top:clamp(26px,4vh,44px);align-self:start;
+  font-family:var(--mono);font-size:11px;line-height:1.55;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);
+  opacity:0;animation:fade .8s .15s var(--ease) forwards;
+}
+.railMark{display:flex;align-items:center;gap:9px;color:var(--ink)}
+.railMark svg{height:17px;width:auto}
+.railCount{margin-top:22px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.railTime{margin-top:2px;font-variant-numeric:tabular-nums}
+/* A hairline that is as long as the reading is. Nothing else on the page moves
+   when the argument inflates; this does, and that is the tell. */
+.railBar{
+  margin-top:12px;height:1px;width:100%;
+  background:var(--line);position:relative;overflow:hidden;
+}
+.railBar i{
+  position:absolute;inset:0 auto 0 0;display:block;
+  background:var(--ink);
+  transform-origin:left;transform:scaleX(var(--fill,.06));
+  transition:transform 1.1s var(--ease);
+}
+body[data-bloated] .railBar i{background:var(--accent)}
+
+/* ── the column ─────────────────────────────────────────────────────────── */
+.sheet{
+  max-width:1120px;margin:0 auto;
+  padding:clamp(76px,14vh,158px) var(--gut) clamp(80px,14vh,140px);
+  display:grid;
+  grid-template-columns:var(--rail) minmax(0,1fr);
+  column-gap:clamp(28px,4.5vw,80px);
+  align-items:start;
+}
+.col{grid-column:2;min-width:0}
+@media(max-width:900px){
+  .sheet{
+    grid-template-columns:1fr;max-width:74ch;
+    padding-top:clamp(30px,6vh,54px);
+  }
+  .rail{
+    position:static;grid-column:1;margin-bottom:clamp(44px,9vh,80px);
+    display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
+  }
+  .col{grid-column:1}
+  .railMark{margin-right:auto}
+  .railCount,.railTime{margin-top:0}
+  .railBar{flex:1 0 100%;margin-top:10px}
+}
+
+/* ── the head ───────────────────────────────────────────────────────────── */
+.headline{
+  font-size:clamp(40px,7.4vw,86px);
+  font-weight:700;
+  line-height:.94;
+  letter-spacing:-.045em;
+  color:var(--ink);
+  text-wrap:balance;
+}
+/* Two sentences, two lines, and the second one is the one that hurts — so it
+   arrives a beat late rather than with its twin. */
+.headline span{display:block;opacity:0;transform:translateY(14px)}
+.headline span:nth-child(1){animation:rise .95s .10s var(--ease) forwards}
+.headline span:nth-child(2){animation:rise .95s .30s var(--ease) forwards;color:var(--accent)}
+
+.deck{
+  margin-top:clamp(26px,4vh,40px);
+  max-width:480px;
+  font-size:clamp(18px,1.7vw,21px);
+  line-height:1.5;letter-spacing:-.018em;color:var(--body);
+  text-wrap:pretty;
+  opacity:0;animation:rise .95s .5s var(--ease) forwards;
+}
+
+/* ── the movements ──────────────────────────────────────────────────────── */
+.block{
+  margin-top:clamp(64px,11vh,128px);
+  max-width:560px;
+  opacity:0;animation:rise .95s var(--in,.7s) var(--ease) forwards;
+}
+.tag{
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);
+  display:block;margin-bottom:16px;
+}
+.lean{font-size:clamp(19px,1.9vw,23px);line-height:1.52;letter-spacing:-.019em;color:var(--ink);text-wrap:pretty}
+.lean + .lean{margin-top:14px}
+.lean b{font-weight:600}
+
+/* Four clauses, one per line, because each is a separate promise and a
+   paragraph would let them blur into one. */
+.clauses{margin-top:4px}
+.clauses p{
+  font-size:clamp(19px,1.9vw,23px);line-height:1.5;letter-spacing:-.019em;
+  color:var(--ink);
+  padding:13px 0;border-bottom:1px solid var(--line);
+}
+.clauses p:first-child{border-top:1px solid var(--line)}
+.clauses em{font-style:normal;color:var(--muted)}
+
+/* ── the inflation ──────────────────────────────────────────────────────────
+   The whole argument, performed. Every block keeps a second copy of itself
+   written the way the category writes: the version that costs nothing to
+   produce and six minutes to read. It is collapsed to nothing until asked
+   for, and the meter in the margin tells the truth about it either way.
+   ─────────────────────────────────────────────────────────────────────── */
+.bloat{
+  display:grid;grid-template-rows:0fr;
+  transition:grid-template-rows .85s var(--ease), opacity .5s ease;
+  opacity:0;
+}
+.bloat > div{overflow:hidden}
+.bloat p{
+  margin-top:20px;
+  font-size:16px;line-height:1.68;color:var(--drone);
+  letter-spacing:-.006em;
+}
+.bloat p:first-child{margin-top:24px}
+body[data-bloated] .bloat{grid-template-rows:1fr;opacity:1}
+
+.control{
+  margin-top:clamp(64px,11vh,120px);
+  opacity:0;animation:rise .95s 1s var(--ease) forwards;
+}
+.toggle{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);
+  display:inline-flex;align-items:center;gap:10px;
+  padding-bottom:5px;border-bottom:1px solid var(--line);
+  transition:color .25s ease,border-color .25s ease;
+}
+.toggle:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.toggle svg{height:9px;width:auto;transition:transform .5s var(--ease)}
+body[data-bloated] .toggle svg{transform:rotate(180deg)}
+
+/* ── the end ────────────────────────────────────────────────────────────── */
+.close{
+  margin-top:clamp(84px,15vh,170px);
+  padding-top:clamp(34px,6vh,54px);
+  border-top:1px solid var(--line);
+  max-width:560px;
+  opacity:0;animation:rise .95s 1.1s var(--ease) forwards;
+}
+.closeLine{
+  font-size:clamp(30px,4.4vw,46px);font-weight:700;
+  line-height:1.02;letter-spacing:-.04em;color:var(--ink);
+  text-wrap:balance;
+}
+.form{display:flex;align-items:center;gap:10px;margin-top:30px;max-width:400px}
+.field{
+  flex:1;height:52px;padding:0 20px;
+  border:1px solid var(--line);border-radius:999px;
+  background:var(--paper);color:var(--ink);
+  font:inherit;font-size:16px;letter-spacing:-.01em;
+  transition:border-color .22s ease,box-shadow .22s ease;
+}
+.field::placeholder{color:var(--faint)}
+.field:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
+.go{
+  flex:none;display:grid;place-items:center;height:52px;width:52px;
+  border-radius:999px;background:var(--ink);color:#fff;
+  transition:transform .35s var(--ease),background .22s ease;
+}
+.go:hover{background:#000;transform:translateX(2px)}
+.go:active{transform:translateX(0) scale(.96)}
+.note{
+  margin-top:14px;min-height:20px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);
+}
+.note[data-bad]{color:#b4483f}
+
+.foot{
+  margin-top:clamp(70px,12vh,120px);
+  display:flex;gap:20px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);
+}
+.foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.foot a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+  .headline span,.deck,.block,.control,.close,.rail{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<main class="sheet" id="sheet">
+
+<div class="rail" aria-hidden="true">
+  <div class="railMark">
+    <svg viewBox="0 0 110 150"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+      <path d="M6 108 H104"/></g></svg>
+    <span>Fosbury</span>
+  </div>
+  <div class="railCount"><span id="words">0</span> words</div>
+  <div class="railTime" id="time">&nbsp;</div>
+  <div class="railBar"><i id="fill"></i></div>
+</div>
+
+<div class="col">
+
+  <h1 class="headline">
+    <span>Writing got free.</span>
+    <span>Reading didn’t.</span>
+  </h1>
+
+  <p class="deck">Every tool your team uses was built when a paragraph cost an hour. That stopped being true about eighteen months ago.</p>
+
+  <section class="block" style="--in:.7s">
+    <span class="tag">The arithmetic</span>
+    <p class="lean">A message costs the person who sends it thirty seconds and the room that reads it thirty minutes. Chat never charged anybody for that, so volume only ever moved one way. Now that a thousand words can be produced for nothing, the bill has come due.</p>
+    <div class="bloat"><div>
+      <p>In today’s rapidly evolving digital workplace, organizations across every vertical are increasingly discovering that effective internal communication is more mission-critical than it has ever been before. As distributed and hybrid teams continue to scale at an unprecedented pace, the challenges of maintaining alignment, driving meaningful cross-functional collaboration, and ensuring that key stakeholders remain informed and engaged have never been more pressing or more consequential to enterprise outcomes.</p>
+      <p>Industry research consistently demonstrates that today’s knowledge workers spend a significant and growing portion of their day managing, triaging, and responding to internal communications — valuable time that could otherwise be redirected toward the high-impact, revenue-generating activities that genuinely move the needle for the business and unlock durable competitive advantage in the marketplace.</p>
+      <p>It has therefore become abundantly clear to forward-thinking leaders that a fundamental rethinking of how modern teams communicate is no longer merely a nice-to-have or a discretionary line item, but rather a strategic imperative for any organization that is serious about unlocking its full potential, future-proofing its operating model, and thriving in an increasingly competitive and fast-moving landscape.</p>
+    </div></div>
+  </section>
+
+  <section class="block" style="--in:.8s">
+    <span class="tag">What we changed</span>
+    <div class="clauses">
+      <p>The sender pays, not the room.</p>
+      <p>Every conversation has an owner, <em>so it is somebody’s.</em></p>
+      <p>Every conversation has an end, <em>so it stops.</em></p>
+      <p>Agents read all of it, <em>so you read almost none.</em></p>
+    </div>
+    <div class="bloat"><div>
+      <p>Fosbury delivers a comprehensive, best-in-class suite of enterprise-grade communication capabilities purpose-built from the ground up to empower modern product organizations to collaborate more effectively, more intelligently, and more asynchronously than ever before. Our robust ownership framework ensures that every single conversation is assigned to a clearly designated accountable party, driving unprecedented levels of transparency and accountability across the entire organizational surface area.</p>
+      <p>Meanwhile, our powerful and highly configurable resolution workflows enable teams to seamlessly move conversations through a fully customizable lifecycle from open to resolved to closed, while our next-generation AI-powered intelligent agent layer leverages state-of-the-art large language models to automatically surface, summarize, prioritize and action the signal hiding within the noise — so your team can focus on what truly matters most.</p>
+      <p>Whether you are a fast-growing seed-stage startup or a global enterprise operating at massive scale, Fosbury flexibly adapts to your unique workflows and meets your organization exactly where it is on its communication maturity journey.</p>
+    </div></div>
+  </section>
+
+  <section class="block" style="--in:.9s">
+    <span class="tag">The name</span>
+    <p class="lean">In 1968 Dick Fosbury won Olympic gold by going over the bar backwards. Everyone else was training harder at the same jump. Within ten years, nobody jumped the old way.</p>
+    <div class="bloat"><div>
+      <p>Our brand identity draws profound inspiration from the remarkable and inspiring story of Richard Douglas “Dick” Fosbury, the visionary American athlete and true category-defining disruptor who fundamentally reimagined the high jump at the 1968 Summer Olympic Games in Mexico City by pioneering an entirely novel and initially controversial back-first technique that would come to be known throughout the athletics world as the Fosbury Flop.</p>
+      <p>Much as Fosbury himself refused to accept the prevailing conventional wisdom of his era and instead chose to challenge the status quo through relentless first-principles thinking, we too are on an ambitious mission to fundamentally reimagine what workplace communication can and should be for the next generation of high-performing teams. We believe, deeply and sincerely, that incremental optimization of a broken paradigm can only ever yield incremental results.</p>
+    </div></div>
+  </section>
+
+  <div class="control">
+    <button class="toggle" type="button" id="toggle" aria-pressed="false">
+      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="toggleLabel">Show me how everyone else would write this</span>
+    </button>
+  </div>
+
+  <section class="close">
+    <h2 class="closeLine">Team chat you can close.</h2>
+    <form class="form" id="form" novalidate>
+      <input class="field" id="email" type="email" name="email" placeholder="you@company.com"
+             autocomplete="email" spellcheck="false" aria-label="Your email address">
+      <button class="go" type="submit" aria-label="Get access">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </form>
+    <p class="note" id="note" role="status" aria-live="polite"></p>
+  </section>
+
+  <footer class="foot">
+    <span>Option A · the asymmetry</span>
+    <a href="/drafts/judgment">Read option B →</a>
+    <a href="/">The live site</a>
+  </footer>
+
+</div>
+
+</main>
+
+<script>
+(() => {
+'use strict';
+
+const sheet  = document.getElementById('sheet');
+const wordEl = document.getElementById('words');
+const timeEl = document.getElementById('time');
+const fillEl = document.getElementById('fill');
+const toggle = document.getElementById('toggle');
+const label  = document.getElementById('toggleLabel');
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The count.
+
+   Typed-in numbers would make the meter decoration. These are read off the
+   page as it currently stands, so the figure in the margin is the figure you
+   are actually being asked to read — including, when it is open, the version
+   nobody should have to.
+   ══════════════════════════════════════════════════════════════════════════ */
+const WPM = 200;
+const READ_CAP = 1500;   /* the widest the bar ever has to describe */
+
+function countWords() {
+  let n = 0;
+  for (const node of sheet.querySelectorAll('.headline, .deck, .lean, .clauses p, .bloat p')) {
+    /* A collapsed block is not being read, so it is not being counted. */
+    if (node.closest('.bloat') && !document.body.hasAttribute('data-bloated')) continue;
+    const words = node.textContent.trim().split(/\s+/).filter(Boolean);
+    n += words.length;
+  }
+  return n;
+}
+
+function spell(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (!m) return s + ' sec';
+  return m + ' min ' + String(s).padStart(2, '0') + ' sec';
+}
+
+/* Numbers that jump are numbers nobody believes. This walks to the new one, on
+   the same curve everything else on the page moves with. */
+let frame = 0, shown = 0;
+function counter(target) {
+  cancelAnimationFrame(frame);
+  fillEl.style.setProperty('--fill', Math.max(.04, Math.min(1, target / READ_CAP)).toFixed(3));
+
+  /* A tab nobody is looking at gets no frames, and a number that waits for a
+     frame that never comes is a number that lies. Somewhere unwatched, or for
+     somebody who asked for less movement, it simply arrives. */
+  if (document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    shown = target;
+    wordEl.textContent = shown.toLocaleString();
+    timeEl.textContent = spell((shown / WPM) * 60);
+    return;
+  }
+
+  const from = shown, span = target - from, start = performance.now();
+  const run = 900;
+
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / run);
+    const eased = 1 - Math.pow(1 - t, 4);
+    shown = Math.round(from + span * eased);
+    wordEl.textContent = shown.toLocaleString();
+    timeEl.textContent = spell((shown / WPM) * 60);
+    if (t < 1) frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+}
+
+/* ── the inflation ─────────────────────────────────────────────────────── */
+const LEAN  = 'Show me how everyone else would write this';
+const HEAVY = 'Enough';
+
+toggle.addEventListener('click', () => {
+  const bloated = document.body.toggleAttribute('data-bloated');
+  toggle.setAttribute('aria-pressed', String(bloated));
+  label.textContent = bloated ? HEAVY : LEAN;
+  counter(countWords());
+});
+
+counter(countWords());
+
+/* ── the waitlist ──────────────────────────────────────────────────────────
+   The same endpoint the live page posts to, so an address given here is an
+   address on the list rather than a draft that swallowed one.
+   ─────────────────────────────────────────────────────────────────────── */
+const form = document.getElementById('form');
+const email = document.getElementById('email');
+const note = document.getElementById('note');
+let sending = false;
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (sending) return;
+
+  const address = email.value.trim();
+  if (!/^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(address)) {
+    note.setAttribute('data-bad', '');
+    note.textContent = 'That does not look like an email address.';
+    email.focus();
+    return;
+  }
+
+  sending = true;
+  note.removeAttribute('data-bad');
+  note.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: address }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.ok) throw new Error(body.error || 'that did not go through');
+    form.hidden = true;
+    note.textContent = 'You’re on the waitlist.';
+  } catch (err) {
+    note.setAttribute('data-bad', '');
+    note.textContent = String(err.message || err);
+  } finally {
+    sending = false;
+  }
+});
+})();
+</script>
+
+</body>
+</html>
