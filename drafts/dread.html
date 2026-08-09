@@ -46,6 +46,7 @@
      a list where every row is coloured is a list with no priority in it. */
   --priority-urgent:#e07b3c;
   --icon-default:#6b6f76;
+  --unread:#5f95e4; --unread-wash:14%;
   --status-open:#8a8f98; --status-resolved:#3a8f68; --status-closed:#a4abb3;
 
   --serif:ui-serif,'New York',Iowan Old Style,Georgia,'Times New Roman',serif;
@@ -242,8 +243,18 @@ a{color:inherit;text-decoration:none}
 .row .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .s{color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .row .r{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;color:var(--faint);font-size:11.5px}
-.unread{min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--accent);
-  color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center}
+/* Unread reads before priority, not after the owner, and the gutter it sits in
+   is held open on every row whether there is a badge in it or not — otherwise
+   the titles step in and out as threads are read. */
+.rowUnread{display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:24px;margin-right:2px}
+.unread{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:16px;padding:0 5px;border-radius:999px;
+  background:color-mix(in srgb, var(--unread) var(--unread-wash), transparent);
+  color:var(--unread);font-size:10px;font-weight:500;
+  font-variant-numeric:tabular-nums;line-height:1;
+}
 .done{color:var(--faint);text-decoration:line-through}
 .uiPad{padding:14px}
 .askBubble{display:inline-block;padding:9px 13px;border-radius:12px 12px 12px 4px;
@@ -257,8 +268,9 @@ a{color:inherit;text-decoration:none}
 .reply{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .msg{display:flex;gap:9px;padding:8px 0}
 .msg > span:last-child{min-width:0}
-.msg .who{display:block;font-weight:600;font-size:12px}
-.msg .txt{display:block;color:var(--body);margin-top:2px}
+.msg > .av{align-self:flex-start}
+.msg .who{display:block;font-weight:600;font-size:12px;line-height:20px}
+.msg .txt{display:block;color:var(--body);margin-top:1px}
 /* The product's follow-up chip: a pill with an inset hairline and nothing
    filled in. Its agentic variant is the accent colour, which is one purple too
    many on this screen, so this is the plain one. */
@@ -284,11 +296,16 @@ a{color:inherit;text-decoration:none}
    and a hairline under both. Not a coloured handle — a handle is a string you
    have to decode, and this is a face you recognise. */
 .mention{
-  display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;
+  display:inline-flex;align-items:center;gap:4px;
+  /* Centred on the text it sits in, the way the product does it. No nudge:
+     a hand-tuned offset is only correct at the one size it was tuned at. */
+  vertical-align:middle;
   color:var(--ink);font-weight:500;
-  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2.5px;
 }
-.av--sm{width:16px;height:16px;font-size:10px;letter-spacing:0;transform:translateY(3px)}
+/* The rule belongs under the name, not under the face. */
+.mention u{text-decoration:underline;text-decoration-color:var(--line);
+  text-underline-offset:2.5px;text-decoration-thickness:1px}
+.av--sm{width:16px;height:16px;font-size:10px;letter-spacing:0}
 .hint{margin-top:9px;padding:9px 11px;border-radius:8px;background:rgb(0 0 0 / .035);color:var(--body);font-size:12px}
 
 /* The command bar, drawn open with something half typed into it. Two floating
@@ -521,15 +538,15 @@ a{color:inherit;text-decoration:none}
         <div class="pane" data-pane="0" data-on>
           <div class="ui">
             <div class="uiBar"><b>My Threads</b><span class="pill" data-s="open">Open</span><span class="pill">Assigned to me</span><span class="pill sp">9</span></div>
-            <div class="grp">Urgent <span>2</span></div>
-            <div class="row"><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="av" style="--c:var(--id-blue)">DK</span><span class="unread">4</span></span></div>
-            <div class="row"><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span><span class="unread">2</span></span></div>
-            <div class="grp">High <span>3</span></div>
-            <div class="row"><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span>3d late</span></div>
-            <div class="row"><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span class="unread">2</span></span></div>
-            <div class="row"><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="--c:var(--id-green)">MB</span><span class="unread">1</span></span></div>
-            <div class="grp">Closed today <span>2</span></div>
-            <div class="row"><span class="prio" data-p="low"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="0.28"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="0.28"/></svg></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
+            <div class="grp" style="padding-left:40px">Urgent <span>2</span></div>
+            <div class="row"><span class="rowUnread"><span class="unread">4</span></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="av" style="--c:var(--id-blue)">DK</span></span></div>
+            <div class="row"><span class="rowUnread"></span><span class="prio" data-p="urgent"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/><path d="M8 4.2v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".95" fill="#fff"/></svg></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span></span></div>
+            <div class="grp" style="padding-left:40px">High <span>3</span></div>
+            <div class="row"><span class="rowUnread"></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="--c:var(--id-pink)">ER</span>3d late</span></div>
+            <div class="row"><span class="rowUnread"><span class="unread">2</span></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span></span></div>
+            <div class="row"><span class="rowUnread"><span class="unread">1</span></span><span class="prio" data-p="high"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="1"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="1"/></svg></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="--c:var(--id-green)">MB</span></span></div>
+            <div class="grp" style="padding-left:40px">Closed today <span>2</span></div>
+            <div class="row"><span class="rowUnread"></span><span class="prio" data-p="low"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9.5" width="3" height="4" rx="1" fill="currentColor" fill-opacity="1"/><rect x="6.5" y="6.5" width="3" height="7" rx="1" fill="currentColor" fill-opacity="0.28"/><rect x="11" y="3.5" width="3" height="10" rx="1" fill="currentColor" fill-opacity="0.28"/></svg></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
           </div>
         </div>
 
@@ -537,8 +554,8 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>Dead letter queue handling</b><span class="pill" data-s="closed">Closed</span><span class="pill sp">You were away</span></div>
             <div class="uiPad">
-              <div class="msg"><span class="av" style="--c:var(--id-yellow);margin-top:2px">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
-              <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by <span class="mention"><span class="av av--sm" style="--c:var(--id-orange)">PN</span>Priya Nair</span> · 4 March →</span></span></div>
+              <div class="msg"><span class="av" style="--c:var(--id-teal)">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
+              <div class="msg"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by <span class="mention"><span class="av av--sm" style="--c:var(--id-orange)">PN</span><u>Priya Nair</u></span> · 4 March →</span></span></div>
               <div class="nightly"><b>3 asked overnight</b><span>2 answered</span><span class="left">1 needs you</span></div>
             </div>
           </div>
@@ -548,14 +565,14 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>API Rate Limiting</b><span class="pill sp">4 members</span></div>
             <div class="uiPad">
-              <div class="msg"><span class="av" style="--c:var(--id-purple);margin-top:2px">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><span class="mention"><span class="av av--sm" style="--c:var(--id-yellow)">TO</span>Tom Okafor</span> can you confirm the burst number before Thursday?</span></span></div>
+              <div class="msg"><span class="av" style="--c:var(--id-purple)">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><span class="mention"><span class="av av--sm" style="--c:var(--id-teal)">TO</span><u>Tom Okafor</u></span> can you confirm the burst number before Thursday?</span></span></div>
               <div class="chip">
                 <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="5.2"/><path d="M8 6.4V9l1.8 1.1"/></svg>
                 Agent follow up · in 2 days
               </div>
               <div class="hint">If Tom has not given a number, ask again. If he has, put it in the spec and close this.</div>
               <div class="reply">
-                <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
+                <div class="msg"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
               </div>
             </div>
           </div>
@@ -593,7 +610,7 @@ a{color:inherit;text-decoration:none}
       <div class="card reveal">
         <div class="cardArt">
           <div class="uiPad" style="padding:12px 14px">
-            <div class="msg" style="padding:0"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
+            <div class="msg" style="padding:0"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
           </div>
         </div>
         <h3 class="cardName">Agents are members</h3>
