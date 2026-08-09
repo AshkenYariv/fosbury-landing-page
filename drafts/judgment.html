@@ -6,355 +6,362 @@
 <title>Fosbury — Everything got cheap except judgement.</title>
 <meta name="description" content="The one input a company cannot manufacture is somebody deciding.">
 <meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%231a1917' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
 
 <!--
   ⚠ THE ENTRIES BELOW ARE PLACEHOLDER.
 
   The whole force of this page is that it is true: a company that publishes its
-  own decisions cannot be copied by one that will not. The dates, the owners
-  and the arguments here are written from the about page and from the product,
-  and every one of them has to be replaced with the real record before this
-  goes anywhere near the public. A ledger that is nearly true is worth less
-  than no ledger at all.
+  own decisions cannot be copied by one that will not. Dates, owners and
+  arguments are written from the about page and from the product, and every one
+  has to be replaced with the real record before this goes anywhere public. A
+  ledger that is nearly true is worth less than no ledger at all.
 -->
 
 <style>
 /* ══════════════════════════════════════════════════════════════════════════
    Option B — judgement.
 
-   Set as a record rather than as an interface: a register with a rule down it,
-   numbered entries, and the argument folded underneath each one. Nothing on
-   this page is chrome from the app, because the claim is that the talk leaves
-   an artefact behind, and an artefact is a document.
+   A register, printed. Bone stock, ink, and one red kept for the single line
+   in the whole document that is not settled. The page is ruled like a ledger
+   and marked where the rules cross; the display is a serif at a size no
+   interface would use, and everything else is small.
 
-   Three voices, none of them downloaded. `ui-serif` is New York on Apple
-   platforms and Georgia everywhere else; `ui-sans-serif` is SF Pro; the meta
-   is SF Mono. No webfont, no image, no network after the document.
+   The stipple in the corner is made here by a turbulence filter thresholded to
+   two values, so the one piece of texture on the page is a few hundred bytes
+   rather than an image. Nothing crosses the network after the document.
    ══════════════════════════════════════════════════════════════════════════ */
 :root{
-  --paper:#fdfdfb;         /* a hair of warmth: this is a document, not a screen */
-  --ink:#1b1c20;
-  --body:#43474e;
-  --muted:#8a8f98;
-  --faint:#b7bac0;
-  --line:rgb(0 0 0 / .10);
-  --hair:rgb(0 0 0 / .06);
-  --accent:#5e6ad2;
+  --stock:#ece7dc;
+  --stock-lit:#f4f0e7;
+  --ink:#17161a;
+  --ink-soft:#4a4740;
+  --ink-mute:#8a857a;
+  --ink-faint:#b3ada0;
+  --rule:rgb(23 22 26 / .16);
+  --hair:rgb(23 22 26 / .09);
+  --open:#b23a2c;
 
   --serif:ui-serif,'New York',Iowan Old Style,Georgia,'Times New Roman',serif;
   --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,monospace;
 
   --ease:cubic-bezier(.2,.8,.2,1);
-  --gut:clamp(22px,5vw,60px);
-  --measure:min(66ch,100%);
+  --gut:clamp(20px,4.2vw,54px);
+  --bar:clamp(56px,7.5vh,84px);
 }
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:var(--stock)}
 body{
-  margin:0;
-  background:var(--paper);
-  color:var(--body);
-  font-family:var(--sans);
-  font-size:17px;line-height:1.62;letter-spacing:-.011em;
+  margin:0;min-height:100vh;
+  background:
+    radial-gradient(90% 70% at 12% 0%, var(--stock-lit), transparent 62%),
+    var(--stock);
+  background-attachment:fixed;
+  color:var(--ink-soft);
+  font-family:var(--sans);font-size:16px;line-height:1.58;letter-spacing:-.008em;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;
 }
 h1,h2,h3,p{margin:0}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
-:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+:focus-visible{outline:1.5px solid var(--open);outline-offset:5px}
 
-.sheet{max-width:calc(74ch + var(--gut) * 2);margin:0 auto;padding:0 var(--gut)}
-
-/* ── the bar ────────────────────────────────────────────────────────────── */
-.top{
-  display:flex;align-items:center;gap:10px;
-  padding:clamp(24px,4vh,40px) 0;
-  color:var(--ink);
-  opacity:0;animation:fade .8s .1s var(--ease) forwards;
+/* ── the ruling ─────────────────────────────────────────────────────────── */
+.rules{position:fixed;inset:0;z-index:0;pointer-events:none}
+.rules i{position:absolute;background:var(--hair)}
+.rules .v{top:0;bottom:0;width:1px}
+.rules .h{left:0;right:0;height:1px}
+.rules .x{
+  position:absolute;width:11px;height:11px;margin:-5px 0 0 -5px;background:
+    linear-gradient(var(--ink-faint),var(--ink-faint)) center/1px 11px no-repeat,
+    linear-gradient(var(--ink-faint),var(--ink-faint)) center/11px 1px no-repeat;
 }
-.top svg{height:22px;width:auto}
-.top span{font-size:19px;font-weight:600;letter-spacing:-.03em}
 
-/* ── the head ───────────────────────────────────────────────────────────── */
-.head{padding:clamp(58px,12vh,130px) 0 clamp(52px,9vh,96px)}
+/* The mark, pressed into the stock rather than printed on it. */
+.watermark{
+  position:fixed;left:-6vw;bottom:-14vh;z-index:0;pointer-events:none;
+  height:min(96vh,900px);width:auto;color:var(--ink);opacity:.045;
+}
+/* Set in the column rather than floated over the page, so it cannot land on a
+   line of type at some width nobody checked. */
+.grain{
+  display:block;width:min(190px,42%);margin:clamp(34px,7vh,72px) 0 0;
+  opacity:.45;color:var(--ink);
+  animation:rise 1.2s .9s var(--ease) backwards;
+}
+@media(max-width:1000px){.watermark{opacity:.03;left:-24vw}}
+@media(max-width:900px){.grain{display:none}}
+
+/* ── the page ───────────────────────────────────────────────────────────── */
+.sheet{position:relative;z-index:1}
+.top{
+  display:flex;align-items:center;gap:14px;height:var(--bar);
+  padding:0 var(--gut);border-bottom:1px solid var(--rule);
+  opacity:0;animation:fade .9s .1s var(--ease) forwards;
+}
+.brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.brand svg{height:20px;width:auto}
+.brand b{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:400}
+.tally{
+  margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mute);white-space:nowrap;
+}
+.tally b{color:var(--open);font-weight:400}
+
+/* Two columns: the argument stays put on the left while the record it produced
+   runs past it on the right. */
+.body{
+  display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
+  gap:clamp(30px,5vw,86px);
+  padding:0 var(--gut) clamp(50px,9vh,100px);
+}
+.say{position:sticky;top:0;align-self:start;padding:clamp(52px,12vh,132px) 0 clamp(30px,6vh,60px)}
+.chip{
+  display:inline-flex;align-items:center;padding:6px 13px;border-radius:999px;
+  border:1px solid var(--rule);
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);
+  opacity:0;animation:rise .9s .22s var(--ease) forwards;
+}
 .headline{
-  font-family:var(--serif);
-  font-size:clamp(38px,6.6vw,78px);
-  font-weight:500;line-height:1.02;letter-spacing:-.028em;
-  color:var(--ink);text-wrap:balance;
+  margin-top:clamp(18px,3vh,30px);
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(40px,5.4vw,80px);line-height:1.0;letter-spacing:-.03em;color:var(--ink);
 }
 .headline span{display:block;opacity:0;transform:translateY(15px)}
-.headline span:nth-child(1){animation:rise 1s .15s var(--ease) forwards}
-.headline span:nth-child(2){animation:rise 1s .38s var(--ease) forwards;font-style:italic}
-
+.headline span:nth-child(1){animation:rise 1.05s .32s var(--ease) forwards}
+.headline span:nth-child(2){animation:rise 1.05s .54s var(--ease) forwards;font-style:italic}
 .deck{
-  margin-top:clamp(26px,4vh,38px);max-width:52ch;
-  font-size:clamp(17px,1.55vw,19.5px);line-height:1.62;letter-spacing:-.014em;
-  color:var(--body);text-wrap:pretty;
-  opacity:0;animation:rise 1s .58s var(--ease) forwards;
+  margin-top:clamp(18px,3vh,28px);max-width:30ch;
+  font-size:clamp(15.5px,1.3vw,17.5px);line-height:1.55;color:var(--ink-soft);text-wrap:pretty;
+  opacity:0;animation:rise 1.05s .72s var(--ease) forwards;
 }
 .deck b{color:var(--ink);font-weight:600}
 
 /* ── the register ───────────────────────────────────────────────────────── */
+.register{padding:clamp(52px,12vh,132px) 0 0}
 .registerHead{
-  display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
-  padding-bottom:14px;border-bottom:1px solid var(--ink);
-  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink);
-  opacity:0;animation:rise 1s .74s var(--ease) forwards;
+  display:flex;justify-content:space-between;gap:16px;
+  padding-bottom:11px;border-bottom:1px solid var(--ink);
+  font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink);
+  opacity:0;animation:rise 1.05s .84s var(--ease) forwards;
 }
-.registerHead em{font-style:normal;color:var(--muted)}
-
-.entry{border-bottom:1px solid var(--hair);padding:clamp(26px,4vh,40px) 0}
-/* Each entry arrives when it is reached, not all at once on load — a register
-   is read down, and the page should behave as though it knows that.
-
-   The hidden state is switched on by the script rather than written here, so a
-   record whose script never runs is still a record you can read. */
+.entry{border-bottom:1px solid var(--hair);padding:clamp(22px,3.4vh,32px) 0}
 .entry{transition:opacity .8s var(--ease),transform .8s var(--ease)}
-html[data-anim] .entry:not([data-seen]){opacity:0;transform:translateY(16px)}
+html[data-anim] .entry:not([data-seen]){opacity:0;transform:translateY(14px)}
 
 .meta{
-  display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--faint);
+  display:flex;gap:12px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);
 }
-.meta .no{color:var(--muted);font-variant-numeric:tabular-nums}
-.meta .state{color:var(--muted)}
-.entry[data-open] .meta .state{color:var(--accent)}
-
+.meta .no{color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.entry[data-open] .meta .state{color:var(--open)}
 .decision{
-  margin-top:14px;
-  font-family:var(--serif);
-  font-size:clamp(24px,3vw,34px);font-weight:500;line-height:1.14;letter-spacing:-.02em;
-  color:var(--ink);text-wrap:balance;
+  margin-top:11px;font-family:var(--serif);font-weight:400;
+  font-size:clamp(21px,2.2vw,29px);line-height:1.16;letter-spacing:-.018em;color:var(--ink);
+  text-wrap:balance;
 }
-.because{margin-top:14px;max-width:var(--measure);text-wrap:pretty}
-.because b{color:var(--ink);font-weight:600}
+.entry[data-open] .decision{font-style:italic}
+.because{margin-top:9px;max-width:50ch;font-size:15.5px;text-wrap:pretty}
 
-/* ── the argument underneath ────────────────────────────────────────────────
-   One line is the decision; fourteen are how it was reached. The short version
-   is what the page is; the long one is there for the reader who does not
-   believe the short one, and costs nothing until they ask.
-   ─────────────────────────────────────────────────────────────────────── */
-.reveal{
-  margin-top:20px;
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--muted);
-  display:inline-flex;align-items:center;gap:9px;
-  transition:color .25s ease;
+.more{
+  margin-top:14px;display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-mute);transition:color .25s ease;
 }
-.reveal:hover{color:var(--ink)}
-.reveal svg{height:8px;width:auto;transition:transform .5s var(--ease)}
-.entry[data-shown] .reveal svg{transform:rotate(180deg)}
-
-.thread{
-  display:grid;grid-template-rows:0fr;
-  transition:grid-template-rows .8s var(--ease),opacity .45s ease;
-  opacity:0;
-}
+.more:hover{color:var(--ink)}
+.more svg{height:7px;width:auto;transition:transform .5s var(--ease)}
+.entry[data-shown] .more svg{transform:rotate(180deg)}
+.thread{display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows .8s var(--ease),opacity .45s ease}
 .thread > div{overflow:hidden}
 .entry[data-shown] .thread{grid-template-rows:1fr;opacity:1}
-
-.turns{
-  margin:22px 0 2px;padding-left:clamp(16px,2.4vw,26px);
-  border-left:1px solid var(--line);
-  max-width:var(--measure);
-}
-.turn{padding:11px 0}
-.who{
-  display:block;
-  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--faint);margin-bottom:5px;
-}
-.turn p{font-size:16px;line-height:1.6;color:var(--body);text-wrap:pretty}
+.turns{margin:16px 0 2px;padding-left:18px;border-left:1px solid var(--rule);max-width:52ch}
+.turn{padding:9px 0}
+.who{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:4px}
+.turn p{font-size:15px;line-height:1.55;color:var(--ink-soft)}
 .turn[data-verdict] p{color:var(--ink)}
-.turn[data-verdict] .who{color:var(--accent)}
+.turn[data-verdict] .who{color:var(--open)}
 
-/* ── the last entry, which is not closed ────────────────────────────────── */
-.entry.last{border-bottom:0;padding-bottom:clamp(20px,3vh,32px)}
-.form{display:flex;align-items:center;gap:10px;margin-top:26px;max-width:400px}
+/* ── the one that is not closed ─────────────────────────────────────────── */
+.entry.last{border-bottom:0}
+.form{display:flex;align-items:center;margin-top:20px;max-width:400px}
 .field{
-  flex:1;height:52px;padding:0 20px;
-  border:1px solid var(--line);border-radius:999px;
-  background:#fff;color:var(--ink);
-  font:inherit;font-size:16px;letter-spacing:-.01em;
-  transition:border-color .22s ease,box-shadow .22s ease;
+  flex:1;min-width:0;height:48px;padding:0 20px;
+  border:1px solid var(--rule);border-right:0;border-radius:999px 0 0 999px;
+  background:rgb(255 255 255 / .5);color:var(--ink);font:inherit;font-size:15px;
+  transition:background .22s ease,border-color .22s ease;
 }
-.field::placeholder{color:var(--faint)}
-.field:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
+.field::placeholder{color:var(--ink-faint)}
+.field:focus{outline:none;background:#fff;border-color:var(--ink-mute)}
 .go{
-  flex:none;display:grid;place-items:center;height:52px;width:52px;
-  border-radius:999px;background:var(--ink);color:#fff;
-  transition:transform .35s var(--ease),background .22s ease;
+  flex:none;display:grid;place-items:center;height:48px;padding:0 20px;
+  border-radius:0 999px 999px 0;background:var(--ink);color:var(--stock);
+  transition:background .22s ease;
 }
-.go:hover{background:#000;transform:translateX(2px)}
-.go:active{transform:translateX(0) scale(.96)}
-.note{
-  margin-top:14px;min-height:20px;
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-}
-.note[data-bad]{color:#b4483f}
+.go:hover{background:#000}
+.said{margin-top:11px;min-height:15px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-mute)}
+.said[data-bad]{color:var(--open)}
 
-.foot{
-  display:flex;gap:20px;flex-wrap:wrap;
-  padding:clamp(52px,9vh,96px) 0 clamp(46px,8vh,80px);
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);
+.links{
+  display:flex;gap:18px;padding:clamp(26px,4vh,40px) var(--gut) clamp(30px,5vh,54px);
+  border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
 }
-.foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
-.foot a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.links a{color:var(--ink-mute);text-decoration:none}
+.links a:hover{color:var(--ink)}
+.links span{color:var(--ink-faint)}
 
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes fade{to{opacity:1}}
+@media(max-width:900px){
+  .body{grid-template-columns:1fr;gap:0}
+  .say{position:static;padding-bottom:0}
+  .register{padding-top:clamp(38px,7vh,64px)}
+}
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
-  .headline span,.deck,.registerHead,.top{opacity:1;transform:none}
+  .top,.chip,.headline span,.deck,.registerHead{opacity:1;transform:none}
   .entry{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="dither" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="1" seed="4" result="n"/>
+    <feColorMatrix in="n" type="matrix"
+      values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="g"/>
+    <feComposite in="g" in2="SourceAlpha" operator="in" result="stipple"/>
+    <feComponentTransfer in="stipple"><feFuncA type="discrete" tableValues="0 0 0 1 1"/></feComponentTransfer>
+  </filter>
+</svg>
+
+<div class="rules" id="rules" aria-hidden="true"></div>
+
+<svg class="watermark" viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="6"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+  <path d="M6 108 H104"/>
+</svg>
+
 <div class="sheet">
 
   <header class="top">
-    <svg viewBox="0 0 110 150" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
-      <path d="M6 108 H104"/></g></svg>
-    <span>Fosbury</span>
+    <a class="brand" href="/" aria-label="Fosbury">
+      <svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+        <path d="M6 108 H104"/>
+      </svg>
+      <b>Fosbury</b>
+    </a>
+    <span class="tally" id="tally">&nbsp;</span>
   </header>
 
-  <section class="head">
-    <h1 class="headline">
-      <span>Everything got cheap</span>
-      <span>except judgement.</span>
-    </h1>
-    <p class="deck">Context, drafts, summaries, replies — a machine will make your team as much of all of it as you like, for nothing, forever. The one input a company still cannot manufacture is <b>somebody deciding</b>. Fosbury is built to spend that carefully, and to keep what it produces.</p>
-  </section>
+  <div class="body">
 
-  <div class="registerHead">
-    <span>The Fosbury decision record</span>
-    <em id="tally">&nbsp;</em>
+    <section class="say">
+      <span class="chip">The record</span>
+      <h1 class="headline">
+        <span>Everything got cheap</span>
+        <span>except judgement.</span>
+      </h1>
+      <p class="deck">A machine will make your team all the context, drafts and replies it likes. The one input a company cannot manufacture is <b>somebody deciding</b>.</p>
+      <svg class="grain" viewBox="0 0 200 80" aria-hidden="true"><g filter="url(#dither)" fill="currentColor">
+        <ellipse cx="70" cy="46" rx="52" ry="26"/><ellipse cx="122" cy="36" rx="44" ry="28"/></g></svg>
+    </section>
+
+    <section class="register">
+      <div class="registerHead">
+        <span>The Fosbury decision record</span>
+        <span>Kept in Fosbury</span>
+      </div>
+
+      <article class="entry">
+        <div class="meta"><span class="no">001</span><span class="state">Closed</span><span>4 March</span><span>Yariv</span></div>
+        <h2 class="decision">Public channels only.</h2>
+        <p class="because">Private channels are where context goes to die. It cost us two deals in the first month.</p>
+        <button class="more" type="button" data-more>
+          <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>The argument</span>
+        </button>
+        <div class="thread"><div><div class="turns">
+          <div class="turn"><span class="who">David Kim</span><p>Every team asks for private channels in the first ten minutes. We will lose deals over this.</p></div>
+          <div class="turn"><span class="who">Elena Ruiz</span><p>They ask because Slack taught them to. What they want is not to be embarrassed in front of everyone, and that is a smaller problem with a smaller answer.</p></div>
+          <div class="turn" data-verdict><span class="who">Yariv · decided</span><p>Public only, and we say why on the website. If we are wrong we will hear it from people who left, which is cheaper than shipping the thing we think is wrong.</p></div>
+        </div></div></div>
+      </article>
+
+      <article class="entry">
+        <div class="meta"><span class="no">002</span><span class="state">Closed</span><span>19 March</span><span>Elena Ruiz</span></div>
+        <h2 class="decision">Nothing rewards you for being online.</h2>
+        <p class="because">No presence, no receipts, no typing dots. Each one is a way of paying people to sit in the app.</p>
+        <button class="more" type="button" data-more>
+          <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>The argument</span>
+        </button>
+        <div class="thread"><div><div class="turns">
+          <div class="turn"><span class="who">Priya Nair</span><p>Read receipts are the single most requested thing from the managers we demo to.</p></div>
+          <div class="turn" data-verdict><span class="who">Elena Ruiz · decided</span><p>That is the argument against them. A read receipt is a manager’s tool paid for out of an engineer’s afternoon.</p></div>
+        </div></div></div>
+      </article>
+
+      <article class="entry">
+        <div class="meta"><span class="no">003</span><span class="state">Closed</span><span>2 April</span><span>Yariv</span></div>
+        <h2 class="decision">Every conversation has to be able to end.</h2>
+        <p class="because">A stream you can only fall behind on, against a queue you can finish. That is the whole difference.</p>
+        <button class="more" type="button" data-more>
+          <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>The argument</span>
+        </button>
+        <div class="thread"><div><div class="turns">
+          <div class="turn"><span class="who">Marco Bianchi</span><p>Closing a conversation feels wrong. Conversations do not close, people just stop talking.</p></div>
+          <div class="turn" data-verdict><span class="who">Yariv · decided</span><p>That is the problem. “People stopped talking” is indistinguishable from “nobody decided”, and six weeks on nobody can tell you which happened.</p></div>
+        </div></div></div>
+      </article>
+
+      <article class="entry">
+        <div class="meta"><span class="no">004</span><span class="state">Closed</span><span>21 April</span><span>Priya Nair</span></div>
+        <h2 class="decision">The agent is a member, not a feature.</h2>
+        <p class="because">It has a seat, takes assignments, and closes what it finishes. It is not a button called Summarise.</p>
+        <button class="more" type="button" data-more>
+          <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>The argument</span>
+        </button>
+        <div class="thread"><div><div class="turns">
+          <div class="turn"><span class="who">David Kim</span><p>Giving it an avatar is going to read as a gimmick to some people.</p></div>
+          <div class="turn" data-verdict><span class="who">Priya Nair · decided</span><p>Until the first time it closes a thread you forgot about. The reading is done by something that does not get tired, so the deciding is left to something that does.</p></div>
+        </div></div></div>
+      </article>
+
+      <article class="entry last">
+        <div class="meta"><span class="no">005</span><span class="state">Open</span><span>Today</span><span>Owner: you</span></div>
+        <h2 class="decision">Whether this is how your team should work.</h2>
+        <p class="because">The only entry we cannot close ourselves.</p>
+        <form class="form" id="form" novalidate>
+          <input class="field" id="email" type="email" name="email" placeholder="you@company.com"
+                 autocomplete="email" spellcheck="false" aria-label="Your email address">
+          <button class="go" type="submit" aria-label="Get access">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+              <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8" fill="none" stroke="currentColor"
+                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="said" id="said" role="status" aria-live="polite"></p>
+      </article>
+    </section>
+
   </div>
 
-  <!-- 001 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">001</span><span class="state">Closed</span><span>4 March</span><span>Yariv</span></div>
-    <h2 class="decision">Public channels only.</h2>
-    <p class="because">Private channels are where context goes to die. We took the feature out rather than ship it and spend three years apologising for it. <b>It cost us two deals in the first month.</b></p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 4 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">David Kim</span><p>Every team we talk to asks for private channels in the first ten minutes. We are going to lose deals over this.</p></div>
-      <div class="turn"><span class="who">Elena Ruiz</span><p>They ask for it because Slack taught them to. What they actually want is not to be embarrassed in front of the whole company, and that is a smaller problem with a smaller answer.</p></div>
-      <div class="turn"><span class="who">David Kim</span><p>DMs cover the embarrassment case. Fine. But we should say the reason out loud rather than let people discover the hole.</p></div>
-      <div class="turn" data-verdict><span class="who">Yariv · decided</span><p>Public only, and we say why on the website. If we are wrong we will find out from people who left, and that is a cheaper way to learn it than shipping the thing we think is wrong.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 002 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">002</span><span class="state">Closed</span><span>19 March</span><span>Elena Ruiz</span></div>
-    <h2 class="decision">Nothing rewards you for being online.</h2>
-    <p class="because">No presence dots, no typing indicators, no read receipts, no “active now”. Every one of them is a way of paying people to sit in the app, and we would rather not be able to afford that.</p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 3 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">Priya Nair</span><p>Read receipts are the single most requested thing from managers we demo to.</p></div>
-      <div class="turn"><span class="who">Elena Ruiz</span><p>That is the argument against them, not for them. A read receipt is a manager’s tool paid for out of an engineer’s afternoon.</p></div>
-      <div class="turn" data-verdict><span class="who">Elena Ruiz · decided</span><p>None of them. If a thread needs an answer it has an owner and a due time, which is a real mechanism. Presence is not a mechanism, it is a mood.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 003 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">003</span><span class="state">Closed</span><span>2 April</span><span>Yariv</span></div>
-    <h2 class="decision">Every conversation has to be able to end.</h2>
-    <p class="because">A thread carries a state and an owner and can be closed, the way a task can. It turns out this is the whole difference: <b>a stream you can only fall behind on, versus a queue you can finish.</b></p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 3 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">Marco Bianchi</span><p>Closing a conversation feels wrong. Conversations do not close, people just stop talking.</p></div>
-      <div class="turn"><span class="who">Sarah Chen</span><p>That is exactly the problem. “People stopped talking” is indistinguishable from “nobody decided”, and six weeks later nobody can tell you which one happened.</p></div>
-      <div class="turn" data-verdict><span class="who">Yariv · decided</span><p>Threads close. What we are actually selling is the difference between a conversation that stopped and a conversation that finished.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 004 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">004</span><span class="state">Closed</span><span>21 April</span><span>Priya Nair</span></div>
-    <h2 class="decision">The agent is a member, not a feature.</h2>
-    <p class="because">It has a name, a face and a seat in the room. It gets assigned threads, it chases the people who owe answers, and it closes what it finishes. It is not a sidebar you open, and it is not a button called “Summarise”.</p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 3 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">Priya Nair</span><p>If it sits in a panel it becomes something you remember to use, which means most days nobody uses it.</p></div>
-      <div class="turn"><span class="who">David Kim</span><p>Giving it an avatar is going to read as a gimmick to some people.</p></div>
-      <div class="turn" data-verdict><span class="who">Priya Nair · decided</span><p>It reads as a gimmick until the first time it closes a thread you forgot about. It is a member. The whole point is that the reading is done by something that does not get tired, so that the deciding is left to something that does.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 005 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">005</span><span class="state">Closed</span><span>8 May</span><span>Sarah Chen</span></div>
-    <h2 class="decision">No loading state, anywhere.</h2>
-    <p class="because">Not a spinner, not a skeleton, not a shimmer. If a screen cannot be drawn instantly it is the wrong screen. You will open this thing forty times a day, and the tax is charged forty times.</p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 2 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">Marco Bianchi</span><p>A skeleton screen is not a loading state, it is a courtesy.</p></div>
-      <div class="turn" data-verdict><span class="who">Sarah Chen · decided</span><p>A skeleton screen is an apology rendered at sixty frames a second. Ban them and the architecture arguments resolve themselves, because there is nowhere left to hide the latency.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 006 ─────────────────────────────────────────────────────────────── -->
-  <article class="entry">
-    <div class="meta"><span class="no">006</span><span class="state">Closed</span><span>16 May</span><span>Yariv</span></div>
-    <h2 class="decision">We took the name from a high jumper.</h2>
-    <p class="because">In 1968 Dick Fosbury won Olympic gold by going over the bar backwards while everyone else was training harder at the same jump. Within ten years, nobody jumped the old way. <b>Not a faster stream. A different one.</b></p>
-    <button class="reveal" type="button" data-reveal>
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>The argument · 2 replies</span>
-    </button>
-    <div class="thread"><div><div class="turns">
-      <div class="turn"><span class="who">Elena Ruiz</span><p>Nobody under forty knows who he is. We will spend the first sentence of every conversation explaining the name.</p></div>
-      <div class="turn" data-verdict><span class="who">Yariv · decided</span><p>Then the first sentence of every conversation is about doing the obvious thing backwards, which is the only sentence I want to be having. Keep it.</p></div>
-    </div></div></div>
-  </article>
-
-  <!-- 007 — the one that is not closed ─────────────────────────────────── -->
-  <article class="entry last">
-    <div class="meta"><span class="no">007</span><span class="state">Open</span><span>Today</span><span>Owner: you</span></div>
-    <h2 class="decision">Whether this is how your team should work.</h2>
-    <p class="because">This is the only entry in the record we cannot close ourselves. Leave an address and we will write the moment a seat opens — or take half an hour and argue with us, which is the version we prefer.</p>
-    <form class="form" id="form" novalidate>
-      <input class="field" id="email" type="email" name="email" placeholder="you@company.com"
-             autocomplete="email" spellcheck="false" aria-label="Your email address">
-      <button class="go" type="submit" aria-label="Get access">
-        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-          <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8" fill="none" stroke="currentColor"
-                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </form>
-    <p class="note" id="note" role="status" aria-live="polite"></p>
-  </article>
-
-  <footer class="foot">
+  <footer class="links">
     <span>Option B · judgement</span>
-    <a href="/drafts/asymmetry">Option A →</a>
-    <a href="/drafts/dread">Option C →</a>
+    <a href="/drafts/asymmetry">Option A</a>
+    <a href="/drafts/dread">Option C</a>
     <a href="/">The live site</a>
   </footer>
 
@@ -364,102 +371,99 @@ html[data-anim] .entry:not([data-seen]){opacity:0;transform:translateY(16px)}
 (() => {
 'use strict';
 
-/* ══════════════════════════════════════════════════════════════════════════
-   The tally.
+/* ── the ruling ────────────────────────────────────────────────────────── */
+const COLS = [.11, .5, .89];
+const rules = document.getElementById('rules');
+function rule() {
+  const bar = document.querySelector('.top').getBoundingClientRect().height;
+  const rows = [Math.round(bar)];
+  const out = [];
+  for (const c of COLS) out.push(`<i class="v" style="left:${(c * 100).toFixed(3)}%"></i>`);
+  for (const y of rows) out.push(`<i class="h" style="top:${y}px"></i>`);
+  for (const c of COLS) for (const y of rows)
+    out.push(`<i class="x" style="left:${(c * 100).toFixed(3)}%;top:${y}px"></i>`);
+  rules.innerHTML = out.join('');
+}
+rule();
+addEventListener('resize', rule, { passive: true });
 
-   Counted off the register rather than typed above it, so the line at the top
+/* ── the tally ─────────────────────────────────────────────────────────────
+   Counted off the register rather than typed above it, so the line in the bar
    cannot drift from the entries under it as they are added.
-   ══════════════════════════════════════════════════════════════════════════ */
+   ─────────────────────────────────────────────────────────────────────── */
 const entries = [...document.querySelectorAll('.entry')];
 const open = entries.filter((e) => e.querySelector('.state').textContent.trim().toLowerCase() === 'open');
 open.forEach((e) => e.setAttribute('data-open', ''));
 
-const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-               'eleven', 'twelve', 'thirteen', 'fourteen'];
+const WORDS = ['no','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
 const spell = (n) => WORDS[n] || String(n);
-const plural = (n, word) => `${spell(n)} ${word}${n === 1 ? '' : 's'}`;
-
-document.getElementById('tally').textContent =
-  `${plural(entries.length, 'decision')} · ${spell(entries.length - open.length)} closed · ${spell(open.length)} open`;
+document.getElementById('tally').innerHTML =
+  `${spell(entries.length)} decisions · ${spell(entries.length - open.length)} closed · <b>${spell(open.length)} open</b>`;
 
 /* ── the arguments ─────────────────────────────────────────────────────── */
-for (const button of document.querySelectorAll('[data-reveal]')) {
+for (const button of document.querySelectorAll('[data-more]')) {
+  button.setAttribute('aria-expanded', 'false');
   button.addEventListener('click', () => {
-    const entry = button.closest('.entry');
-    const shown = entry.toggleAttribute('data-shown');
+    const shown = button.closest('.entry').toggleAttribute('data-shown');
     button.setAttribute('aria-expanded', String(shown));
   });
-  button.setAttribute('aria-expanded', 'false');
 }
 
 /* ── reading down ──────────────────────────────────────────────────────────
-   A register is read in order, so an entry earns its arrival by being reached.
-   Where the browser will not watch, everything is simply already there.
+   The hidden state is switched on by this script, so a record whose script
+   never runs is still a record you can read. Anything already on screen is
+   marked here and now rather than waiting on a frame a background tab will
+   never hand out.
    ─────────────────────────────────────────────────────────────────────── */
 if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.documentElement.setAttribute('data-anim', '');
-
-  /* Whatever is already on the screen has already been reached, and is marked
-     so here and now. An observer answers on a frame, and a tab nobody is
-     looking at is given no frames — waiting for one would mean a reader who
-     opens this in a background tab finds an empty page waiting for them. */
   const later = entries.filter((entry) => {
     const reached = entry.getBoundingClientRect().top < window.innerHeight * .92;
     if (reached) entry.setAttribute('data-seen', '');
     return !reached;
   });
-
   const seen = new IntersectionObserver((rows) => {
     for (const row of rows) {
       if (!row.isIntersecting) continue;
       row.target.setAttribute('data-seen', '');
       seen.unobserve(row.target);
     }
-  }, { rootMargin: '0px 0px -12% 0px', threshold: .12 });
-  later.forEach((entry) => seen.observe(entry));
+  }, { rootMargin: '0px 0px -10% 0px', threshold: .1 });
+  later.forEach((e) => seen.observe(e));
 }
 
-/* ── the waitlist ──────────────────────────────────────────────────────────
-   The same endpoint the live page posts to, so an address given here is an
-   address on the list rather than a draft that swallowed one.
-   ─────────────────────────────────────────────────────────────────────── */
+/* ── the waitlist ──────────────────────────────────────────────────────── */
 const form = document.getElementById('form');
 const email = document.getElementById('email');
-const note = document.getElementById('note');
+const said = document.getElementById('said');
 let sending = false;
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (sending) return;
-
   const address = email.value.trim();
   if (!/^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(address)) {
-    note.setAttribute('data-bad', '');
-    note.textContent = 'That does not look like an email address.';
+    said.setAttribute('data-bad', '');
+    said.textContent = 'That does not look like an email address.';
     email.focus();
     return;
   }
-
   sending = true;
-  note.removeAttribute('data-bad');
-  note.textContent = 'Sending…';
-
+  said.removeAttribute('data-bad');
+  said.textContent = 'Sending…';
   try {
     const res = await fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: address }),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body.ok) throw new Error(body.error || 'that did not go through');
     form.hidden = true;
-    note.textContent = 'You’re on the record.';
+    said.textContent = 'You’re on the record.';
   } catch (err) {
-    note.setAttribute('data-bad', '');
-    note.textContent = String(err.message || err);
-  } finally {
-    sending = false;
-  }
+    said.setAttribute('data-bad', '');
+    said.textContent = String(err.message || err);
+  } finally { sending = false; }
 });
 })();
 </script>

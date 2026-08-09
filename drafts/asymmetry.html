@@ -6,405 +6,401 @@
 <title>Fosbury — Writing got free. Reading didn’t.</title>
 <meta name="description" content="Every tool your team uses was built when a paragraph cost an hour.">
 <meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23201C18' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 150'%3E%3Cg fill='none' stroke='%23f2f0ea' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80'/%3E%3Cpath d='M6 108 H104'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 /* ══════════════════════════════════════════════════════════════════════════
    Option A — the asymmetry.
 
-   Not one byte crosses the network after the document. No webfont, no image,
-   no video, no framework. The two voices on this page are `ui-sans-serif` and
-   `ui-monospace`, which on the machine this is written for resolve to SF Pro
-   and SF Mono — already installed, already hinted, and free. A page whose
-   argument is that reading is expensive cannot afford to make you wait for it.
+   A field of one colour, a ruled grid with a mark at every crossing, an
+   editorial serif set against a mono, and the company's own logotype blown up
+   until it is architecture rather than a badge. The clouds are one-bit, made
+   in the document by a turbulence filter thresholded to two values — the same
+   collision the reference leans on, of something drawn finely against
+   something obviously made of pixels.
+
+   Still nothing crossing the network after the document: the ornament is a
+   filter and the typefaces are the ones already on the machine.
    ══════════════════════════════════════════════════════════════════════════ */
 :root{
-  --paper:#ffffff;
-  --ink:#17181c;          /* the display weight; heavier than body ink on purpose */
-  --body:#3f434a;
-  --muted:#8a8f98;
-  --faint:#b9bcc2;
-  --drone:#767b84;      /* the bloat: plainly subordinate, still legible at AA */
-  --line:rgb(0 0 0 / .085);
-  --accent:#5e6ad2;
+  --field:#242ba0;
+  --field-deep:#141a72;
+  --paper:#f4f2ec;
+  --paper-dim:rgb(244 242 236 / .62);
+  --paper-faint:rgb(244 242 236 / .34);
+  --rule:rgb(244 242 236 / .17);
+  --hot:#f0d478;
 
-  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --serif:ui-serif,'New York',Iowan Old Style,Georgia,'Times New Roman',serif;
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,monospace;
 
-  /* One curve, used everywhere. Motion on this page has weight, not duration. */
   --ease:cubic-bezier(.2,.8,.2,1);
-  --gut:clamp(22px,5vw,64px);
-  --rail:210px;
+  --gut:clamp(20px,4.5vw,58px);
+  --bar:clamp(58px,8vh,88px);
 }
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:var(--field)}
 body{
-  margin:0;
-  background:var(--paper);
-  color:var(--body);
-  font-family:var(--sans);
-  font-size:17px;
-  line-height:1.62;
-  letter-spacing:-.011em;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
+  margin:0;min-height:100vh;
+  background:
+    radial-gradient(120% 90% at 78% 6%, rgb(255 255 255 / .11), transparent 58%),
+    linear-gradient(168deg, var(--field) 0%, var(--field-deep) 100%);
+  background-attachment:fixed;
+  color:var(--paper-dim);
+  font-family:var(--sans);font-size:16px;line-height:1.6;letter-spacing:-.008em;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;
 }
 h1,h2,p{margin:0}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+:focus-visible{outline:1.5px solid var(--hot);outline-offset:5px}
 
-/* ── the meter ────────────────────────────────────────────────────────────
-   The only ornament on the page, and it is not ornament: it is the count of
-   what you are being asked to read, measured off this document as it stands.
-   It has to be true, so it is read from the DOM rather than typed in.
+/* ── the ruling ───────────────────────────────────────────────────────────
+   The hairlines the layout is actually built on, left visible, with a small
+   mark wherever two of them cross. It is the cheapest ornament there is and
+   the one that most reads as somebody having set the page rather than filled
+   it.
    ─────────────────────────────────────────────────────────────────────── */
-.rail{
-  /* A column of the grid rather than something floated near it, so the meter
-     sits on the same left edge the page is built from and stays with you as
-     the argument gets longer. */
-  grid-column:1;position:sticky;top:clamp(26px,4vh,44px);align-self:start;
-  font-family:var(--mono);font-size:11px;line-height:1.55;
-  letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);
-  opacity:0;animation:fade .8s .15s var(--ease) forwards;
-}
-.railMark{display:flex;align-items:center;gap:9px;color:var(--ink)}
-.railMark svg{height:17px;width:auto}
-.railCount{margin-top:22px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.railTime{margin-top:2px;font-variant-numeric:tabular-nums}
-/* A hairline that is as long as the reading is. Nothing else on the page moves
-   when the argument inflates; this does, and that is the tell. */
-.railBar{
-  margin-top:12px;height:1px;width:100%;
-  background:var(--line);position:relative;overflow:hidden;
-}
-.railBar i{
-  position:absolute;inset:0 auto 0 0;display:block;
-  background:var(--ink);
-  transform-origin:left;transform:scaleX(var(--fill,.06));
-  transition:transform 1.1s var(--ease);
-}
-body[data-bloated] .railBar i{background:var(--accent)}
-
-/* ── the column ─────────────────────────────────────────────────────────── */
-.sheet{
-  max-width:1120px;margin:0 auto;
-  padding:clamp(76px,14vh,158px) var(--gut) clamp(80px,14vh,140px);
-  display:grid;
-  grid-template-columns:var(--rail) minmax(0,1fr);
-  column-gap:clamp(28px,4.5vw,80px);
-  align-items:start;
-}
-.col{grid-column:2;min-width:0}
-@media(max-width:900px){
-  .sheet{
-    grid-template-columns:1fr;max-width:74ch;
-    padding-top:clamp(30px,6vh,54px);
-  }
-  .rail{
-    position:static;grid-column:1;margin-bottom:clamp(44px,9vh,80px);
-    display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
-  }
-  .col{grid-column:1}
-  .railMark{margin-right:auto}
-  .railCount,.railTime{margin-top:0}
-  .railBar{flex:1 0 100%;margin-top:10px}
+.rules{position:fixed;inset:0;z-index:0;pointer-events:none}
+.rules i{position:absolute;background:var(--rule)}
+.rules .v{top:0;bottom:0;width:1px}
+.rules .h{left:0;right:0;height:1px}
+.rules .x{
+  position:absolute;width:11px;height:11px;margin:-5px 0 0 -5px;background:
+    linear-gradient(var(--paper-faint),var(--paper-faint)) center/1px 11px no-repeat,
+    linear-gradient(var(--paper-faint),var(--paper-faint)) center/11px 1px no-repeat;
 }
 
-/* ── the head ───────────────────────────────────────────────────────────── */
+/* ── the artwork ──────────────────────────────────────────────────────────
+   The logotype at the size of a building, bled off two edges. It is a jumper
+   and a bar, which is the entire argument of the name, and at this scale it
+   stops being a logo and becomes the thing the type is set against.
+   ─────────────────────────────────────────────────────────────────────── */
+.art{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.jumper{
+  position:absolute;right:-7vw;top:50%;transform:translateY(-48%);
+  height:min(126vh,1160px);width:auto;color:var(--paper);opacity:.075;
+}
+.cloud{position:absolute;opacity:.5}
+.cloud--a{top:12%;right:33%;width:min(230px,26vw)}
+.cloud--b{top:64%;right:8%;width:min(160px,19vw)}
+@media(max-width:900px){.jumper{right:-26vw;opacity:.05}.cloud--a{right:5%}.cloud--b{display:none}}
+
+/* ── the sheet ──────────────────────────────────────────────────────────── */
+.sheet{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.top{
+  display:flex;align-items:center;gap:16px;
+  height:var(--bar);padding:0 var(--gut);
+  border-bottom:1px solid var(--rule);
+  opacity:0;animation:fade .9s .1s var(--ease) forwards;
+}
+.brand{display:inline-flex;align-items:center;gap:10px;color:var(--paper);text-decoration:none}
+.brand svg{height:20px;width:auto}
+.brand b{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:400}
+
+/* The meter as a fitting rather than a caption. It counts what is on the page,
+   off the DOM, so it cannot flatter the page it sits on. */
+.meter{
+  margin-left:auto;display:inline-flex;align-items:center;gap:12px;
+  padding:7px 14px;border:1px solid var(--rule);border-radius:999px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--paper-dim);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.meter b{color:var(--paper);font-weight:400}
+.meter s{display:block;width:44px;height:1px;background:var(--rule);position:relative;text-decoration:none}
+.meter s::after{
+  content:'';position:absolute;inset:0 auto 0 0;width:100%;background:var(--hot);
+  transform-origin:left;transform:scaleX(var(--fill,.08));transition:transform 1.1s var(--ease);
+}
+
+.stage{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(46px,8vh,104px) var(--gut) clamp(36px,6vh,72px);
+}
+.chip{
+  display:inline-flex;align-self:flex-start;align-items:center;
+  padding:6px 13px;border-radius:999px;background:rgb(244 242 236 / .1);
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--paper);
+  opacity:0;animation:rise .9s .25s var(--ease) forwards;
+}
+
 .headline{
-  font-size:clamp(40px,7.4vw,86px);
-  font-weight:700;
-  line-height:.94;
-  letter-spacing:-.045em;
-  color:var(--ink);
-  text-wrap:balance;
+  margin-top:clamp(20px,3.4vh,36px);
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(44px,8.2vw,122px);line-height:.96;letter-spacing:-.032em;
+  color:var(--paper);
 }
-/* Two sentences, two lines, and the second one is the one that hurts — so it
-   arrives a beat late rather than with its twin. */
-.headline span{display:block;opacity:0;transform:translateY(14px)}
-.headline span:nth-child(1){animation:rise .95s .10s var(--ease) forwards}
-.headline span:nth-child(2){animation:rise .95s .30s var(--ease) forwards;color:var(--accent)}
+.headline span{display:block;opacity:0;transform:translateY(16px)}
+.headline span:nth-child(1){animation:rise 1.05s .34s var(--ease) forwards}
+.headline span:nth-child(2){
+  animation:rise 1.05s .56s var(--ease) forwards;
+  font-style:italic;color:var(--hot);
+  /* The fringe the reference puts on its one gold object, kept for the half of
+     the sentence that is the bad news. */
+  text-shadow:.018em 0 rgb(255 90 120 / .5), -.018em 0 rgb(90 220 255 / .45);
+}
 
 .deck{
-  margin-top:clamp(26px,4vh,40px);
-  max-width:480px;
-  font-size:clamp(18px,1.7vw,21px);
-  line-height:1.5;letter-spacing:-.018em;color:var(--body);
+  margin-top:clamp(18px,3vh,32px);max-width:34ch;
+  font-size:clamp(16px,1.45vw,19px);line-height:1.5;color:var(--paper-dim);
   text-wrap:pretty;
-  opacity:0;animation:rise .95s .5s var(--ease) forwards;
+  opacity:0;animation:rise 1.05s .74s var(--ease) forwards;
 }
 
-/* ── the movements ──────────────────────────────────────────────────────── */
-.block{
-  margin-top:clamp(64px,11vh,128px);
-  max-width:560px;
-  opacity:0;animation:rise .95s var(--in,.7s) var(--ease) forwards;
+/* Three lines, ruled apart. Nothing here is a paragraph. */
+.clauses{
+  margin-top:clamp(26px,4.5vh,50px);max-width:47ch;
+  opacity:0;animation:rise 1.05s .9s var(--ease) forwards;
 }
-.tag{
-  font-family:var(--mono);font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--faint);
-  display:block;margin-bottom:16px;
-}
-.lean{font-size:clamp(19px,1.9vw,23px);line-height:1.52;letter-spacing:-.019em;color:var(--ink);text-wrap:pretty}
-.lean + .lean{margin-top:14px}
-.lean b{font-weight:600}
-
-/* Four clauses, one per line, because each is a separate promise and a
-   paragraph would let them blur into one. */
-.clauses{margin-top:4px}
 .clauses p{
-  font-size:clamp(19px,1.9vw,23px);line-height:1.5;letter-spacing:-.019em;
-  color:var(--ink);
-  padding:13px 0;border-bottom:1px solid var(--line);
+  display:flex;gap:16px;align-items:baseline;
+  padding:13px 0;border-top:1px solid var(--rule);
+  font-size:clamp(16px,1.4vw,18.5px);color:var(--paper);
 }
-.clauses p:first-child{border-top:1px solid var(--line)}
-.clauses em{font-style:normal;color:var(--muted)}
+.clauses p:last-child{border-bottom:1px solid var(--rule)}
+.clauses u{
+  text-decoration:none;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  color:var(--paper-faint);flex:none;
+}
+.clauses em{font-style:normal;color:var(--paper-dim)}
 
-/* ── the inflation ──────────────────────────────────────────────────────────
-   The whole argument, performed. Every block keeps a second copy of itself
-   written the way the category writes: the version that costs nothing to
-   produce and six minutes to read. It is collapsed to nothing until asked
-   for, and the meter in the margin tells the truth about it either way.
+/* ── the inflation ────────────────────────────────────────────────────────
+   Ask for the version everyone else writes and you get it, in place: the
+   composition above is shoved apart, the page stops being a page and becomes
+   a wall, and the meter says what it now costs. The argument is not that the
+   long one is worse to read. It is that you watch it stop being designed.
    ─────────────────────────────────────────────────────────────────────── */
 .bloat{
-  display:grid;grid-template-rows:0fr;
-  transition:grid-template-rows .85s var(--ease), opacity .5s ease;
-  opacity:0;
+  display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows .9s var(--ease),opacity .5s ease;
 }
 .bloat > div{overflow:hidden}
-.bloat p{
-  margin-top:20px;
-  font-size:16px;line-height:1.68;color:var(--drone);
-  letter-spacing:-.006em;
-}
-.bloat p:first-child{margin-top:24px}
+.bloat p{margin-top:18px;max-width:74ch;font-size:14.5px;line-height:1.65;color:var(--paper-faint)}
 body[data-bloated] .bloat{grid-template-rows:1fr;opacity:1}
 
-.control{
-  margin-top:clamp(64px,11vh,120px);
-  opacity:0;animation:rise .95s 1s var(--ease) forwards;
+.foot{
+  display:flex;align-items:center;gap:clamp(14px,2.6vw,30px);flex-wrap:wrap;
+  padding:0 var(--gut) clamp(24px,4vh,42px);
+  opacity:0;animation:rise 1.05s 1.06s var(--ease) forwards;
 }
 .toggle{
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--muted);
-  display:inline-flex;align-items:center;gap:10px;
-  padding-bottom:5px;border-bottom:1px solid var(--line);
-  transition:color .25s ease,border-color .25s ease;
+  display:inline-flex;align-items:center;gap:9px;
+  padding:9px 16px;border:1px solid var(--rule);border-radius:999px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--paper-dim);transition:color .25s ease,border-color .25s ease;
 }
-.toggle:hover{color:var(--ink);border-bottom-color:var(--ink)}
-.toggle svg{height:9px;width:auto;transition:transform .5s var(--ease)}
+.toggle:hover{color:var(--paper);border-color:var(--paper-faint)}
+.toggle svg{height:8px;width:auto;transition:transform .5s var(--ease)}
 body[data-bloated] .toggle svg{transform:rotate(180deg)}
 
-/* ── the end ────────────────────────────────────────────────────────────── */
-.close{
-  margin-top:clamp(84px,15vh,170px);
-  padding-top:clamp(34px,6vh,54px);
-  border-top:1px solid var(--line);
-  max-width:560px;
-  opacity:0;animation:rise .95s 1.1s var(--ease) forwards;
-}
-.closeLine{
-  font-size:clamp(30px,4.4vw,46px);font-weight:700;
-  line-height:1.02;letter-spacing:-.04em;color:var(--ink);
-  text-wrap:balance;
-}
-.form{display:flex;align-items:center;gap:10px;margin-top:30px;max-width:400px}
-.field{
-  flex:1;height:52px;padding:0 20px;
-  border:1px solid var(--line);border-radius:999px;
-  background:var(--paper);color:var(--ink);
-  font:inherit;font-size:16px;letter-spacing:-.01em;
-  transition:border-color .22s ease,box-shadow .22s ease;
-}
-.field::placeholder{color:var(--faint)}
-.field:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgb(0 0 0 / .05)}
-.go{
-  flex:none;display:grid;place-items:center;height:52px;width:52px;
-  border-radius:999px;background:var(--ink);color:#fff;
-  transition:transform .35s var(--ease),background .22s ease;
-}
-.go:hover{background:#000;transform:translateX(2px)}
-.go:active{transform:translateX(0) scale(.96)}
-.note{
-  margin-top:14px;min-height:20px;
-  font-family:var(--mono);font-size:11px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--muted);
-}
-.note[data-bad]{color:#b4483f}
+.links{display:flex;gap:18px;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase}
+.links a{color:var(--paper-faint);text-decoration:none}
+.links a:hover{color:var(--paper)}
 
-.foot{
-  margin-top:clamp(70px,12vh,120px);
-  display:flex;gap:20px;flex-wrap:wrap;
-  font-family:var(--mono);font-size:11px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--faint);
+.form{display:flex;align-items:center;margin-left:auto;max-width:100%}
+.field{
+  width:clamp(186px,25vw,264px);height:46px;padding:0 20px;
+  border:1px solid var(--rule);border-right:0;border-radius:999px 0 0 999px;
+  background:rgb(244 242 236 / .06);color:var(--paper);
+  font:inherit;font-size:15px;
+  transition:background .22s ease,border-color .22s ease;
 }
-.foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
-.foot a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.field::placeholder{color:var(--paper-faint)}
+.field:focus{outline:none;background:rgb(244 242 236 / .1);border-color:var(--paper-faint)}
+.go{
+  flex:none;display:grid;place-items:center;height:46px;padding:0 20px;
+  border-radius:0 999px 999px 0;background:var(--paper);color:var(--field-deep);
+  transition:background .22s ease;
+}
+.go:hover{background:#fff}
+.said{
+  width:100%;min-height:15px;margin-top:11px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--paper-faint);
+}
+.said[data-bad]{color:#ffb3a7}
 
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes fade{to{opacity:1}}
+@media(max-width:760px){
+  .form{margin-left:0;width:100%}
+  .field{flex:1;width:auto}
+}
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
-  .headline span,.deck,.block,.control,.close,.rail{opacity:1;transform:none}
+  .top,.chip,.headline span,.deck,.clauses,.foot{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
 
-<main class="sheet" id="sheet">
+<!-- The one-bit stipple, defined once and borrowed by both clouds. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="dither" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="9" result="n"/>
+    <feColorMatrix in="n" type="matrix"
+      values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 0 0 0 0" result="g"/>
+    <feComposite in="g" in2="SourceAlpha" operator="in" result="stipple"/>
+    <feComponentTransfer in="stipple">
+      <feFuncA type="discrete" tableValues="0 0 0 1 1"/>
+    </feComponentTransfer>
+  </filter>
+</svg>
 
-<div class="rail" aria-hidden="true">
-  <div class="railMark">
-    <svg viewBox="0 0 110 150"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
-      <path d="M6 108 H104"/></g></svg>
-    <span>Fosbury</span>
-  </div>
-  <div class="railCount"><span id="words">0</span> words</div>
-  <div class="railTime" id="time">&nbsp;</div>
-  <div class="railBar"><i id="fill"></i></div>
+<div class="rules" id="rules" aria-hidden="true"></div>
+
+<div class="art" aria-hidden="true">
+  <svg class="jumper" viewBox="0 0 110 150" fill="none" stroke="currentColor"
+       stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+    <path d="M6 108 H104"/>
+  </svg>
+  <svg class="cloud cloud--a" viewBox="0 0 200 90"><g filter="url(#dither)" fill="#fff">
+    <ellipse cx="62" cy="56" rx="52" ry="30"/><ellipse cx="108" cy="42" rx="46" ry="34"/>
+    <ellipse cx="150" cy="60" rx="40" ry="24"/></g></svg>
+  <svg class="cloud cloud--b" viewBox="0 0 200 90"><g filter="url(#dither)" fill="#fff">
+    <ellipse cx="70" cy="52" rx="48" ry="27"/><ellipse cx="120" cy="46" rx="40" ry="30"/></g></svg>
 </div>
 
-<div class="col">
+<div class="sheet">
 
-  <h1 class="headline">
-    <span>Writing got free.</span>
-    <span>Reading didn’t.</span>
-  </h1>
+  <header class="top">
+    <a class="brand" href="/" aria-label="Fosbury">
+      <svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/>
+        <path d="M6 108 H104"/>
+      </svg>
+      <b>Fosbury</b>
+    </a>
+    <div class="meter" aria-hidden="true">
+      <span><b id="words">0</b> words</span>
+      <span id="time">&nbsp;</span>
+      <s id="fill"></s>
+    </div>
+  </header>
 
-  <p class="deck">Every tool your team uses was built when a paragraph cost an hour. That stopped being true about eighteen months ago.</p>
+  <main class="stage" id="stage">
+    <span class="chip">The asymmetry</span>
 
-  <section class="block" style="--in:.7s">
-    <span class="tag">The arithmetic</span>
-    <p class="lean">A message costs the person who sends it thirty seconds and the room that reads it thirty minutes. Chat never charged anybody for that, so volume only ever moved one way. Now that a thousand words can be produced for nothing, the bill has come due.</p>
+    <h1 class="headline">
+      <span>Writing got free.</span>
+      <span>Reading didn’t.</span>
+    </h1>
+
+    <p class="deck">Every tool your team uses was built when a paragraph cost an hour.</p>
+
     <div class="bloat"><div>
       <p>In today’s rapidly evolving digital workplace, organizations across every vertical are increasingly discovering that effective internal communication is more mission-critical than it has ever been before. As distributed and hybrid teams continue to scale at an unprecedented pace, the challenges of maintaining alignment, driving meaningful cross-functional collaboration, and ensuring that key stakeholders remain informed and engaged have never been more pressing or more consequential to enterprise outcomes.</p>
-      <p>Industry research consistently demonstrates that today’s knowledge workers spend a significant and growing portion of their day managing, triaging, and responding to internal communications — valuable time that could otherwise be redirected toward the high-impact, revenue-generating activities that genuinely move the needle for the business and unlock durable competitive advantage in the marketplace.</p>
-      <p>It has therefore become abundantly clear to forward-thinking leaders that a fundamental rethinking of how modern teams communicate is no longer merely a nice-to-have or a discretionary line item, but rather a strategic imperative for any organization that is serious about unlocking its full potential, future-proofing its operating model, and thriving in an increasingly competitive and fast-moving landscape.</p>
+      <p>Industry research consistently demonstrates that today’s knowledge workers spend a significant and growing portion of their day managing, triaging, and responding to internal communications — valuable time that could otherwise be redirected toward the high-impact, revenue-generating activities that genuinely move the needle for the business and unlock durable competitive advantage in an increasingly crowded marketplace.</p>
     </div></div>
-  </section>
 
-  <section class="block" style="--in:.8s">
-    <span class="tag">What we changed</span>
     <div class="clauses">
-      <p>The sender pays, not the room.</p>
-      <p>Every conversation has an owner, <em>so it is somebody’s.</em></p>
-      <p>Every conversation has an end, <em>so it stops.</em></p>
-      <p>Agents read all of it, <em>so you read almost none.</em></p>
+      <p><u>01</u><span>The sender pays, not the room.</span></p>
+      <p><u>02</u><span>Every thread has an owner and an end.</span></p>
+      <p><u>03</u><span>Agents read all of it, <em>so you read almost none.</em></span></p>
     </div>
+
     <div class="bloat"><div>
       <p>Fosbury delivers a comprehensive, best-in-class suite of enterprise-grade communication capabilities purpose-built from the ground up to empower modern product organizations to collaborate more effectively, more intelligently, and more asynchronously than ever before. Our robust ownership framework ensures that every single conversation is assigned to a clearly designated accountable party, driving unprecedented levels of transparency and accountability across the entire organizational surface area.</p>
-      <p>Meanwhile, our powerful and highly configurable resolution workflows enable teams to seamlessly move conversations through a fully customizable lifecycle from open to resolved to closed, while our next-generation AI-powered intelligent agent layer leverages state-of-the-art large language models to automatically surface, summarize, prioritize and action the signal hiding within the noise — so your team can focus on what truly matters most.</p>
-      <p>Whether you are a fast-growing seed-stage startup or a global enterprise operating at massive scale, Fosbury flexibly adapts to your unique workflows and meets your organization exactly where it is on its communication maturity journey.</p>
+      <p>Meanwhile, our powerful and highly configurable resolution workflows enable teams to seamlessly move conversations through a fully customizable lifecycle from open to resolved to closed, while our next-generation AI-powered intelligent agent layer leverages state-of-the-art large language models to automatically surface, summarize, prioritize and action the signal hiding within the noise — so that your team is finally free to focus on what truly matters most.</p>
+      <p>Whether you are a fast-growing seed-stage startup or a global enterprise operating at massive scale, Fosbury flexibly adapts to your unique workflows and meets your organization exactly where it happens to be on its own communication maturity journey.</p>
     </div></div>
-  </section>
+  </main>
 
-  <section class="block" style="--in:.9s">
-    <span class="tag">The name</span>
-    <p class="lean">In 1968 Dick Fosbury won Olympic gold by going over the bar backwards. Everyone else was training harder at the same jump. Within ten years, nobody jumped the old way.</p>
-    <div class="bloat"><div>
-      <p>Our brand identity draws profound inspiration from the remarkable and inspiring story of Richard Douglas “Dick” Fosbury, the visionary American athlete and true category-defining disruptor who fundamentally reimagined the high jump at the 1968 Summer Olympic Games in Mexico City by pioneering an entirely novel and initially controversial back-first technique that would come to be known throughout the athletics world as the Fosbury Flop.</p>
-      <p>Much as Fosbury himself refused to accept the prevailing conventional wisdom of his era and instead chose to challenge the status quo through relentless first-principles thinking, we too are on an ambitious mission to fundamentally reimagine what workplace communication can and should be for the next generation of high-performing teams. We believe, deeply and sincerely, that incremental optimization of a broken paradigm can only ever yield incremental results.</p>
-    </div></div>
-  </section>
-
-  <div class="control">
+  <footer class="foot">
     <button class="toggle" type="button" id="toggle" aria-pressed="false">
-      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span id="toggleLabel">Show me how everyone else would write this</span>
+      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="toggleLabel">How everyone else writes this</span>
     </button>
-  </div>
 
-  <section class="close">
-    <h2 class="closeLine">Team chat you can close.</h2>
+    <div class="links">
+      <a href="/drafts/judgment">Option B</a>
+      <a href="/drafts/dread">Option C</a>
+    </div>
+
     <form class="form" id="form" novalidate>
       <input class="field" id="email" type="email" name="email" placeholder="you@company.com"
              autocomplete="email" spellcheck="false" aria-label="Your email address">
       <button class="go" type="submit" aria-label="Get access">
-        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
           <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8" fill="none" stroke="currentColor"
-                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </form>
-    <p class="note" id="note" role="status" aria-live="polite"></p>
-  </section>
-
-  <footer class="foot">
-    <span>Option A · the asymmetry</span>
-    <a href="/drafts/judgment">Option B →</a>
-    <a href="/drafts/dread">Option C →</a>
-    <a href="/">The live site</a>
+    <p class="said" id="said" role="status" aria-live="polite"></p>
   </footer>
 
 </div>
-
-</main>
 
 <script>
 (() => {
 'use strict';
 
-const sheet  = document.getElementById('sheet');
-const wordEl = document.getElementById('words');
-const timeEl = document.getElementById('time');
-const fillEl = document.getElementById('fill');
-const toggle = document.getElementById('toggle');
-const label  = document.getElementById('toggleLabel');
+/* ── the ruling ────────────────────────────────────────────────────────────
+   Drawn from the same numbers the layout uses, and marked wherever two of them
+   meet, so the crossings land on the grid rather than near it.
+   ─────────────────────────────────────────────────────────────────────── */
+const COLS = [.125, .5, .875];
+const rules = document.getElementById('rules');
+
+function rule() {
+  const bar = parseFloat(getComputedStyle(document.body).getPropertyValue('--bar')) ||
+              document.querySelector('.top').getBoundingClientRect().height;
+  const rows = [Math.round(bar), Math.round(window.innerHeight - Math.max(92, window.innerHeight * .155))];
+  const out = [];
+  for (const c of COLS) out.push(`<i class="v" style="left:${(c * 100).toFixed(3)}%"></i>`);
+  for (const y of rows) out.push(`<i class="h" style="top:${y}px"></i>`);
+  for (const c of COLS) for (const y of rows)
+    out.push(`<i class="x" style="left:${(c * 100).toFixed(3)}%;top:${y}px"></i>`);
+  rules.innerHTML = out.join('');
+}
+rule();
+addEventListener('resize', rule, { passive: true });
 
 /* ══════════════════════════════════════════════════════════════════════════
    The count.
 
-   Typed-in numbers would make the meter decoration. These are read off the
-   page as it currently stands, so the figure in the margin is the figure you
-   are actually being asked to read — including, when it is open, the version
-   nobody should have to.
+   Read off the page as it stands rather than typed above it, so the figure in
+   the corner is the figure you are actually being asked to read.
    ══════════════════════════════════════════════════════════════════════════ */
-const WPM = 200;
-const READ_CAP = 1500;   /* the widest the bar ever has to describe */
+const stage = document.getElementById('stage');
+const wordEl = document.getElementById('words');
+const timeEl = document.getElementById('time');
+const fillEl = document.getElementById('fill');
+const toggle = document.getElementById('toggle');
+const label = document.getElementById('toggleLabel');
+const WPM = 200, CAP = 1200;
 
-function countWords() {
-  let n = 0;
-  for (const node of sheet.querySelectorAll('.headline, .deck, .lean, .clauses p, .bloat p')) {
-    /* A collapsed block is not being read, so it is not being counted. */
-    if (node.closest('.bloat') && !document.body.hasAttribute('data-bloated')) continue;
-    const words = node.textContent.trim().split(/\s+/).filter(Boolean);
-    n += words.length;
-  }
-  return n;
+const countWords = () => [...stage.querySelectorAll('.headline, .deck, .clauses p, .bloat p')]
+  .filter((n) => !(n.closest('.bloat') && !document.body.hasAttribute('data-bloated')))
+  .reduce((n, node) => n + node.textContent.trim().split(/\s+/).filter(Boolean).length, 0);
+
+function spell(sec) {
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return m ? `${m} min ${String(s).padStart(2, '0')} sec` : `${s} sec`;
 }
 
-function spell(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  if (!m) return s + ' sec';
-  return m + ' min ' + String(s).padStart(2, '0') + ' sec';
-}
-
-/* Numbers that jump are numbers nobody believes. This walks to the new one, on
-   the same curve everything else on the page moves with. */
 let frame = 0, shown = 0;
 function counter(target) {
   cancelAnimationFrame(frame);
-  fillEl.style.setProperty('--fill', Math.max(.04, Math.min(1, target / READ_CAP)).toFixed(3));
+  fillEl.style.setProperty('--fill', Math.max(.05, Math.min(1, target / CAP)).toFixed(3));
 
-  /* A tab nobody is looking at gets no frames, and a number that waits for a
-     frame that never comes is a number that lies. Somewhere unwatched, or for
-     somebody who asked for less movement, it simply arrives. */
+  /* A tab nobody is looking at gets no frames, and a number waiting on a frame
+     that never comes is a number that lies. There, it simply arrives. */
   if (document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) {
     shown = target;
     wordEl.textContent = shown.toLocaleString();
     timeEl.textContent = spell((shown / WPM) * 60);
     return;
   }
-
   const from = shown, span = target - from, start = performance.now();
-  const run = 900;
-
   const step = (now) => {
-    const t = Math.min(1, (now - start) / run);
-    const eased = 1 - Math.pow(1 - t, 4);
-    shown = Math.round(from + span * eased);
+    const t = Math.min(1, (now - start) / 900);
+    shown = Math.round(from + span * (1 - Math.pow(1 - t, 4)));
     wordEl.textContent = shown.toLocaleString();
     timeEl.textContent = spell((shown / WPM) * 60);
     if (t < 1) frame = requestAnimationFrame(step);
@@ -412,60 +408,46 @@ function counter(target) {
   frame = requestAnimationFrame(step);
 }
 
-/* ── the inflation ─────────────────────────────────────────────────────── */
-const LEAN  = 'Show me how everyone else would write this';
-const HEAVY = 'Enough';
-
 toggle.addEventListener('click', () => {
-  const bloated = document.body.toggleAttribute('data-bloated');
-  toggle.setAttribute('aria-pressed', String(bloated));
-  label.textContent = bloated ? HEAVY : LEAN;
+  const on = document.body.toggleAttribute('data-bloated');
+  toggle.setAttribute('aria-pressed', String(on));
+  label.textContent = on ? 'Enough' : 'How everyone else writes this';
   counter(countWords());
 });
-
 counter(countWords());
 
-/* ── the waitlist ──────────────────────────────────────────────────────────
-   The same endpoint the live page posts to, so an address given here is an
-   address on the list rather than a draft that swallowed one.
-   ─────────────────────────────────────────────────────────────────────── */
+/* ── the waitlist ──────────────────────────────────────────────────────── */
 const form = document.getElementById('form');
 const email = document.getElementById('email');
-const note = document.getElementById('note');
+const said = document.getElementById('said');
 let sending = false;
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (sending) return;
-
   const address = email.value.trim();
   if (!/^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(address)) {
-    note.setAttribute('data-bad', '');
-    note.textContent = 'That does not look like an email address.';
+    said.setAttribute('data-bad', '');
+    said.textContent = 'That does not look like an email address.';
     email.focus();
     return;
   }
-
   sending = true;
-  note.removeAttribute('data-bad');
-  note.textContent = 'Sending…';
-
+  said.removeAttribute('data-bad');
+  said.textContent = 'Sending…';
   try {
     const res = await fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: address }),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body.ok) throw new Error(body.error || 'that did not go through');
     form.hidden = true;
-    note.textContent = 'You’re on the waitlist.';
+    said.textContent = 'You’re on the waitlist.';
   } catch (err) {
-    note.setAttribute('data-bad', '');
-    note.textContent = String(err.message || err);
-  } finally {
-    sending = false;
-  }
+    said.setAttribute('data-bad', '');
+    said.textContent = String(err.message || err);
+  } finally { sending = false; }
 });
 })();
 </script>
