@@ -140,8 +140,8 @@ a{color:inherit;text-decoration:none}
 .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
   color:var(--faint);margin-bottom:16px}
 .bandTitle{font-family:var(--serif);font-weight:600;
-  font-size:clamp(30px,4.4vw,54px);line-height:1.04;letter-spacing:-.03em;
-  color:var(--ink);text-wrap:balance;max-width:17ch}
+  font-size:clamp(25px,3.3vw,40px);line-height:1.08;letter-spacing:-.026em;
+  color:var(--ink);text-wrap:balance;max-width:20ch}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .85s var(--ease),transform .85s var(--ease)}
 .reveal[data-seen]{opacity:1;transform:none}
 
@@ -228,6 +228,21 @@ a{color:inherit;text-decoration:none}
   border-radius:7px;border:1px solid rgb(94 106 210 / .3);background:rgb(94 106 210 / .07);
   color:var(--accent);font-size:11.5px;font-weight:600}
 .hint{margin-top:9px;padding:9px 11px;border-radius:8px;background:rgb(0 0 0 / .035);color:var(--body);font-size:12px}
+
+/* The command bar, drawn open with something half typed into it. Two floating
+   key caps and a made-up millisecond count said nothing; a palette with a
+   result under it is the claim itself. */
+.cmdBar{display:flex;align-items:center;gap:8px;padding:9px 12px;
+  border-bottom:1px solid var(--line);color:var(--mute);font-size:12.5px}
+.cmdBar > svg{flex:none;color:var(--faint)}
+.cmdQ{color:var(--ink);font-weight:500;white-space:nowrap}
+.cmdCaret{display:inline-block;width:1.5px;height:12px;background:var(--accent);
+  vertical-align:-2px;margin-left:2px}
+.kbd{margin-left:auto;flex:none;font-family:var(--mono);font-size:10px;color:var(--mute);
+  border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.cmdHit{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:rgb(94 106 210 / .08);color:var(--ink);font-size:12.5px;font-weight:500}
+.cmdRet{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--accent)}
 
 /* ── the six ────────────────────────────────────────────────────────────── */
 .six{margin-top:clamp(40px,6vh,70px);display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
@@ -388,7 +403,7 @@ a{color:inherit;text-decoration:none}
 <section class="band" id="how">
   <div class="wrap">
     <p class="kicker reveal">How it works</p>
-    <h2 class="bandTitle reveal">Fosbury reads the part you don’t have time for.</h2>
+    <h2 class="bandTitle reveal">Fosbury does the reading.</h2>
 
     <div class="works reveal">
       <div class="picks" role="tablist" aria-label="How it works">
@@ -418,7 +433,7 @@ a{color:inherit;text-decoration:none}
             <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="background:#d4534b">ER</span><span class="unread">2</span></span></div>
             <div class="grp">High <span>3</span></div>
             <div class="row"><span class="dot" data-p="high"></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="background:#c05f9c">ER</span>3d late</span></div>
-            <div class="row"><span class="dot" data-p="high"></span><span class="t">Burst allowance number</span><span class="s">Newport Agent chased the owner.</span><span class="r"><span class="av" style="background:#8a8f98">NA</span><span class="unread">2</span></span></div>
+            <div class="row"><span class="dot" data-p="high"></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av" style="background:#8a8f98">FA</span><span class="unread">2</span></span></div>
             <div class="row"><span class="dot" data-p="high"></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="background:#3d9b7a">MB</span><span class="unread">1</span></span></div>
             <div class="grp">Closed today <span>2</span></div>
             <div class="row"><span class="dot" data-p="low"></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
@@ -427,7 +442,7 @@ a{color:inherit;text-decoration:none}
 
         <div class="pane" data-pane="1">
           <div class="ui">
-            <div class="uiBar"><b>Agent</b><span class="pill sp">Newport</span></div>
+            <div class="uiBar"><b>Agent</b><span class="pill sp">Fosbury</span></div>
             <div class="uiPad">
               <span class="askBubble">What did we decide about the retry ceiling?</span>
               <div class="think">
@@ -435,7 +450,7 @@ a{color:inherit;text-decoration:none}
                 <div><b>Checking nothing supersedes it.</b><br>An October ceiling assumed single-partition ingest, which no longer holds.<span class="tool">read · Backpressure on the ingest worker</span></div>
               </div>
               <div class="reply">
-                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">NA</span><span><span class="who">Newport Agent</span><span class="txt">Five retries, a dedicated DLQ and fourteen days. Settled by Priya on Tuesday, and closed.</span></span></div>
+                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent</span><span class="txt">Five retries, a dedicated DLQ and fourteen days. Settled by Priya on Tuesday, and closed.</span></span></div>
               </div>
             </div>
           </div>
@@ -452,7 +467,7 @@ a{color:inherit;text-decoration:none}
               </div>
               <div class="hint">If Tom has not given a number, ask again. If he has, put it in the spec and close this.</div>
               <div class="reply">
-                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">NA</span><span><span class="who">Newport Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
+                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
               </div>
             </div>
           </div>
@@ -490,7 +505,7 @@ a{color:inherit;text-decoration:none}
       <div class="card reveal">
         <div class="cardArt">
           <div class="uiPad" style="padding:12px 14px">
-            <div class="msg" style="padding:0"><span class="av" style="background:#8a8f98;margin-top:2px">NA</span><span><span class="who">Newport Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
+            <div class="msg" style="padding:0"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
           </div>
         </div>
         <h3 class="cardName">Agents are members</h3>
@@ -518,10 +533,13 @@ a{color:inherit;text-decoration:none}
       </div>
 
       <div class="card reveal">
-        <div class="cardArt">
-          <div class="uiPad" style="padding:14px;display:flex;gap:7px;align-items:center;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#4c4d55">
-            <span class="pill">⌘K</span><span class="pill">⌘⏎</span><span style="margin-left:auto;color:#b8b9c0">0 ms</span>
+        <div class="cardArt" style="justify-content:flex-start">
+          <div class="cmdBar">
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.4 10.4 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="cmdQ">assign to el<i class="cmdCaret"></i></span>
+            <span class="kbd">⌘K</span>
           </div>
+          <div class="cmdHit"><span class="av" style="background:#c05f9c">ER</span>Elena Ruiz<span class="cmdRet">↩</span></div>
         </div>
         <h3 class="cardName">Instant, always</h3>
         <p class="cardBody">No spinner, no skeleton, no shimmer. You open this forty times a day.</p>
@@ -741,7 +759,7 @@ form.addEventListener('submit', async (e) => {
    ══════════════════════════════════════════════════════════════════════════ */
 const picks = [...document.querySelectorAll('.pick')];
 const panes = [...document.querySelectorAll('.pane')];
-const HOLD = 6200;
+const HOLD = 9500;
 let shown = 0, walk = 0, chosen = false, inView = false;
 
 function show(next) {
