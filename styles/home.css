@@ -47,6 +47,15 @@ body{font-size:17px;line-height:1.58}
    same size on the same line, so the swap reads as a change of person on its
    own, and anything added to it only softens the picture. */
 .screams img[data-on]{opacity:1}
+/* On a phone the frame is the other way up, and 45% of that width is a
+   thumbnail — at which size a face screaming at you is a face you have to look
+   for. So it stops being sized by the width and starts being sized by the room
+   under the sentence: it runs off both sides as well as off the bottom, which
+   is the crop the wide screen already makes, made on three edges instead of
+   one, and a tall phone gets a bigger head rather than a field of black. */
+@media(max-width:640px){
+  .screams{top:auto;bottom:-4svh;width:min(118vw,58svh)}
+}
 
 .heroCopy{position:relative;z-index:2;padding-top:clamp(84px,13vh,140px)}
 .lockup{display:inline-flex;align-items:center;gap:12px}
@@ -125,7 +134,7 @@ body{font-size:17px;line-height:1.58}
   display:grid;grid-template-columns:minmax(0,.76fr) minmax(0,1.24fr);
   gap:clamp(26px,5vw,72px);align-items:center;
 }
-.picks{display:grid;align-content:center;gap:2px}
+.picks{display:grid;align-content:center;gap:2px;min-width:0}
 .pick{display:block;width:100%;text-align:left;position:relative;padding:15px 0 15px 20px}
 
 /* Each claim stands against a grey rail, and whichever one is open fills its
@@ -160,11 +169,15 @@ body{font-size:17px;line-height:1.58}
 
 /* Every screen in the same grid cell, so the section is as tall as the tallest
    and nothing under it moves when one replaces another. */
-.panes{display:grid}
-.pane{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(8px);
+.panes{display:grid;min-width:0}
+.pane{grid-area:1/1;min-width:0;opacity:0;visibility:hidden;transform:translateY(8px);
   transition:opacity .3s var(--ease),transform .3s var(--ease),visibility .3s}
 .pane[data-on]{opacity:1;visibility:visible;transform:none}
-@media(max-width:860px){.works{grid-template-columns:1fr;gap:clamp(22px,4vh,36px)}}
+/* Stacked, and the column is told it may be narrower than the screen inside it —
+   a bare `1fr` keeps a floor of its own content, and the drawn screens below are
+   full of lines that would rather not wrap, so the section would push the page
+   sideways instead of letting them shorten. */
+@media(max-width:860px){.works{grid-template-columns:minmax(0,1fr);gap:clamp(22px,4vh,36px)}}
 
 /* ── the drawn screens ──────────────────────────────────────────────────────
    The app's own components, at the app's own values, rather than an
@@ -174,7 +187,12 @@ body{font-size:17px;line-height:1.58}
   font-size:13px;line-height:1.45;letter-spacing:-.006em;
   box-shadow:0 0 0 1px var(--line), 0 30px 60px -34px rgb(0 0 0 / .5)}
 .uiBar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);background:#fbfbfa}
-.uiBar b{font-weight:600;font-size:12.5px}
+/* The screen's own title shortens before anything else in the bar does: the
+   pills beside it are the status, and a status with half its word missing is
+   worse than a title with half of its. */
+.uiBar b{font-weight:600;font-size:12.5px;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uiBar .pill{flex:none}
 .uiBar .sp{margin-left:auto}
 .uiPad{padding:14px}
 
@@ -222,7 +240,7 @@ body{font-size:17px;line-height:1.58}
 .grp span{color:var(--faint);font-weight:500}
 .row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
-.row .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .row .s{color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .row .r{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;color:var(--faint);font-size:11.5px}
 .done{color:var(--faint);text-decoration:line-through}
@@ -348,6 +366,33 @@ body{font-size:17px;line-height:1.58}
   font-size:16.5px;font-weight:600;letter-spacing:-.015em;transition:transform .35s var(--ease)}
 .endBtn:hover{transform:translateY(-2px)}
 .endBtn svg{height:14px;width:auto}
+
+/* ── on a phone ───────────────────────────────────────────────────────────
+   The drawn screens are the app at the app's own size, and a phone is not that
+   size. Rather than shrink the type until none of it is the product any more,
+   the rows drop what a row can do without.
+   ─────────────────────────────────────────────────────────────────────── */
+@media(max-width:640px){
+  /* The last line of a thread is a nicety; the thread itself is the list. With
+     both of them the width buys half a title and half a preview, and half a
+     title is the one that costs you something. */
+  .row .s{display:none}
+
+  /* A refusal is only an argument in the plural. At full size one switch is
+     nearly the width of the screen, so the strip reads as a single pill sliding
+     past rather than as a list of everything that is not here — it comes down
+     until three or four of them are in view at once.
+     The fade at each end comes in with it: eight per cent of a phone is thirty
+     pixels, which is a cut rather than a fade. */
+  .sw{gap:9px;padding:8px 13px;font-size:13.5px}
+  .sw i{width:27px;height:16px}
+  .sw i::after{width:11px;height:11px;top:2.5px;left:2.5px}
+  .sw[data-on] i::after{right:2.5px}
+  .sw em{font-size:9.5px}
+  .track{gap:9px}
+  .strip{-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent)}
+}
 
 @keyframes slide{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){
