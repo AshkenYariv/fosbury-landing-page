@@ -1,0 +1,154 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Base.
+
+   What both screens are built on: the palette, the reset, the bar, the ask in
+   the corner, and the deck the two screens stand on. Anything only one screen
+   draws lives in that screen's own sheet.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#fff;
+  --ink:#111114;
+  --body:#4c4d55;
+  --mute:#83848d;
+  --faint:#b8b9c0;
+  --line:rgb(17 17 20 / .1);
+  --accent:#5e6ad2;
+
+  /* The serif is the page's display voice; the sans is the product's own, so
+     the site and the app are set in one hand. Swapped in, so the words are on
+     screen before the font is. */
+  --serif:ui-serif,'New York',Iowan Old Style,Georgia,'Times New Roman',serif;
+  --sans:'Inter',ui-sans-serif,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,monospace;
+
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --gut:clamp(20px,4.5vw,56px);
+  /* Clearing one screen to white, settling the next onto it, and the bar
+     changing shape over the top of both. Kept in step with scripts/nav.js. */
+  --out:.26s; --in:.36s; --travel:.5s;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{
+  margin:0;background:var(--paper);color:var(--body);overflow-x:clip;
+  font-family:var(--sans);font-size:16px;line-height:1.55;letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+h1,h2,h3,p{margin:0}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+
+/* The mark, wherever it is drawn. Weight is set by whatever is drawing it. */
+.mark{fill:none;stroke:currentColor;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ── the deck ─────────────────────────────────────────────────────────────
+   One document, two screens, one on top of the other. About is not a page:
+   the screen you are on clears to white, the other one settles onto the same
+   white canvas, and nothing is ever fetched or thrown away in between.
+   ─────────────────────────────────────────────────────────────────────── */
+/* One column, the width of the screen and no wider — a marquee inside is as
+   wide as its own content and would otherwise drag the column out with it. */
+.deck{display:grid;grid-template-columns:minmax(0,1fr)}
+.view{grid-area:1/1;min-width:0;transition:opacity var(--out) ease}
+/* Cleared: gone, but still holding the page's height until the swap. */
+.view[data-off]{opacity:0;pointer-events:none}
+/* Away: taking up neither height nor keyboard, so the page is only ever as
+   long as the screen you are actually reading. */
+.view[data-idle]{visibility:hidden;height:100svh;overflow:hidden}
+.view:not([data-off]){transition-duration:var(--in)}
+
+/* ── the bar ──────────────────────────────────────────────────────────────
+   The mark and About are always in it. The two that belong to the home screen
+   grow out of the mark when you are on it and fold back into it when you
+   leave — the bar is the same object throughout, never a second one.
+   ─────────────────────────────────────────────────────────────────────── */
+.nav{
+  position:fixed;top:clamp(13px,2.2vh,24px);left:50%;transform:translateX(-50%);z-index:60;
+  display:flex;align-items:center;
+  padding:9px 18px 9px 13px;border-radius:999px;
+  background:rgb(255 255 255 / .97);color:#111;
+  -webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);
+  font-size:14px;font-weight:500;letter-spacing:-.012em;white-space:nowrap;
+  box-shadow:0 10px 30px -14px rgb(0 0 0 / .5), inset 0 0 0 1px var(--line);
+  opacity:0;animation:fade .8s .18s var(--ease) forwards;
+  max-width:calc(100vw - var(--gut) * 2);
+}
+.navMark{display:grid;place-items:center;width:24px;height:24px;border-radius:999px;background:#111;flex:none}
+.navMark svg{height:13px;width:auto;color:#fff}
+.nav a:not(.navMark){color:rgb(0 0 0 / .66);transition:color .16s ease}
+.nav a:hover,.nav a[aria-current]{color:#000}
+.navAbout{margin-left:18px}
+/* The two the home screen adds. Each carries its own width from none to all of
+   it while its words travel in and out of the mark, and the bar, being sized by
+   what is in it, follows. The width has to be a real length for it to be worth
+   animating — an `fr` in a bar this size resolves to the same thing whatever
+   the fraction, which is a jump, not a travel — so `scripts/nav.js` measures
+   each label once and leaves it in `--w`.
+
+   They leave furthest-first and come back nearest-first, so the bar reads as
+   one thing closing and opening rather than two labels blinking. */
+/* Named against the bar as well as itself, so it outweighs the plain link rule
+   above rather than losing its travel to that rule's transition. */
+.nav a.navHome{
+  display:block;overflow:hidden;margin-left:18px;
+  transition:width var(--travel) var(--ease),
+             margin-left var(--travel) var(--ease), color .16s ease;
+}
+.navHome > span{
+  display:block;width:max-content;
+  transition:opacity .26s ease,transform var(--travel) var(--ease);
+}
+/* Shut is the resting shape once the bar knows which screen it is on; without
+   that it has never been told, and both belong in it. */
+.nav[data-view] .navHome{width:0;margin-left:0}
+.nav[data-view] .navHome > span{opacity:0;transform:translateX(-18px)}
+.nav[data-view="home"] .navHome{width:var(--w,auto);margin-left:18px}
+.nav[data-view="home"] .navHome > span{opacity:1;transform:none}
+/* Out nearest-first and back furthest-first. The two counts come from the bar
+   itself, so a link added to it takes its turn without being told. Colour is
+   left at no delay — a hover should answer at once. */
+.nav[data-view="home"] .navHome{transition-delay:var(--out-i) var(--out-i) 0s}
+.nav[data-view="home"] .navHome > span{transition-delay:var(--out-i)}
+.nav:not([data-view="home"]) .navHome{transition-delay:var(--shut-i) var(--shut-i) 0s}
+.nav:not([data-view="home"]) .navHome > span{transition-delay:var(--shut-i)}
+
+/* Below this the bar is the mark and About, the same shape it wears on the
+   other screen — four labels and a mark do not fit across a phone. */
+@media(max-width:560px){
+  .nav a.navHome{display:none}
+}
+
+/* ── get access, in the corner ────────────────────────────────────────────
+   The ask follows you once the screen it was asked on is behind you, and
+   steps aside wherever that screen makes the offer full size itself.
+   ─────────────────────────────────────────────────────────────────────── */
+.getAccess{
+  position:fixed;top:clamp(13px,2.2vh,24px);right:var(--gut);z-index:60;
+  display:inline-flex;align-items:center;gap:6px;
+  height:36px;padding:0 15px;border-radius:999px;
+  background:var(--ink);color:#fff;
+  font-size:13px;font-weight:600;letter-spacing:-.012em;white-space:nowrap;
+  box-shadow:0 8px 24px -12px rgb(0 0 0 / .55);
+  opacity:0;transform:translateY(-8px);pointer-events:none;
+  transition:opacity .4s var(--ease),transform .4s var(--ease),background .2s ease;
+}
+.getAccess[data-on]{opacity:1;transform:none;pointer-events:auto}
+.getAccess:hover{background:#000}
+.getAccess svg{height:11px;width:auto}
+@media(max-width:720px){
+  /* Under the bar it would sit on top of it, so it moves to the other corner. */
+  .getAccess{top:auto;bottom:clamp(16px,3vh,26px)}
+}
+
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important;transition-delay:0ms!important}
+  .nav{opacity:1}
+}
