@@ -4,5 +4,13 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/about", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(styles|scripts)/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
   ]
 }

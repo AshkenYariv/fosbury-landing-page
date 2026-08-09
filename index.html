@@ -12,10 +12,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles/base.css">
-<link rel="stylesheet" href="/styles/waitlist.css">
-<link rel="stylesheet" href="/styles/home.css">
-<link rel="stylesheet" href="/styles/about.css">
+<!-- The `?v=` is a one-off rescue, not a habit. Anyone who loaded the site
+     before 10 Aug holds a stylesheet their browser was told to keep for four
+     hours, and it will not ask for a new one until that runs out — so a phone
+     pairs today's markup with Friday's CSS. The HTML is never cached, so
+     changing the query is the only thing that reaches them: a different URL is
+     a different entry, and the browser has to go and fetch it. The header rule
+     in vercel.json is what stops this happening again; once every stale copy
+     has aged out this can go back to being a bare path. -->
+<link rel="stylesheet" href="/styles/base.css?v=20260810">
+<link rel="stylesheet" href="/styles/waitlist.css?v=20260810">
+<link rel="stylesheet" href="/styles/home.css?v=20260810">
+<link rel="stylesheet" href="/styles/about.css?v=20260810">
 <!-- The first two frames are the hero; the rest arrive in the tenth of a
      second before they are wanted. -->
 <link rel="preload" as="image" href="/assets/screams/01.jpg">
@@ -23,10 +31,10 @@
 <!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
 <script defer src="https://cloud.umami.is/script.js"
         data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
-<script defer src="/scripts/track.js"></script>
-<script defer src="/scripts/waitlist.js"></script>
-<script defer src="/scripts/nav.js"></script>
-<script defer src="/scripts/home.js"></script>
+<script defer src="/scripts/track.js?v=20260810"></script>
+<script defer src="/scripts/waitlist.js?v=20260810"></script>
+<script defer src="/scripts/nav.js?v=20260810"></script>
+<script defer src="/scripts/home.js?v=20260810"></script>
 </head>
 <body>
 
