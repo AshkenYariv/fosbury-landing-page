@@ -240,12 +240,6 @@ a{color:inherit;text-decoration:none}
 .cite{display:inline-flex;align-items:center;gap:5px;margin-top:8px;
   font-family:var(--mono);font-size:10.5px;color:var(--accent);
   background:rgb(94 106 210 / .08);border-radius:5px;padding:3px 8px}
-/* What it refused to answer, which is the impressive half. */
-.draft{margin-top:11px;padding:10px 12px;border-radius:9px;
-  border:1px dashed rgb(94 106 210 / .38);background:rgb(94 106 210 / .05)}
-.draftTag{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--accent);margin-bottom:5px}
-.draftTxt{display:block;font-size:12px;color:var(--body)}
 .nightly{display:flex;gap:9px;flex-wrap:wrap;align-items:center;
   margin-top:13px;padding-top:11px;border-top:1px solid var(--line);
   font-size:11.5px;color:var(--mute)}
@@ -470,7 +464,7 @@ a{color:inherit;text-decoration:none}
         <button class="pick" type="button" role="tab" data-pick="1" aria-selected="false">
           <span class="pickNo">02</span>
           <span class="pickTitle">It already replied.</span>
-          <span class="pickBody"><span><em>Anything your team already decided, it answers in the thread and closes — with a link to where. Anything nobody has decided yet, it drafts and leaves for you. <b>It never decides; it repeats.</b></em></span></span>
+          <span class="pickBody"><span><em>Anything your team already decided, it answers in the thread and closes — with a link to where it was decided. <b>It never decides; it repeats.</b></em></span></span>
         </button>
         <button class="pick" type="button" role="tab" data-pick="2" aria-selected="false">
           <span class="pickNo">03</span>
@@ -501,10 +495,6 @@ a{color:inherit;text-decoration:none}
             <div class="uiPad">
               <div class="msg"><span class="av" style="background:#3d9b7a;margin-top:2px">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
               <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by Priya · 4 March →</span></span></div>
-              <div class="draft">
-                <span class="draftTag">Left for you</span>
-                <span class="draftTxt">Grace asked whether to raise the org ceiling. Nobody has decided that, so I have not answered it.</span>
-              </div>
               <div class="nightly"><b>3 asked overnight</b><span>2 answered</span><span class="left">1 needs you</span></div>
             </div>
           </div>
