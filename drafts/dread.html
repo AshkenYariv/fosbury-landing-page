@@ -200,8 +200,18 @@ a{color:inherit;text-decoration:none}
 .dot[data-p="high"]{background:#e2954a}
 .dot[data-p="med"]{background:#5e6ad2}
 .dot[data-p="low"]{background:#a8abb2}
-.av{width:20px;height:20px;border-radius:999px;flex:none;display:grid;place-items:center;
-  font-size:9px;font-weight:600;color:#fff}
+.av{
+  width:20px;height:20px;border-radius:999px;flex:none;display:grid;place-items:center;
+  font-size:9px;font-weight:700;letter-spacing:.02em;
+  /* One colour per person, stated once: the initials wear it at full strength
+     and the disc wears the same colour lifted almost to paper. Quieter than a
+     saturated fill, and it stops six avatars from shouting over the type. */
+  color:var(--c,#6b6f76);
+  /* The flat one first, so an engine that cannot mix colours drops the line
+     under it and still gets a disc rather than a hole. */
+  background:#f1f1f4;
+  background:color-mix(in oklab, var(--c,#6b6f76) 14%, #fff);
+}
 /* The agent wears the mark rather than a pair of initials: it is the company
    in the room, not another colleague. */
 .av--agent{background:#111114}
@@ -231,8 +241,11 @@ a{color:inherit;text-decoration:none}
 .msg .who{display:block;font-weight:600;font-size:12px}
 .msg .txt{display:block;color:var(--body);margin-top:2px}
 .chip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;height:26px;padding:0 10px;
-  border-radius:7px;border:1px solid rgb(94 106 210 / .3);background:rgb(94 106 210 / .07);
-  color:var(--accent);font-size:11.5px;font-weight:600}
+  border-radius:7px;
+  /* Amber, not the brand. A scheduled thing is a clock, and three purple
+     objects in one small screen is two too many. */
+  border:1px solid rgb(181 122 30 / .3);background:rgb(181 122 30 / .07);
+  color:#96671a;font-size:11.5px;font-weight:600}
 /* The clock does the work no adjective can: a question at 02:14 and an answer
    at 02:14, with nobody awake for either of them. */
 .when{margin-left:6px;font-weight:400;font-size:11px;color:var(--faint)}
@@ -478,12 +491,12 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>My Threads</b><span class="pill" data-on>Open</span><span class="pill">Assigned to me</span><span class="pill sp">9</span></div>
             <div class="grp">Urgent <span>2</span></div>
-            <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="av" style="background:#5e6ad2">DK</span><span class="unread">4</span></span></div>
-            <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="background:#d4534b">ER</span><span class="unread">2</span></span></div>
+            <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Per-key or per-org rate limits?</span><span class="s">Priya: 40% of the org ceiling…</span><span class="r"><span class="av" style="--c:#3f6fd1">DK</span><span class="unread">4</span></span></div>
+            <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="--c:#b8497f">ER</span><span class="unread">2</span></span></div>
             <div class="grp">High <span>3</span></div>
-            <div class="row"><span class="dot" data-p="high"></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="background:#c05f9c">ER</span>3d late</span></div>
+            <div class="row"><span class="dot" data-p="high"></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="--c:#b8497f">ER</span>3d late</span></div>
             <div class="row"><span class="dot" data-p="high"></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span class="unread">2</span></span></div>
-            <div class="row"><span class="dot" data-p="high"></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="background:#3d9b7a">MB</span><span class="unread">1</span></span></div>
+            <div class="row"><span class="dot" data-p="high"></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="--c:#2f8f6b">MB</span><span class="unread">1</span></span></div>
             <div class="grp">Closed today <span>2</span></div>
             <div class="row"><span class="dot" data-p="low"></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
           </div>
@@ -493,7 +506,7 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>Dead letter queue handling</b><span class="pill">Closed</span><span class="pill sp">You were away</span></div>
             <div class="uiPad">
-              <div class="msg"><span class="av" style="background:#3d9b7a;margin-top:2px">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
+              <div class="msg"><span class="av" style="--c:#2b8a9e;margin-top:2px">TO</span><span><span class="who">Tom Okafor<span class="when">02:14</span></span><span class="txt">What did we land on for the retry ceiling? Writing the runbook now.</span></span></div>
               <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent<span class="when">02:14</span></span><span class="txt">Five retries, a dedicated DLQ topic and fourteen days’ retention.</span><span class="cite">Decided by Priya · 4 March →</span></span></div>
               <div class="nightly"><b>3 asked overnight</b><span>2 answered</span><span class="left">1 needs you</span></div>
             </div>
@@ -504,7 +517,7 @@ a{color:inherit;text-decoration:none}
           <div class="ui">
             <div class="uiBar"><b>API Rate Limiting</b><span class="pill sp">4 members</span></div>
             <div class="uiPad">
-              <div class="msg"><span class="av" style="background:#7a4fc0;margin-top:2px">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><b style="color:#5e6ad2">@tom</b> can you confirm the burst number before Thursday?</span></span></div>
+              <div class="msg"><span class="av" style="--c:#5b53b8;margin-top:2px">YA</span><span><span class="who">Yariv Ashkenazy</span><span class="txt"><b style="color:#5e6ad2">@tom</b> can you confirm the burst number before Thursday?</span></span></div>
               <div class="chip">
                 <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.2l2 1.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                 Agent follow up · in 2 days
@@ -539,7 +552,7 @@ a{color:inherit;text-decoration:none}
 
       <div class="card reveal">
         <div class="cardArt">
-          <div class="row" style="border-bottom:1px solid rgb(0 0 0 / .08)"><span class="av" style="background:#c05f9c">ER</span><span class="t">Elena Ruiz</span><span class="r">owns this</span></div>
+          <div class="row" style="border-bottom:1px solid rgb(0 0 0 / .08)"><span class="av" style="--c:#b8497f">ER</span><span class="t">Elena Ruiz</span><span class="r">owns this</span></div>
           <div class="row"><span class="t" style="color:#b8b9c0">@here</span><span class="r" style="color:#b8b9c0">does not exist</span></div>
         </div>
         <h3 class="cardName">An owner, not an @here</h3>
@@ -568,7 +581,7 @@ a{color:inherit;text-decoration:none}
       <div class="card reveal">
         <div class="cardArt">
           <div class="uiPad" style="padding:14px;display:flex;gap:6px;align-items:center">
-            <span class="av" style="background:#5e6ad2">DK</span><span class="av" style="background:#c05f9c">ER</span><span class="av" style="background:#3d9b7a">MB</span>
+            <span class="av" style="--c:#3f6fd1">DK</span><span class="av" style="--c:#b8497f">ER</span><span class="av" style="--c:#2f8f6b">MB</span>
             <span style="margin-left:auto;color:#b8b9c0;font-size:11.5px">no green dots</span>
           </div>
         </div>
@@ -583,7 +596,7 @@ a{color:inherit;text-decoration:none}
             <span class="cmdQ">assign to el<i class="cmdCaret"></i></span>
             <span class="kbd">⌘K</span>
           </div>
-          <div class="cmdHit"><span class="av" style="background:#c05f9c">ER</span>Elena Ruiz<span class="cmdRet">↩</span></div>
+          <div class="cmdHit"><span class="av" style="--c:#b8497f">ER</span>Elena Ruiz<span class="cmdRet">↩</span></div>
         </div>
         <h3 class="cardName">Instant, always</h3>
         <p class="cardBody">No spinner, no skeleton, no shimmer. You open this forty times a day.</p>
