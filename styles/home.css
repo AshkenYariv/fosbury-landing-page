@@ -120,7 +120,7 @@ body{font-size:17px;line-height:1.58}
 .works{
   /* How long each claim holds the screen before the next one takes it.
      `scripts/home.js` reads this rather than keeping its own copy. */
-  --hold:9.5s;
+  --hold:8s;
   margin-top:clamp(36px,6vh,64px);
   display:grid;grid-template-columns:minmax(0,.76fr) minmax(0,1.24fr);
   gap:clamp(26px,5vw,72px);align-items:center;
@@ -129,8 +129,9 @@ body{font-size:17px;line-height:1.58}
 .pick{display:block;width:100%;text-align:left;position:relative;padding:15px 0 15px 20px}
 
 /* Each claim stands against a grey rail, and whichever one is open fills its
-   own rail over the time it has left. The section stops moving on without
-   warning: you can see the switch coming, and stop it by choosing. */
+   own rail over the time it has left. The section never moves on without
+   warning: you can see the switch coming, and choosing sends the rail back to
+   empty so the one you asked for gets the full hold. */
 .pick::before,.pick::after{content:'';position:absolute;left:0;top:0;width:2px;border-radius:1px}
 .pick::before{bottom:0;background:var(--line)}
 .pick::after{
@@ -138,7 +139,8 @@ body{font-size:17px;line-height:1.58}
   transform:scaleY(0);transform-origin:top;
   transition:transform .3s var(--ease);
 }
-/* Chosen, or left alone: the rail is simply full. Walking itself: it fills. */
+/* Held still — off screen, or reduced motion: the rail is simply full.
+   Walking: it fills. */
 .pick[aria-selected="true"]::after{transform:scaleY(1)}
 .works[data-walking] .pick[aria-selected="true"]::after{animation:tick var(--hold) linear forwards}
 @keyframes tick{from{transform:scaleY(0)}to{transform:scaleY(1)}}
