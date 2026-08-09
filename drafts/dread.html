@@ -97,8 +97,10 @@ a{color:inherit;text-decoration:none}
 .lockup b{font-family:var(--serif);font-weight:500;
   font-size:clamp(30px,3.6vw,46px);letter-spacing:-.028em;line-height:1;color:#fff}
 .claim{
-  margin:clamp(18px,3vh,28px) auto 0;max-width:19ch;
-  font-size:clamp(22px,2.9vw,36px);font-weight:600;line-height:1.14;letter-spacing:-.026em;
+  margin:clamp(16px,2.6vh,24px) auto 0;max-width:22ch;
+  /* Regular weight and a size down: it is a sentence, not a shout, and the
+     wordmark above it is doing the shouting already. */
+  font-size:clamp(18px,2.2vw,27px);font-weight:400;line-height:1.24;letter-spacing:-.016em;
   color:#fff;text-wrap:balance;
   opacity:0;animation:rise 1s .45s var(--ease) forwards;
 }
@@ -200,6 +202,10 @@ a{color:inherit;text-decoration:none}
 .dot[data-p="low"]{background:#a8abb2}
 .av{width:20px;height:20px;border-radius:999px;flex:none;display:grid;place-items:center;
   font-size:9px;font-weight:600;color:#fff}
+/* The agent wears the mark rather than a pair of initials: it is the company
+   in the room, not another colleague. */
+.av--agent{background:#111114}
+.av--agent svg{width:11px;height:auto;color:#fff}
 .grp{display:flex;gap:8px;padding:9px 14px 6px;font-size:11px;font-weight:600;color:var(--mute)}
 .grp span{color:var(--faint);font-weight:500}
 .row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
@@ -297,47 +303,78 @@ a{color:inherit;text-decoration:none}
   font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgb(255 255 255 / .32)}
 
 /* ── the dialog ───────────────────────────────────────────────────────────
-   Dark, because it belongs to the top of the page rather than the bottom, and
-   the question types itself out the way it does on the live site.
+   The one from the live site, in the dark: same room, same proportions, same
+   rate on the keys.
+
+   A room rather than a box. There is one question in here and nothing else to
+   look at, so the card is sized for the question and the question sits in the
+   middle of it. The height is deliberate — a tall card with one field in it
+   reads as a step somebody is taking, where a tight one reads as a form
+   somebody has to fill in.
    ─────────────────────────────────────────────────────────────────────── */
 .scrim{
-  position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:var(--gut);
-  background:rgb(0 0 0 / .74);animation:fade .2s ease;
-  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;
+  background:rgb(0 0 0 / .64);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  animation:scrimIn .18s ease forwards;
 }
 .scrim[hidden]{display:none}
 .card2{
-  position:relative;width:min(430px,100%);
-  background:#131316;color:#fff;border:1px solid rgb(255 255 255 / .11);
-  border-radius:20px;padding:clamp(26px,4vw,34px);
-  box-shadow:0 40px 90px -30px rgb(0 0 0 / .95);
-  animation:cardIn .3s var(--ease);text-align:left;
+  position:relative;display:grid;place-items:center;
+  width:min(760px,100%);min-height:min(480px,74vh);
+  padding:clamp(32px,5vw,64px);border-radius:28px;
+  background:#131316;color:#fff;
+  box-shadow:0 0 0 1px rgb(255 255 255 / .09), 0 32px 80px -24px rgb(0 0 0 / .9);
+  animation:cardIn .26s cubic-bezier(.2,.7,.2,1) forwards;text-align:center;
 }
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
 @keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-.cardX{position:absolute;top:13px;right:13px;display:grid;place-items:center;
-  width:30px;height:30px;border-radius:999px;color:rgb(255 255 255 / .45);
-  transition:background .2s ease,color .2s ease}
-.cardX:hover{background:rgb(255 255 255 / .1);color:#fff}
-.askTitle{font-size:21px;font-weight:600;letter-spacing:-.022em;color:#fff;min-height:1.5em}
-.caret{display:inline-block;width:2px;height:1.02em;margin-left:2px;vertical-align:-.14em;background:var(--accent)}
-.askTitle[data-state='rest'] .caret{animation:blink 1s steps(1,end) 3 forwards}
+.cardX{
+  position:absolute;top:22px;right:22px;display:grid;place-items:center;
+  width:40px;height:40px;border-radius:999px;
+  background:rgb(255 255 255 / .07);color:rgb(255 255 255 / .5);
+  transition:background .16s ease,color .16s ease;
+}
+.cardX:hover{background:rgb(255 255 255 / .15);color:#fff}
+.step2{width:100%;max-width:600px}
+.step2[hidden]{display:none}
+.askTitle{font-size:clamp(20px,1.75vw,24px);font-weight:600;letter-spacing:-.024em;
+  line-height:1.3;color:#fff;text-wrap:balance}
+/* The caret is in the line from the first frame, empty text or not, so the card
+   is the same height before the first character as after the last one — a
+   question that types itself into a box that jumps is just a jumping box. */
+.caret{display:inline-block;width:2px;height:1.05em;margin-left:3px;
+  vertical-align:-.16em;background:#fff;opacity:0}
+.askTitle[data-state='typing'] .caret{opacity:1}
+.askTitle[data-state='rest'] .caret{animation:blink 1s steps(1,end) 3}
 @keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
-.askSub{margin-top:12px;font-size:15px;color:rgb(255 255 255 / .6);text-wrap:pretty}
-.form{display:flex;align-items:center;margin-top:20px}
-.field{flex:1;min-width:0;height:50px;padding:0 20px;
+.askSub{margin:14px auto 0;max-width:44ch;font-size:clamp(15px,1.15vw,16.5px);
+  line-height:1.55;color:rgb(255 255 255 / .62);text-wrap:balance}
+.form{display:flex;align-items:center;margin-top:clamp(24px,3.6vh,36px)}
+.field{
+  flex:1;min-width:0;height:64px;padding:0 26px;
   border:1px solid rgb(255 255 255 / .2);border-right:0;border-radius:999px 0 0 999px;
-  background:rgb(255 255 255 / .06);color:#fff;font:inherit;font-size:15.5px;
-  transition:background .22s ease,border-color .22s ease}
-.field::placeholder{color:rgb(255 255 255 / .38)}
+  background:rgb(255 255 255 / .06);color:#fff;font:inherit;font-size:clamp(15px,1.15vw,16.5px);
+  transition:background .2s ease,border-color .2s ease;
+}
+.field::placeholder{color:rgb(255 255 255 / .36)}
 .field:focus{outline:none;background:rgb(255 255 255 / .12);border-color:rgb(255 255 255 / .48)}
-.go{flex:none;display:grid;place-items:center;height:50px;padding:0 20px;
+.go{flex:none;display:grid;place-items:center;width:64px;height:64px;
   border-radius:0 999px 999px 0;background:#fff;color:#0a0a0a;transition:background .2s ease}
 .go:hover{background:#e9e9e9}
-.note{margin-top:13px;min-height:15px;font-family:var(--mono);font-size:10px;
-  letter-spacing:.13em;text-transform:uppercase;color:rgb(255 255 255 / .45)}
+.note{margin-top:14px;min-height:18px;text-align:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:rgb(255 255 255 / .45)}
 .note[data-bad]{color:#ff9d90}
-.call{display:inline-flex;align-items:center;height:48px;padding:0 24px;margin-top:20px;
-  border-radius:999px;background:#fff;color:#0a0a0a;font-size:15.5px;font-weight:600}
+.call{display:inline-flex;align-items:center;height:56px;padding:0 30px;
+  margin-top:clamp(24px,3.6vh,34px);border-radius:999px;
+  background:#fff;color:#0a0a0a;font-size:16px;font-weight:600}
+@media(max-width:640px){
+  .scrim{padding:16px}
+  .card2{min-height:min(440px,72vh);padding:32px 22px;border-radius:22px}
+  .field{height:56px;padding:0 20px}
+  .go{width:56px;height:56px}
+}
 
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes fade{to{opacity:1}}
@@ -433,7 +470,7 @@ a{color:inherit;text-decoration:none}
             <div class="row"><span class="dot" data-p="urgent"></span><span class="t">Dead letter queue handling</span><span class="s">David: Five, then a dedicated DLQ.</span><span class="r"><span class="av" style="background:#d4534b">ER</span><span class="unread">2</span></span></div>
             <div class="grp">High <span>3</span></div>
             <div class="row"><span class="dot" data-p="high"></span><span class="t">Design approval on the composer</span><span class="s">Elena: Is anyone using bold?</span><span class="r"><span class="av" style="background:#c05f9c">ER</span>3d late</span></div>
-            <div class="row"><span class="dot" data-p="high"></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av" style="background:#8a8f98">FA</span><span class="unread">2</span></span></div>
+            <div class="row"><span class="dot" data-p="high"></span><span class="t">Burst allowance number</span><span class="s">Fosbury Agent chased the owner.</span><span class="r"><span class="av av--agent"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span class="unread">2</span></span></div>
             <div class="row"><span class="dot" data-p="high"></span><span class="t">Weekend rota funding</span><span class="s">Nathan: Small wins that sum to nothing.</span><span class="r"><span class="av" style="background:#3d9b7a">MB</span><span class="unread">1</span></span></div>
             <div class="grp">Closed today <span>2</span></div>
             <div class="row"><span class="dot" data-p="low"></span><span class="t done">Chase the auditor on SOC 2</span><span class="s">Marco: Sent. They have everything.</span><span class="r">✓</span></div>
@@ -450,7 +487,7 @@ a{color:inherit;text-decoration:none}
                 <div><b>Checking nothing supersedes it.</b><br>An October ceiling assumed single-partition ingest, which no longer holds.<span class="tool">read · Backpressure on the ingest worker</span></div>
               </div>
               <div class="reply">
-                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent</span><span class="txt">Five retries, a dedicated DLQ and fourteen days. Settled by Priya on Tuesday, and closed.</span></span></div>
+                <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent</span><span class="txt">Five retries, a dedicated DLQ and fourteen days. Settled by Priya on Tuesday, and closed.</span></span></div>
               </div>
             </div>
           </div>
@@ -467,7 +504,7 @@ a{color:inherit;text-decoration:none}
               </div>
               <div class="hint">If Tom has not given a number, ask again. If he has, put it in the spec and close this.</div>
               <div class="reply">
-                <div class="msg"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
+                <div class="msg"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent <span style="color:#8a8f98;font-weight:400">· ran 13h ago</span></span><span class="txt">He said 40% of the org ceiling. In the spec, and closed.</span></span></div>
               </div>
             </div>
           </div>
@@ -505,7 +542,7 @@ a{color:inherit;text-decoration:none}
       <div class="card reveal">
         <div class="cardArt">
           <div class="uiPad" style="padding:12px 14px">
-            <div class="msg" style="padding:0"><span class="av" style="background:#8a8f98;margin-top:2px">FA</span><span><span class="who">Fosbury Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
+            <div class="msg" style="padding:0"><span class="av av--agent" style="margin-top:2px"><svg viewBox="0 0 110 150" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M79 27 C75 15 61 10 53 18 C46 25 45 36 45 48 C45 72 43 93 41 110 C39 126 33 139 22 137 C12 135 11 121 26 112 C43 102 66 93 86 80"/><path d="M6 108 H104"/></svg></span><span><span class="who">Fosbury Agent</span><span class="txt" style="font-size:12px">Closed two of yours overnight.</span></span></div>
           </div>
         </div>
         <h3 class="cardName">Agents are members</h3>
@@ -588,10 +625,10 @@ a{color:inherit;text-decoration:none}
 <div class="scrim" id="scrim" hidden>
   <div class="card2" role="dialog" aria-modal="true" aria-labelledby="askTitle">
     <button class="cardX" type="button" data-close aria-label="Close">
-      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
 
-    <div id="askStep">
+    <div class="step2" id="askStep">
       <h2 class="askTitle" id="askTitle" aria-label="What’s your email?">
         <span data-typed aria-hidden="true"></span><span class="caret" aria-hidden="true"></span>
       </h2>
@@ -605,7 +642,7 @@ a{color:inherit;text-decoration:none}
       <p class="note" id="note" role="status" aria-live="polite"></p>
     </div>
 
-    <div id="doneStep" hidden>
+    <div class="step2" id="doneStep" hidden>
       <h2 class="askTitle">You’re on the waitlist.</h2>
       <p class="askSub">If you’d like to join alpha testing and shape where Fosbury goes</p>
       <a class="call" data-call href="https://calendar.app.google/xegK1AbmJKyEs1my9" target="_blank" rel="noopener">Schedule a 30-minute call</a>
@@ -676,7 +713,7 @@ function typeQuestion() {
     if (i < ASK.length) typeTimer = setTimeout(tick, ASK[i - 1] === ' ' ? 96 : 52);
     else titleEl.setAttribute('data-state', 'rest');
   };
-  typeTimer = setTimeout(tick, 200);
+  typeTimer = setTimeout(tick, 220);
 }
 
 function open(from) {
