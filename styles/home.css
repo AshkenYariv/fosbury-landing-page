@@ -286,7 +286,7 @@ body{font-size:17px;line-height:1.58}
 /* The bar lands on the six rather than on the head above them, and stops far
    enough down that all six are on screen at once — which is the only reason
    to follow that link. */
-.six{margin-top:clamp(40px,6vh,70px);scroll-margin-top:clamp(78px,11vh,104px);
+.six{margin-top:clamp(40px,6vh,70px);scroll-margin-top:clamp(180px,26vh,236px);
   display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
 .card{border:1px solid var(--line);border-radius:20px;padding:22px;background:#fff;display:flex;flex-direction:column}
 .cardArt{margin:-4px -4px 20px;border-radius:12px;overflow:hidden;background:#fff;color:var(--ink);font-size:12.5px;

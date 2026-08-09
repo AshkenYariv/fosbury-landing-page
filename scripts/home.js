@@ -104,8 +104,4 @@ if ('IntersectionObserver' in window && !CALM.matches) {
 } else {
   blocks.forEach((b) => b.setAttribute('data-seen', ''));
 }
-
-/* This script is deferred, and so is the counter; the arrival is announced once
-   the page is up so there is something there to count it. */
-try { window.umami?.track('Home view'); } catch { /* counted or not */ }
 })();

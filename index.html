@@ -23,6 +23,7 @@
 <!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
 <script defer src="https://cloud.umami.is/script.js"
         data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
+<script defer src="/scripts/track.js"></script>
 <script defer src="/scripts/waitlist.js"></script>
 <script defer src="/scripts/nav.js"></script>
 <script defer src="/scripts/home.js"></script>
@@ -73,14 +74,14 @@
 <!-- The mark and About are always here. The two below grow out of the mark on
      the home screen and fold back into it on the way to the other one. -->
 <nav class="nav" aria-label="Fosbury">
-  <a class="navMark" href="/" aria-label="Fosbury"><svg class="mark" viewBox="0 0 110 150" aria-hidden="true"><use href="#mark"/></svg></a>
-  <a class="navHome" href="#how"><span>How it works</span></a>
-  <a class="navHome" href="#built"><span>Built for</span></a>
-  <a class="navHome" href="#quiet"><span>Quiet</span></a>
-  <a class="navAbout" href="/about">About</a>
+  <a class="navMark" href="/" aria-label="Fosbury" data-track="Nav — Fosbury mark"><svg class="mark" viewBox="0 0 110 150" aria-hidden="true"><use href="#mark"/></svg></a>
+  <a class="navHome" href="#how" data-track="Nav — How it works"><span>How it works</span></a>
+  <a class="navHome" href="#built" data-track="Nav — Built for"><span>Built for</span></a>
+  <a class="navHome" href="#quiet" data-track="Nav — Quiet"><span>Quiet</span></a>
+  <a class="navAbout" href="/about" data-track="Nav — About">About</a>
 </nav>
 
-<button class="getAccess" type="button" data-ask="corner" data-tone="light">
+<button class="getAccess" type="button" data-ask="corner" data-tone="light" data-track="Get access — corner">
   Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
 </button>
 
@@ -91,7 +92,7 @@
       data-title="Fosbury — Team chat you won’t dread opening.">
 
 <!-- ═══ the hero ══════════════════════════════════════════════════════════ -->
-<header class="hero" id="top">
+<header class="hero" id="top" data-section="Hero">
 
   <div class="screams" id="screams">
     <img src="/assets/screams/01.jpg" alt="" width="760" height="760" data-on>
@@ -112,36 +113,36 @@
       <b>Fosbury</b>
     </div>
     <h1 class="claim">Team chat you won’t dread opening.</h1>
-    <button class="getBtn" type="button" data-ask="hero">
+    <button class="getBtn" type="button" data-ask="hero" data-track="Get access — hero">
       Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
     </button>
   </div>
 
   <div class="stopWrap">
-    <button class="stop" type="button" data-ask="make it stop"><i aria-hidden="true"></i>Make it stop</button>
+    <button class="stop" type="button" data-ask="make it stop" data-track="Make it stop"><i aria-hidden="true"></i>Make it stop</button>
   </div>
 
 </header>
 
 <!-- ═══ how it works ══════════════════════════════════════════════════════ -->
-<section class="band" id="how">
+<section class="band" id="how" data-section="How it works">
   <div class="wrap">
     <p class="kicker reveal">How it works</p>
     <h2 class="bandTitle reveal">Come back to less than you left.</h2>
 
     <div class="works reveal">
       <div class="picks" role="tablist" aria-label="How it works">
-        <button class="pick" type="button" role="tab" aria-selected="true">
+        <button class="pick" type="button" role="tab" aria-selected="true" data-track="How it works — 01 A queue, not a river">
           <span class="pickNo">01</span>
           <span class="pickTitle">A queue, not a river.</span>
           <span class="pickBody"><span><em>Everything waiting on you, in one list, already sorted. Each thread carries an owner, a priority and a state.</em></span></span>
         </button>
-        <button class="pick" type="button" role="tab" aria-selected="false">
+        <button class="pick" type="button" role="tab" aria-selected="false" data-track="How it works — 02 It already replied">
           <span class="pickNo">02</span>
           <span class="pickTitle">It already replied.</span>
           <span class="pickBody"><span><em>Anything your team already decided, it answers in the thread and closes — with a link to where it was decided. <b>It never decides; it repeats.</b></em></span></span>
         </button>
-        <button class="pick" type="button" role="tab" aria-selected="false">
+        <button class="pick" type="button" role="tab" aria-selected="false" data-track="How it works — 03 Hand off the chasing">
           <span class="pickNo">03</span>
           <span class="pickTitle">Hand off the chasing.</span>
           <span class="pickBody"><span><em>Ask once, then say what should happen if nobody answers. The agent goes back and closes it.</em></span></span>
@@ -248,7 +249,7 @@
 </section>
 
 <!-- ═══ the six ═══════════════════════════════════════════════════════════ -->
-<section class="band band--near">
+<section class="band band--near" data-section="Built for">
   <div class="wrap">
     <p class="kicker reveal">The parts</p>
     <h2 class="bandTitle reveal">Built for how teams actually work.</h2>
@@ -326,7 +327,7 @@
 </section>
 
 <!-- ═══ what is switched off ══════════════════════════════════════════════ -->
-<section class="band" id="quiet">
+<section class="band" id="quiet" data-section="Quiet by default">
   <div class="wrap">
     <p class="kicker reveal">Quiet by default</p>
     <h2 class="bandTitle reveal">Most of the work went into what we refused to build.</h2>
@@ -338,9 +339,9 @@
 </section>
 
 <!-- ═══ the close ═════════════════════════════════════════════════════════ -->
-<section class="end" id="get">
+<section class="end" id="get" data-section="Closing">
   <h2 class="endTitle">Ready to <em>close</em> something?</h2>
-  <button class="endBtn" type="button" data-ask="close">
+  <button class="endBtn" type="button" data-ask="close" data-track="Get access — closing">
     Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
   </button>
 </section>
@@ -352,7 +353,7 @@
      two photographs stand beside it, so the app and the jumper are in view
      while the sentence about them is being read.
      ═════════════════════════════════════════════════════════════════════ -->
-<main class="view view--about" data-view="about" data-path="/about"
+<main class="view view--about" data-view="about" data-path="/about" data-section="About"
       data-title="Introducing Fosbury">
   <div class="sheet">
 

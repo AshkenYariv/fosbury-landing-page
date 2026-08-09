@@ -5,9 +5,10 @@
  * `[data-ask]` button opens it; `/api/waitlist` is the only thing that ever
  * sees the address.
  *
- * It announces itself on the document as `waitlist:open` and `waitlist:close`,
- * which is how a page holds something still while the dialog is up without
- * this file knowing anything about that page.
+ * It announces every step on the document — opened, closed, rejected, sending,
+ * joined, failed — and names none of them. That is how a page holds something
+ * still while the dialog is up, and how `scripts/track.js` counts what
+ * happened, without this file knowing anything about either.
  */
 (() => {
 'use strict';
@@ -25,7 +26,7 @@ const CALL_URL = 'https://calendar.app.google/xegK1AbmJKyEs1my9';
 document.body.insertAdjacentHTML('beforeend', `
 <div class="scrim" hidden>
   <div class="ask" role="dialog" aria-modal="true" aria-labelledby="askTitle">
-    <button class="askX" type="button" data-close aria-label="Close">
+    <button class="askX" type="button" data-close data-track="Waitlist — close pressed" aria-label="Close">
       <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
 
@@ -46,7 +47,8 @@ document.body.insertAdjacentHTML('beforeend', `
     <div class="askStep" data-step="done" hidden>
       <h2 class="askTitle">You’re on the waitlist.</h2>
       <p class="askSub">If you’d like to join alpha testing and shape where Fosbury goes</p>
-      <a class="askCall" href="${CALL_URL}" target="_blank" rel="noopener">Schedule a 30-minute call</a>
+      <a class="askCall" href="${CALL_URL}" target="_blank" rel="noopener"
+         data-track="Waitlist — schedule a call">Schedule a 30-minute call</a>
     </div>
   </div>
 </div>`);
@@ -64,7 +66,7 @@ const form = scrim.querySelector('.askForm');
 
 let typeTimer = 0, opener = null, joined = false, sending = false;
 
-const track = (name, data) => { try { window.umami?.track(name, data); } catch { /* counted or not */ } };
+const announce = (what, detail) => document.dispatchEvent(new CustomEvent(`waitlist:${what}`, { detail }));
 const say = (text, bad) => {
   note.textContent = text;
   note.toggleAttribute('data-bad', Boolean(bad));
@@ -92,7 +94,7 @@ function open(from) {
   opener = from || document.activeElement;
   scrim.hidden = false;
   document.body.setAttribute('data-locked', '');
-  document.dispatchEvent(new CustomEvent('waitlist:open'));
+  announce('open', { from: from?.dataset.ask || 'page' });
   if (joined) { call.focus({ preventScroll: true }); return; }
   typeQuestion();
   setTimeout(() => field.focus({ preventScroll: true }), CALM.matches ? 0 : 120);
@@ -103,7 +105,7 @@ function close() {
   scrim.hidden = true;
   document.body.removeAttribute('data-locked');
   clearTimeout(typeTimer);
-  document.dispatchEvent(new CustomEvent('waitlist:close'));
+  announce('close', { joined });
   if (opener?.isConnected) opener.focus({ preventScroll: true });
   opener = null;
 }
@@ -111,15 +113,13 @@ function close() {
 document.addEventListener('click', (e) => {
   const asked = e.target.closest('[data-ask]');
   if (asked) {
-    track('Get access', { from: asked.dataset.ask || 'page' });
     /* Whichever button asked says which room to open: dark over the hero and
        the closing section, light over paper. */
     scrim.dataset.tone = asked.dataset.tone || 'dark';
     open(asked);
     return;
   }
-  if (e.target.closest('[data-close]')) { close(); return; }
-  if (e.target.closest('.askCall')) track('Schedule call');
+  if (e.target.closest('[data-close]')) close();
 });
 /* The backdrop, but not the card sitting on it. */
 scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) close(); });
@@ -142,9 +142,9 @@ form.addEventListener('submit', async (e) => {
   if (sending) return;
   const email = field.value.trim();
   if (!LOOKS_LIKE_EMAIL.test(email)) {
-    /* Counted, and never with the address in it: what is useful here is that
-       the send did not land, not who was trying to send it. */
-    track('Email failed', { reason: 'invalid' });
+    /* Announced, and never with the address in it: what is useful is that the
+       send did not land, not who was trying to send it. */
+    announce('invalid');
     say('That does not look like an email address.', true);
     field.focus();
     return;
@@ -153,6 +153,7 @@ form.addEventListener('submit', async (e) => {
   sending = true;
   field.disabled = true;
   say('One moment…');
+  announce('sending');
   try {
     const res = await fetch('/api/waitlist', {
       method: 'POST',
@@ -164,7 +165,7 @@ form.addEventListener('submit', async (e) => {
     if (!res.ok || !body.ok) throw new Error(body.error || `That did not go through (${res.status}).`);
 
     joined = true;
-    track('Email sent');
+    announce('joined', { confirmed: Boolean(body.confirmed) });
     if (body.call) call.href = body.call;
     askStep.hidden = true;
     doneStep.hidden = false;
@@ -173,7 +174,7 @@ form.addEventListener('submit', async (e) => {
     /* A dead fetch throws a TypeError with nothing readable in it — the usual
        cause is a page opened without its API behind it, so say that much. */
     const offline = err instanceof TypeError;
-    track('Email failed', { reason: offline ? 'offline' : 'server' });
+    announce('failed', { reason: offline ? 'offline' : 'server' });
     say(offline
       ? 'We could not reach the server. Check your connection and try again.'
       : (err.message || 'That did not go through. Try again in a moment.'), true);

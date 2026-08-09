@@ -39,6 +39,11 @@ function ask() {
   if (corner) corner.toggleAttribute('data-on', at === 'home' ? !onHero && !onClose : true);
 }
 
+/* Said out loud rather than counted here: `scripts/track.js` is the one place
+   that knows what any of this is called. */
+const arrived = (screen) =>
+  document.dispatchEvent(new CustomEvent('screen:shown', { detail: { screen } }));
+
 /* ── the travel ────────────────────────────────────────────────────────────
    Clear the screen you are on, swap underneath the white it leaves behind,
    then settle the new one onto it. The bar does not wait for any of that: it
@@ -55,6 +60,7 @@ function show(next, push) {
   about.toggleAttribute('aria-current', next === 'about');
   document.title = arriving.dataset.title;
   ask();
+  arrived(next);
   if (push) history.pushState({ view: next }, '', arriving.dataset.path);
 
   leaving.setAttribute('data-off', '');
@@ -126,7 +132,10 @@ if (document.fonts) document.fonts.ready.then(measure);
 /* Shut, then open: the bar arrives out of its own mark. */
 nav.dataset.view = '';
 nav.getBoundingClientRect();
-requestAnimationFrame(() => { nav.dataset.view = at; });
+requestAnimationFrame(() => {
+  nav.dataset.view = at;
+  arrived(at);
+});
 
 if (corner) {
   const watch = (el, threshold, fn) => {
