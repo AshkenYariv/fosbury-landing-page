@@ -138,12 +138,15 @@ requestAnimationFrame(() => {
 });
 
 if (corner) {
-  const watch = (el, threshold, fn) => {
+  const watch = (el, options, fn) => {
     if (!el || !('IntersectionObserver' in window)) return;
-    new IntersectionObserver(([e]) => { fn(e.isIntersecting); ask(); }, { threshold }).observe(el);
+    new IntersectionObserver(([e]) => { fn(e.isIntersecting); ask(); }, options).observe(el);
   };
-  watch(document.querySelector('.hero'), .02, (seen) => { onHero = seen; });
-  watch(document.querySelector('.end'), .12, (seen) => { onClose = seen; });
+  watch(document.querySelector('.hero'), { threshold: .02 }, (seen) => { onHero = seen; });
+  /* Not when the closing section is merely somewhere on screen — it is short
+     enough to be wholly in view while you are still reading the section above
+     it — but when it has reached the corner the ask actually sits in. */
+  watch(document.querySelector('.end'), { rootMargin: '0px 0px -88% 0px' }, (seen) => { onClose = seen; });
   ask();
 }
 })();

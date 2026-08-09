@@ -118,24 +118,39 @@ body{font-size:17px;line-height:1.58}
    leave it.
    ─────────────────────────────────────────────────────────────────────── */
 .works{
+  /* How long each claim holds the screen before the next one takes it.
+     `scripts/home.js` reads this rather than keeping its own copy. */
+  --hold:9.5s;
   margin-top:clamp(36px,6vh,64px);
   display:grid;grid-template-columns:minmax(0,.76fr) minmax(0,1.24fr);
   gap:clamp(26px,5vw,72px);align-items:center;
 }
 .picks{display:grid;align-content:center;gap:2px}
-.pick{display:block;width:100%;text-align:left;
-  padding:15px 0 15px 20px;border-left:2px solid transparent;
-  transition:border-color .5s var(--ease)}
-.pick[aria-selected="true"]{border-left-color:var(--ink)}
+.pick{display:block;width:100%;text-align:left;position:relative;padding:15px 0 15px 20px}
+
+/* Each claim stands against a grey rail, and whichever one is open fills its
+   own rail over the time it has left. The section stops moving on without
+   warning: you can see the switch coming, and stop it by choosing. */
+.pick::before,.pick::after{content:'';position:absolute;left:0;top:0;width:2px;border-radius:1px}
+.pick::before{bottom:0;background:var(--line)}
+.pick::after{
+  height:100%;background:var(--ink);
+  transform:scaleY(0);transform-origin:top;
+  transition:transform .3s var(--ease);
+}
+/* Chosen, or left alone: the rail is simply full. Walking itself: it fills. */
+.pick[aria-selected="true"]::after{transform:scaleY(1)}
+.works[data-walking] .pick[aria-selected="true"]::after{animation:tick var(--hold) linear forwards}
+@keyframes tick{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .pickNo{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
-  color:var(--faint);margin-bottom:8px;transition:color .4s ease}
+  color:var(--faint);margin-bottom:8px;transition:color .24s ease}
 .pick[aria-selected="true"] .pickNo{color:var(--accent)}
 .pickTitle{display:block;font-family:var(--serif);font-weight:600;
   font-size:clamp(20px,2.3vw,28px);line-height:1.14;letter-spacing:-.024em;
-  color:var(--faint);transition:color .4s ease;text-wrap:balance}
+  color:var(--faint);transition:color .24s ease;text-wrap:balance}
 .pick[aria-selected="true"] .pickTitle{color:var(--ink)}
 .pickBody{display:grid;grid-template-rows:0fr;opacity:0;
-  transition:grid-template-rows .55s var(--ease),opacity .38s ease}
+  transition:grid-template-rows .34s var(--ease),opacity .22s ease}
 .pickBody > span{display:block;overflow:hidden}
 .pickBody em{display:block;padding-top:10px;max-width:36ch;font-size:16px;
   font-style:normal;color:var(--body);text-wrap:pretty}
@@ -144,8 +159,8 @@ body{font-size:17px;line-height:1.58}
 /* Every screen in the same grid cell, so the section is as tall as the tallest
    and nothing under it moves when one replaces another. */
 .panes{display:grid}
-.pane{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(10px);
-  transition:opacity .5s var(--ease),transform .5s var(--ease),visibility .5s}
+.pane{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(8px);
+  transition:opacity .3s var(--ease),transform .3s var(--ease),visibility .3s}
 .pane[data-on]{opacity:1;visibility:visible;transform:none}
 @media(max-width:860px){.works{grid-template-columns:1fr;gap:clamp(22px,4vh,36px)}}
 

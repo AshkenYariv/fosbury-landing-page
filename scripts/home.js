@@ -49,9 +49,11 @@ Promise.all(shots.map((img) => img.decode().catch(() => {}))).then(() => { ready
    Three claims and three screens in one section. It walks itself until the
    first time somebody chooses, and then it is theirs.
    ══════════════════════════════════════════════════════════════════════════ */
+const works = document.querySelector('.works');
 const picks = [...document.querySelectorAll('.pick')];
 const panes = [...document.querySelectorAll('.pane')];
-const HOLD = 9500;
+/* The hold is the section's own, written where the rail that draws it lives. */
+const HOLD = (parseFloat(getComputedStyle(works).getPropertyValue('--hold')) || 9.5) * 1000;
 let shown = 0, walk = 0, chosen = false, inView = false;
 
 function show(next) {
@@ -59,13 +61,16 @@ function show(next) {
   picks.forEach((p, i) => p.setAttribute('aria-selected', String(i === shown)));
   panes.forEach((p, i) => p.toggleAttribute('data-on', i === shown));
 }
+/* `data-walking` is what tells the rails to fill: they are only counting down
+   to something when there is something to count down to. */
 function walkOn() {
   clearInterval(walk);
-  if (chosen || !inView || CALM.matches) return;
-  walk = setInterval(() => show((shown + 1) % picks.length), HOLD);
+  const walking = !chosen && inView && !CALM.matches;
+  works.toggleAttribute('data-walking', walking);
+  if (walking) walk = setInterval(() => show((shown + 1) % picks.length), HOLD);
 }
-picks.forEach((p, i) => p.addEventListener('click', () => { chosen = true; clearInterval(walk); show(i); }));
-watch(document.querySelector('.works'), .35, (seen) => { inView = seen; walkOn(); });
+picks.forEach((p, i) => p.addEventListener('click', () => { chosen = true; show(i); walkOn(); }));
+watch(works, .35, (seen) => { inView = seen; walkOn(); });
 
 /* ══════════════════════════════════════════════════════════════════════════
    What is switched off.
