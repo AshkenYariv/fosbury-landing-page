@@ -143,10 +143,28 @@ if (corner) {
     new IntersectionObserver(([e]) => { fn(e.isIntersecting); ask(); }, options).observe(el);
   };
   watch(document.querySelector('.hero'), { threshold: .02 }, (seen) => { onHero = seen; });
+
   /* Not when the closing section is merely somewhere on screen — it is short
      enough to be wholly in view while you are still reading the section above
-     it — but when it has reached the corner the ask actually sits in. */
-  watch(document.querySelector('.end'), { rootMargin: '0px 0px -88% 0px' }, (seen) => { onClose = seen; });
+     it — but when it has reached the corner the ask actually sits in.
+
+     Which corner that is changes with the width: the bar owns the top one on a
+     narrow screen, so the ask moves to the bottom, and the closing section
+     reaches the bottom of the screen the moment it appears rather than once it
+     has taken the whole of it. Asked from where the button actually is, so the
+     little ask is never sitting on top of the full-size one. */
+  const end = document.querySelector('.end');
+  const low = matchMedia('(max-width:720px)');
+  let closing = null;
+  function watchClose() {
+    if (closing) closing.disconnect();
+    if (!end || !('IntersectionObserver' in window)) return;
+    closing = new IntersectionObserver(([e]) => { onClose = e.isIntersecting; ask(); },
+      { rootMargin: low.matches ? '0px' : '0px 0px -88% 0px' });
+    closing.observe(end);
+  }
+  watchClose();
+  low.addEventListener('change', watchClose);
   ask();
 }
 })();

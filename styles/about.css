@@ -65,10 +65,43 @@
 }
 .plate figcaption{margin-top:9px;font-size:11.5px;line-height:1.45;color:var(--faint)}
 
+/* ── stacked ──────────────────────────────────────────────────────────────
+   Below the width the two columns need, the argument and the photographs
+   become one column of the same grid — `display:contents` hands the sheet the
+   paragraphs and the plates as siblings — so each picture can stand beside the
+   sentence it belongs to instead of queueing up under all of them. The app is
+   shown where the tools are being described, and the jumper directly above the
+   paragraph that explains why any of this is called Fosbury.
+
+   The rhythm stays the paragraphs' own — the gap is theirs to keep, so the
+   grid contributes none of its own and the plates take the same measure.
+   ─────────────────────────────────────────────────────────────────────── */
 @media(max-width:900px){
-  .sheet{grid-template-columns:1fr;align-items:start;gap:clamp(26px,5vh,40px);
-    padding-top:clamp(84px,12vh,110px)}
-  .plates{order:2}
+  /* The corner ask stands in the bottom corner on a narrow screen rather than
+     the top one, so the last paragraph is given the room to end above it
+     instead of ending underneath it. */
+  .sheet{grid-template-columns:minmax(0,1fr);align-items:start;gap:0;
+    padding-top:clamp(84px,12vh,110px);padding-bottom:clamp(76px,11vh,104px)}
+  .sheet > article,.plates{display:contents}
+  .title{order:1}
+  .lede{order:2}
+  .prose{order:3}
+  .plate:first-child{order:4}
+  .rules{order:5}
+  .plate:nth-child(2){order:6}
+  .flop{order:7}
+  .plate{margin-top:clamp(20px,3.4vh,32px)}
+  /* Standing in the reading column rather than in a column of their own, they
+     are as wide as the text and as tall as that makes them. */
+  .plate img{max-height:none;width:100%}
+}
+/* The small type here is what buys the one screen that does not scroll. A phone
+   never had that screen to begin with — it scrolls whatever we do — so it gets
+   the size the paragraphs are actually comfortable to read at instead. */
+@media(max-width:640px){
+  .view--about{font-size:15.5px}
+  .flop{font-size:15px}
+  .plate figcaption{font-size:12.5px}
 }
 @media(prefers-reduced-motion:reduce){
   .plate,.view--about:not([data-idle]) .plate{opacity:1;transform:none;animation:none}
