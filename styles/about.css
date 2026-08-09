@@ -1,0 +1,75 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Introducing Fosbury.
+
+   The screen to the right of home. A single screen that does not scroll: the
+   argument runs down the left and the two photographs stand beside it, so the
+   app and the jumper are in view while the sentence about them is being read
+   rather than a screen and a half later.
+   ══════════════════════════════════════════════════════════════════════════ */
+.view--about{background:var(--paper);font-size:14.5px;line-height:1.72}
+
+/* Sized to fit rather than to scroll. Below the height it needs, and on a
+   phone, it gives up and stacks — a page that clips the last paragraph to keep
+   a promise about scrolling has kept the wrong promise. */
+.sheet{
+  min-height:100svh;
+  display:grid;grid-template-columns:minmax(0,1.24fr) minmax(0,.76fr);
+  gap:clamp(28px,4.5vw,66px);align-items:center;
+  padding:clamp(66px,8vh,88px) var(--gut) clamp(14px,2.2vh,32px);
+  max-width:1240px;margin:0 auto;
+}
+.title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(23px,2.6vw,33px);line-height:1.08;letter-spacing:-.026em;
+  color:var(--ink);text-wrap:balance;
+}
+.lede{
+  margin-top:clamp(10px,1.6vh,15px);max-width:44ch;
+  font-size:clamp(14px,1.1vw,16px);line-height:1.5;color:var(--mute);text-wrap:pretty;
+}
+.prose{margin-top:clamp(14px,2.4vh,28px);max-width:60ch}
+.prose p{margin-top:clamp(11px,2vh,16px);text-wrap:pretty}
+.prose p:first-child{margin-top:0}
+.prose b{color:var(--ink);font-weight:600}
+
+/* Three rules, ruled apart. As a numbered list they read as a to-do; like this
+   they are the shape of the product. */
+.rules{margin-top:clamp(14px,2.4vh,28px);max-width:60ch}
+.rules p{
+  display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:baseline;
+  padding:clamp(8px,1.6vh,14px) 0;border-top:1px solid var(--line);
+}
+.rules p:last-child{border-bottom:1px solid var(--line)}
+.rules u{text-decoration:none;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint)}
+.rules b{color:var(--ink);font-weight:600}
+
+.flop{
+  margin-top:clamp(12px,2vh,26px);max-width:60ch;
+  font-size:14px;color:var(--mute);text-wrap:pretty;
+}
+.flop b{color:var(--ink);font-weight:600}
+
+/* ── the two photographs ────────────────────────────────────────────────── */
+.plates{display:grid;gap:clamp(18px,3vh,28px);align-content:center}
+/* They arrive when the screen does, whether you loaded it or slid to it. */
+.plate{margin:0;opacity:0;transform:translateY(20px)}
+.view--about:not([data-idle]) .plate{animation:rise .9s .35s var(--ease) forwards}
+.view--about:not([data-idle]) .plate:nth-child(2){animation-delay:.5s}
+/* Capped by the screen as well as by the column, so on a short window the
+   photographs give way rather than pushing the argument off the bottom. Both
+   caps, no crop: whichever bites first, the picture keeps its shape. */
+.plate img{
+  width:auto;max-width:100%;max-height:33svh;height:auto;margin-inline:auto;
+  border-radius:12px;
+  box-shadow:0 0 0 1px var(--line), 0 24px 50px -30px rgb(0 0 0 / .55);
+}
+.plate figcaption{margin-top:9px;font-size:11.5px;line-height:1.45;color:var(--faint)}
+
+@media(max-width:900px){
+  .sheet{grid-template-columns:1fr;align-items:start;gap:clamp(26px,5vh,40px);
+    padding-top:clamp(84px,12vh,110px)}
+  .plates{order:2}
+}
+@media(prefers-reduced-motion:reduce){
+  .plate,.view--about:not([data-idle]) .plate{opacity:1;transform:none;animation:none}
+}
