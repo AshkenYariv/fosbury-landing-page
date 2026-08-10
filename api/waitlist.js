@@ -25,12 +25,31 @@
  * turning away a lead the inbox already had.
  *
  * Needs `RESEND_KEY` on the Vercel project, and `DATABASE_URL` for the table.
+ * The addresses below have defaults and only need setting on a deployment that
+ * should not write to the real inbox.
  */
 
 import { record } from '../lib/signups.js';
 
-const NOTIFY = 'ashkenazy.jariv@gmail.com';
-const FROM = 'Fosbury <hello@fosbury.ai>';
+/*
+ * Every address this endpoint uses, in one place.
+ *
+ * `hello@fosbury.ai` is the address the world sees, and it is an alias: Google
+ * decides where it lands, so where a reply ends up can change without a deploy.
+ * That is the reason replies are pointed at the alias and not at the mailbox
+ * behind it — the address in a stranger's inbox outlives whoever reads it.
+ *
+ * The notice is the other direction. Nobody replies to it and nothing reads it
+ * but us, so it goes straight to the mailbox; an alias in front would only add
+ * a hop that can break.
+ *
+ * All three are overridable so a preview deployment can be pointed somewhere
+ * harmless — previews inherit `RESEND_KEY` and would otherwise send real mail
+ * from the real domain.
+ */
+const FROM = process.env.EMAIL_FROM || 'Fosbury <hello@fosbury.ai>';
+const REPLY_TO = process.env.EMAIL_REPLY_TO || 'hello@fosbury.ai';
+const NOTIFY = process.env.EMAIL_NOTIFY || 'yariv@fosbury.ai';
 
 /* Half an hour, whenever suits them. The page reads this back off the response
    so the link lives in one place rather than in two that drift apart. */
@@ -64,7 +83,7 @@ function welcome(email) {
   return {
     from: FROM,
     to: [email],
-    reply_to: NOTIFY,
+    reply_to: REPLY_TO,
     subject: 'You’re on the Fosbury waitlist',
     text: [
       'Thanks for asking for access to Fosbury.',
