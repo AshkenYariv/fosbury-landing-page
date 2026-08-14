@@ -13,11 +13,9 @@ means something on a machine without a database.
 
 ## What the page asks for
 
-Two things, and neither of them is an address any more:
-
-* **Open app** — `https://app.fosbury.ai`, in the same tab.
-* **Download** — the download section, and from there the app's own stable
-  per-platform links. See [Downloads](#downloads).
+One thing, and it is not an address any more: **Open app** —
+`https://app.fosbury.ai`, in the same tab. It is the hero button, the corner
+button that follows you, the closing button, and what "Make it stop" does.
 
 The waitlist dialog is gone from the page. [`api/waitlist.js`](api/waitlist.js),
 [`lib/signups.js`](lib/signups.js) and the `waitlist_signups` table are still
@@ -25,9 +23,24 @@ here and still work — **nothing calls them.** They are kept rather than delete
 because the endpoint is the only record of how sign-ups were taken, and putting
 it back in front of a button is one commit. Its tests still run.
 
-## Downloads
+## Downloads — built, and switched off
 
-The three buttons point at the **app's** origin, not at this one:
+The whole download surface is written and **commented out**, because the links
+do not work yet. Every piece is marked `OFF UNTIL THERE ARE BUILDS`:
+
+| Where | What |
+|---|---|
+| `index.html` | the `#download` section, and the four buttons pointing at it — bar, corner, hero, closing |
+| `index.html` `<head>` | `styles/help.css` and `scripts/help.js` |
+
+`scripts/download.js` stays loaded. It draws nothing — its whole output is
+`data-os` on the document — and that is the dimension every counted event
+carries, which is worth having precisely while there is nothing to download.
+`api/download-help.js`, its tests and `assets/platforms/` are untouched on disk.
+
+### Why it is off
+
+The buttons point at the **app's** origin, not this one:
 
 | | |
 |---|---|
@@ -35,18 +48,28 @@ The three buttons point at the **app's** origin, not at this one:
 | `https://app.fosbury.ai/download/windows` | newest `.exe` |
 | `https://app.fosbury.ai/download/linux` | newest `.AppImage` |
 
-Nothing is hosted here and no href names a version, so publishing a build is
-putting a file in a directory. The other end is `backend/download.ts` in
-`fosbury-app`, and it is **off unless `FOSBURY_DOWNLOADS` names a directory on
-that deployment** — with it unset the app's SPA catch-all answers instead, and
-every one of these links quietly returns an HTML page rather than a file. That
-is a one-variable failure with no visible symptom on this side, so it is worth
-checking after any deploy of the app: the links must return
-`content-type: application/*`, not `text/html`.
+`backend/download.ts` in `fosbury-app` is **off unless `FOSBURY_DOWNLOADS` names
+a directory on that deployment.** With it unset — which is how production stands
+— the app's SPA catch-all answers instead, so each link returns an HTML login
+screen rather than an installer. Somebody clicking Download gets no file and no
+error, which is worse than not being offered it.
 
-`scripts/download.js` names the machine once, writes it to `data-os` on the
-document, and everything else reads it from there — which build is marked yours,
-and the `os` dimension on every counted event.
+### Switching it back on
+
+```bash
+curl -sI https://app.fosbury.ai/download/mac | grep content-type
+```
+
+When that says `application/*` rather than `text/html`, uncomment the blocks
+above. Getting it to say that is three steps in `fosbury-app`, none of them
+here: run the **desktop** workflow for the three artifacts, put them in the
+directory `FOSBURY_DOWNLOADS` names on the Railway volume, and set that variable.
+See its `DEPLOY.md`.
+
+Nothing here names a version, so once those links work they keep working —
+publishing a build is putting a file in a directory, and the aliases resolve to
+the newest of each kind at request time with `cache-control: no-store` on the
+redirect. **A new app release never needs a change on this side.**
 
 ## Email
 

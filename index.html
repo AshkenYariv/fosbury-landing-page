@@ -22,7 +22,10 @@
      vercel.json has been revalidating them since, and every stale copy has long
      aged out. -->
 <link rel="stylesheet" href="/styles/base.css">
-<link rel="stylesheet" href="/styles/help.css">
+<!-- OFF UNTIL THERE ARE BUILDS — see the note above the download section. The
+     only thing this sheet dresses is the "having problems downloading?" dialog,
+     and there is nothing to have problems with yet. -->
+<!-- <link rel="stylesheet" href="/styles/help.css"> -->
 <link rel="stylesheet" href="/styles/home.css">
 <link rel="stylesheet" href="/styles/about.css">
 <!-- The first two frames are the hero; the rest arrive in the tenth of a
@@ -35,10 +38,18 @@
 <!-- Order matters once, and only here: `download.js` works out which machine
      this is and writes it onto the document, and `track.js` reads it off there
      for every event it sends. Deferred scripts run in the order they are
-     written, so the answer is on the page before the first count leaves it. -->
+     written, so the answer is on the page before the first count leaves it.
+
+     `download.js` stays loaded with the download section switched off. It draws
+     nothing — its whole output is `data-os` on the document — and that is the
+     dimension every counted event carries. Which machines arrive here is worth
+     knowing precisely while there is nothing for them to download yet. -->
 <script defer src="/scripts/track.js"></script>
 <script defer src="/scripts/download.js"></script>
-<script defer src="/scripts/help.js"></script>
+<!-- OFF UNTIL THERE ARE BUILDS. Nothing opens this dialog once the download
+     section is commented out, and a dialog nobody can reach is markup injected
+     into every page load for nothing. -->
+<!-- <script defer src="/scripts/help.js"></script> -->
 <script defer src="/scripts/nav.js"></script>
 <script defer src="/scripts/home.js"></script>
 </head>
@@ -96,25 +107,29 @@
      the home screen and fold back into it on the way to the other one. -->
 <nav class="nav" aria-label="Fosbury">
   <a class="navMark" href="/" aria-label="Fosbury" data-track="Nav — Fosbury mark"><svg class="mark" viewBox="0 0 110 150" aria-hidden="true"><use href="#mark"/></svg></a>
-  <a class="navHome" href="#download" data-track="Nav — Download"><span>Download</span></a>
+  <!-- OFF UNTIL THERE ARE BUILDS. The bar takes its order and its travel from
+       whatever is in it, so this goes back in at the front and needs nothing
+       else changed. -->
+  <!-- <a class="navHome" href="#download" data-track="Nav — Download"><span>Download</span></a> -->
   <a class="navHome" href="#how" data-track="Nav — How it works"><span>How it works</span></a>
   <a class="navHome" href="#built" data-track="Nav — Built for"><span>Built for</span></a>
   <a class="navHome" href="#quiet" data-track="Nav — Quiet"><span>Quiet</span></a>
   <a class="navAbout" href="/about" data-track="Nav — About">About</a>
 </nav>
 
-<!-- The two asks, following you. Download is the quieter of the pair on purpose:
-     the app in a browser is one click and nothing to install, so that is what a
-     stranger should be offered first and what the solid button says.
+<!-- The ask, following you. It is a group of one while there is one thing to
+     offer, and the group is what travels — so the second button goes back in
+     beside it without anything else moving.
 
-     `/#download` rather than `#download`, because this pair is on the about
-     screen too, where a bare fragment points at a section that is not on screen.
-     With the slash it is a link home that happens to name where it lands, and
+     OFF UNTIL THERE ARE BUILDS: the Download half. `/#download` rather than
+     `#download` when it returns, because this pair is on the about screen too,
+     where a bare fragment points at a section that is not on screen. With the
+     slash it is a link home that happens to name where it lands, and
      `scripts/nav.js` carries the fragment across the swap. -->
 <div class="corner" data-corner>
-  <a class="cornerGet" href="/#download" data-track="Download — corner">
+  <!-- <a class="cornerGet" href="/#download" data-track="Download — corner">
     <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
-  </a>
+  </a> -->
   <a class="cornerApp" href="https://app.fosbury.ai" data-track="Open app — corner">
     Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
   </a>
@@ -148,18 +163,18 @@
       <b>Fosbury</b>
     </div>
     <h1 class="claim">Team chat you won’t dread opening.</h1>
-    <!-- Open first, download second. The one that costs nothing goes on the
-         white button; the one that costs a quarter of a gigabyte and a Gatekeeper
-         warning does not send anybody straight at the file — it sends them one
-         screen down, where the build for their machine is named and the warning
-         they are about to see is explained before they see it. -->
+    <!-- OFF UNTIL THERE ARE BUILDS: the Download button. When it returns it goes
+         second — the one that costs nothing goes on the white button, and the one
+         that costs a quarter of a gigabyte and a Gatekeeper warning does not send
+         anybody straight at the file. It sends them one screen down, where the
+         build for their machine is named. -->
     <div class="heroGo">
       <a class="getBtn" href="https://app.fosbury.ai" data-track="Open app — hero">
         Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
       </a>
-      <a class="getBtn getBtn--ghost" href="#download" data-track="Download — hero">
+      <!-- <a class="getBtn getBtn--ghost" href="#download" data-track="Download — hero">
         <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
-      </a>
+      </a> -->
     </div>
   </div>
 
@@ -172,28 +187,47 @@
 
 <!-- ═══ download ══════════════════════════════════════════════════════════
      The first thing under the hero, because it is the first thing the hero
-     asked for. Grey rather than white so it stands off the section below it,
-     and typographic rather than logotyped — see the note on `#down` above.
+     asked for. Grey rather than white so it stands off the section below it.
 
      The three hrefs are the app's own stable links: `/download/mac` is always
      the newest Mac build, so publishing one is putting a file in a directory
      and nothing on this page ever points at a version that has been replaced.
      `backend/download.ts` in fosbury-app is the other end of them.
-     ═══════════════════════════════════════════════════════════════════════ -->
+     ═══════════════════════════════════════════════════════════════════════
+
+     OFF UNTIL THERE ARE BUILDS.
+
+     `https://app.fosbury.ai/download/mac` and its two siblings answer with the
+     app's own HTML right now, not with a file — `backend/download.ts` is off
+     unless `FOSBURY_DOWNLOADS` names a directory on that deployment, and with it
+     unset the SPA catch-all takes the request instead. So every button here
+     lands somebody on a login screen holding no installer, which is worse than
+     not offering it. It goes back the day these return `application/*`:
+
+         curl -sI https://app.fosbury.ai/download/mac | grep content-type
+
+     Three things switch it back on, all of them marked OFF UNTIL THERE ARE
+     BUILDS: this section, the four buttons that point at it (bar, corner, hero,
+     closing), and `help.css` + `help.js` in the head. `scripts/download.js`
+     stays loaded throughout — it draws nothing and only writes `data-os`.
+
+     Its inner notes, kept because comments do not nest:
+
+     `data-os` on each is what `scripts/download.js` matches the machine
+     against; it marks one of them yours and leaves the other two alone.
+
+     The marks are in `/assets/platforms/`, named for the same three words — so
+     `data-os`, the file, the event and what the endpoint puts in the subject
+     line are one vocabulary rather than four. Each is left in its own colours:
+     they are here to be recognised at a glance, and a recoloured Apple is a
+     shape somebody has to stop and read. `alt` is empty on purpose — the name
+     is written beside it in text.
+
 <section class="band band--near" id="download" data-section="Download">
   <div class="wrap">
     <p class="kicker reveal">Download</p>
     <h2 class="bandTitle reveal">It shouldn’t live in a tab.</h2>
 
-    <!-- `data-os` on each is what `scripts/download.js` matches the machine
-         against; it marks one of them yours and leaves the other two alone.
-
-         The marks are in `/assets/platforms/`, named for the same three words —
-         so `data-os`, the file, the event and what the endpoint puts in the
-         subject line are one vocabulary rather than four. Each is left in its
-         own colours: they are here to be recognised at a glance, and a
-         recoloured Apple is a shape somebody has to stop and read. `alt` is
-         empty on purpose — the name is written beside it in text. -->
     <div class="gets reveal">
       <a class="get" href="https://app.fosbury.ai/download/mac" data-os="macos" data-track="Download — macOS">
         <span class="getTop">
@@ -227,6 +261,7 @@
     </p>
   </div>
 </section>
+-->
 
 <!-- ═══ how it works ══════════════════════════════════════════════════════ -->
 <section class="band" id="how" data-section="How it works">
@@ -449,9 +484,11 @@
     <a class="endBtn" href="https://app.fosbury.ai" data-track="Open app — closing">
       Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
     </a>
-    <a class="endBtn endBtn--ghost" href="#download" data-track="Download — closing">
+    <!-- OFF UNTIL THERE ARE BUILDS. The same pair as the hero, at the other end
+         of the page, and it comes back the same way. -->
+    <!-- <a class="endBtn endBtn--ghost" href="#download" data-track="Download — closing">
       <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
-    </a>
+    </a> -->
   </div>
 </section>
 
