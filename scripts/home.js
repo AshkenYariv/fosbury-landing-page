@@ -17,9 +17,11 @@ const watch = (el, at, fn) => {
    The screaming.
 
    Ten frames at about a tenth of a second, which is where a cut stops reading
-   as a slideshow and starts reading as a noise. It never stops for good: the
-   dialog holds it still while it is open, and closing the dialog starts it
-   again. The only way to make it stop is the thing the dialog is asking for.
+   as a slideshow and starts reading as a noise. It runs while it is looked at
+   and not otherwise, and a dialog on top of it counts as not looked at.
+
+   "Make it stop" is a link to the app now rather than a dialog, and it still
+   does not lie: press it and the screaming stops, because you have gone.
    ══════════════════════════════════════════════════════════════════════════ */
 const screams = document.getElementById('screams');
 const shots = [...screams.querySelectorAll('img')];
@@ -39,8 +41,8 @@ function run() {
 /* Off screen it is a timer nobody is watching burning a frame every tenth of a
    second. It runs while it is looked at and not otherwise. */
 watch(screams, .12, (seen) => { watched = seen; run(); });
-document.addEventListener('waitlist:open', () => { asking = true; run(); });   /* which is to say: stop */
-document.addEventListener('waitlist:close', () => { asking = false; run(); }); /* and it picks up again */
+document.addEventListener('help:open', () => { asking = true; run(); });   /* which is to say: stop */
+document.addEventListener('help:close', () => { asking = false; run(); }); /* and it picks up again */
 Promise.all(shots.map((img) => img.decode().catch(() => {}))).then(() => { ready = true; run(); });
 
 /* ══════════════════════════════════════════════════════════════════════════

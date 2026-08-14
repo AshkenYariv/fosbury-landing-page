@@ -1,6 +1,7 @@
 # fosbury-landing
 
-The landing page. Static HTML, one endpoint, and the table it writes to.
+The landing page. Static HTML, two endpoints, and the table one of them writes
+to.
 
 ```bash
 npm test
@@ -10,14 +11,64 @@ The tests need nothing but Node. `test/schema.test.js` additionally wants a
 Postgres to talk to and skips itself when there is not one, so `npm test` still
 means something on a machine without a database.
 
+## What the page asks for
+
+Two things, and neither of them is an address any more:
+
+* **Open app** — `https://app.fosbury.ai`, in the same tab.
+* **Download** — the download section, and from there the app's own stable
+  per-platform links. See [Downloads](#downloads).
+
+The waitlist dialog is gone from the page. [`api/waitlist.js`](api/waitlist.js),
+[`lib/signups.js`](lib/signups.js) and the `waitlist_signups` table are still
+here and still work — **nothing calls them.** They are kept rather than deleted
+because the endpoint is the only record of how sign-ups were taken, and putting
+it back in front of a button is one commit. Its tests still run.
+
+## Downloads
+
+The three buttons point at the **app's** origin, not at this one:
+
+| | |
+|---|---|
+| `https://app.fosbury.ai/download/mac` | newest `.dmg` |
+| `https://app.fosbury.ai/download/windows` | newest `.exe` |
+| `https://app.fosbury.ai/download/linux` | newest `.AppImage` |
+
+Nothing is hosted here and no href names a version, so publishing a build is
+putting a file in a directory. The other end is `backend/download.ts` in
+`fosbury-app`, and it is **off unless `FOSBURY_DOWNLOADS` names a directory on
+that deployment** — with it unset the app's SPA catch-all answers instead, and
+every one of these links quietly returns an HTML page rather than a file. That
+is a one-variable failure with no visible symptom on this side, so it is worth
+checking after any deploy of the app: the links must return
+`content-type: application/*`, not `text/html`.
+
+`scripts/download.js` names the machine once, writes it to `data-os` on the
+document, and everything else reads it from there — which build is marked yours,
+and the `os` dimension on every counted event.
+
 ## Email
 
-One endpoint sends mail — [`api/waitlist.js`](api/waitlist.js) — and **nothing
-in this repo receives it.** There is no inbound webhook, no IMAP, no parse hook
-and no polling, which is worth knowing before anyone changes an MX record: mail
-routing can be rearranged without touching this code.
+Two endpoints send mail and **nothing in this repo receives it.** There is no
+inbound webhook, no IMAP, no parse hook and no polling, which is worth knowing
+before anyone changes an MX record: mail routing can be rearranged without
+touching this code.
 
-Two letters go out per sign-up, and they point in opposite directions:
+[`api/download-help.js`](api/download-help.js) is the live one — the
+"having problems downloading?" dialog. One letter per report:
+
+| | To | From | Reply-To |
+|---|---|---|---|
+| **Report**, to us | `EMAIL_SUPPORT` | `EMAIL_FROM` | the person who wrote it |
+
+It goes to the **alias**, which is the opposite of what the waitlist notice
+below does and deliberately so: the dialog tells people the address, they will
+use it again, and support has to be re-pointable at somebody who is not Yariv
+without a deploy.
+
+[`api/waitlist.js`](api/waitlist.js) is the unreachable one described above. Two
+letters go out per sign-up, and they point in opposite directions:
 
 | | To | From | Reply-To |
 |---|---|---|---|
@@ -34,15 +85,23 @@ read it — so it goes straight to the mailbox.
 
 | Variable | Default | |
 |---|---|---|
-| `RESEND_KEY` | — | Required to send at all. Without it the row is still written and the sign-up still succeeds. |
+| `RESEND_KEY` | — | Required to send at all. Without it a download report **fails and says so**, naming the address instead; a waitlist row is still written and the sign-up still succeeds. |
 | `DATABASE_URL` | — | The table. `POSTGRES_URL` is also accepted. |
 | `EMAIL_FROM` | `Fosbury <hello@fosbury.ai>` | Must be on a domain verified in Resend. |
+| `EMAIL_SUPPORT` | `hello@fosbury.ai` | Where download reports land. |
 | `EMAIL_REPLY_TO` | `hello@fosbury.ai` | |
 | `EMAIL_NOTIFY` | `yariv@fosbury.ai` | |
 
-The three addresses have working defaults and only need setting on a deployment
+The four addresses have working defaults and only need setting on a deployment
 that should not write to the real inbox. Preview deployments inherit
 `RESEND_KEY` and would otherwise send real mail from the real domain.
+
+The two endpoints differ on what a missing `RESEND_KEY` means, and the
+difference is the point: a sign-up has a row to fall back on, and a support
+report has nothing but the letter. So one carries on and the other refuses
+loudly — and the dialog prints `hello@fosbury.ai` in readable text underneath
+the form either way, because the failure case of a contact form must never be a
+dead end.
 
 ### DNS
 

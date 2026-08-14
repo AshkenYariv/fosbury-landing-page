@@ -8,22 +8,23 @@
 <meta property="og:title" content="Fosbury — Team chat you won’t dread opening.">
 <meta property="og:description" content="Threads that close, owners that answer, agents that do the chasing.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://fosbury.ai/">
+<link rel="canonical" href="https://fosbury.ai/">
 <link rel="icon" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Both buttons on this page go to the app: one to open it, three to download
+     from it. The handshake is worth having done before the click. -->
+<link rel="preconnect" href="https://app.fosbury.ai">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- The `?v=` is a one-off rescue, not a habit. Anyone who loaded the site
-     before 10 Aug holds a stylesheet their browser was told to keep for four
-     hours, and it will not ask for a new one until that runs out — so a phone
-     pairs today's markup with Friday's CSS. The HTML is never cached, so
-     changing the query is the only thing that reaches them: a different URL is
-     a different entry, and the browser has to go and fetch it. The header rule
-     in vercel.json is what stops this happening again; once every stale copy
-     has aged out this can go back to being a bare path. -->
-<link rel="stylesheet" href="/styles/base.css?v=20260810">
-<link rel="stylesheet" href="/styles/waitlist.css?v=20260810">
-<link rel="stylesheet" href="/styles/home.css?v=20260810">
-<link rel="stylesheet" href="/styles/about.css?v=20260810">
+<!-- Bare paths again. The `?v=` here was a one-off rescue for browsers holding
+     a four-hour copy of the stylesheets from before 10 Aug; the header rule in
+     vercel.json has been revalidating them since, and every stale copy has long
+     aged out. -->
+<link rel="stylesheet" href="/styles/base.css">
+<link rel="stylesheet" href="/styles/help.css">
+<link rel="stylesheet" href="/styles/home.css">
+<link rel="stylesheet" href="/styles/about.css">
 <!-- The first two frames are the hero; the rest arrive in the tenth of a
      second before they are wanted. -->
 <link rel="preload" as="image" href="/assets/screams/01.jpg">
@@ -31,10 +32,15 @@
 <!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
 <script defer src="https://cloud.umami.is/script.js"
         data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
-<script defer src="/scripts/track.js?v=20260810"></script>
-<script defer src="/scripts/waitlist.js?v=20260810"></script>
-<script defer src="/scripts/nav.js?v=20260810"></script>
-<script defer src="/scripts/home.js?v=20260810"></script>
+<!-- Order matters once, and only here: `download.js` works out which machine
+     this is and writes it onto the document, and `track.js` reads it off there
+     for every event it sends. Deferred scripts run in the order they are
+     written, so the answer is on the page before the first count leaves it. -->
+<script defer src="/scripts/track.js"></script>
+<script defer src="/scripts/download.js"></script>
+<script defer src="/scripts/help.js"></script>
+<script defer src="/scripts/nav.js"></script>
+<script defer src="/scripts/home.js"></script>
 </head>
 <body>
 
@@ -47,6 +53,13 @@
   </symbol>
   <symbol id="arrow" viewBox="0 0 16 16">
     <path d="M3 8h9.4M8.6 4.2 12.8 8l-4.2 3.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <!-- The same arrow, turned down, with the tray under it every download button
+       has had since the first one. No platform logos anywhere on this page: the
+       rest of the site draws nothing decorative, and three borrowed trademarks
+       would be the loudest thing on it. -->
+  <symbol id="down" viewBox="0 0 16 16">
+    <path d="M8 2.4v8M4.6 7 8 10.4 11.4 7M3 13.4h10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
   </symbol>
   <symbol id="urgent" viewBox="0 0 16 16">
     <rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.2" fill="currentColor"/>
@@ -83,15 +96,29 @@
      the home screen and fold back into it on the way to the other one. -->
 <nav class="nav" aria-label="Fosbury">
   <a class="navMark" href="/" aria-label="Fosbury" data-track="Nav — Fosbury mark"><svg class="mark" viewBox="0 0 110 150" aria-hidden="true"><use href="#mark"/></svg></a>
+  <a class="navHome" href="#download" data-track="Nav — Download"><span>Download</span></a>
   <a class="navHome" href="#how" data-track="Nav — How it works"><span>How it works</span></a>
   <a class="navHome" href="#built" data-track="Nav — Built for"><span>Built for</span></a>
   <a class="navHome" href="#quiet" data-track="Nav — Quiet"><span>Quiet</span></a>
   <a class="navAbout" href="/about" data-track="Nav — About">About</a>
 </nav>
 
-<button class="getAccess" type="button" data-ask="corner" data-tone="light" data-track="Get access — corner">
-  Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
-</button>
+<!-- The two asks, following you. Download is the quieter of the pair on purpose:
+     the app in a browser is one click and nothing to install, so that is what a
+     stranger should be offered first and what the solid button says.
+
+     `/#download` rather than `#download`, because this pair is on the about
+     screen too, where a bare fragment points at a section that is not on screen.
+     With the slash it is a link home that happens to name where it lands, and
+     `scripts/nav.js` carries the fragment across the swap. -->
+<div class="corner" data-corner>
+  <a class="cornerGet" href="/#download" data-track="Download — corner">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
+  </a>
+  <a class="cornerApp" href="https://app.fosbury.ai" data-track="Open app — corner">
+    Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
+  </a>
+</div>
 
 <div class="deck">
 
@@ -121,16 +148,85 @@
       <b>Fosbury</b>
     </div>
     <h1 class="claim">Team chat you won’t dread opening.</h1>
-    <button class="getBtn" type="button" data-ask="hero" data-track="Get access — hero">
-      Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
-    </button>
+    <!-- Open first, download second. The one that costs nothing goes on the
+         white button; the one that costs a quarter of a gigabyte and a Gatekeeper
+         warning does not send anybody straight at the file — it sends them one
+         screen down, where the build for their machine is named and the warning
+         they are about to see is explained before they see it. -->
+    <div class="heroGo">
+      <a class="getBtn" href="https://app.fosbury.ai" data-track="Open app — hero">
+        Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
+      </a>
+      <a class="getBtn getBtn--ghost" href="#download" data-track="Download — hero">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
+      </a>
+    </div>
   </div>
 
+  <!-- It still does not lie. The screaming stops, because you have left. -->
   <div class="stopWrap">
-    <button class="stop" type="button" data-ask="make it stop" data-track="Make it stop"><i aria-hidden="true"></i>Make it stop</button>
+    <a class="stop" href="https://app.fosbury.ai" data-track="Make it stop"><i aria-hidden="true"></i>Make it stop</a>
   </div>
 
 </header>
+
+<!-- ═══ download ══════════════════════════════════════════════════════════
+     The first thing under the hero, because it is the first thing the hero
+     asked for. Grey rather than white so it stands off the section below it,
+     and typographic rather than logotyped — see the note on `#down` above.
+
+     The three hrefs are the app's own stable links: `/download/mac` is always
+     the newest Mac build, so publishing one is putting a file in a directory
+     and nothing on this page ever points at a version that has been replaced.
+     `backend/download.ts` in fosbury-app is the other end of them.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="band band--near" id="download" data-section="Download">
+  <div class="wrap">
+    <p class="kicker reveal">Download</p>
+    <h2 class="bandTitle reveal">It shouldn’t live in a tab.</h2>
+
+    <!-- `data-os` on each is what `scripts/download.js` matches the machine
+         against; it marks one of them yours and leaves the other two alone.
+
+         The marks are in `/assets/platforms/`, named for the same three words —
+         so `data-os`, the file, the event and what the endpoint puts in the
+         subject line are one vocabulary rather than four. Each is left in its
+         own colours: they are here to be recognised at a glance, and a
+         recoloured Apple is a shape somebody has to stop and read. `alt` is
+         empty on purpose — the name is written beside it in text. -->
+    <div class="gets reveal">
+      <a class="get" href="https://app.fosbury.ai/download/mac" data-os="macos" data-track="Download — macOS">
+        <span class="getTop">
+          <img class="getLogo" src="/assets/platforms/macos.svg" alt="" width="26" height="26" decoding="async">
+          <span class="getName">macOS</span>
+        </span>
+        <span class="getWhat">Intel and Apple Silicon</span>
+        <span class="getGo">Download <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg></span>
+      </a>
+      <a class="get" href="https://app.fosbury.ai/download/windows" data-os="windows" data-track="Download — Windows">
+        <span class="getTop">
+          <img class="getLogo" src="/assets/platforms/windows.svg" alt="" width="26" height="26" decoding="async">
+          <span class="getName">Windows</span>
+        </span>
+        <span class="getWhat">Windows 10 and later</span>
+        <span class="getGo">Download <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg></span>
+      </a>
+      <a class="get" href="https://app.fosbury.ai/download/linux" data-os="linux" data-track="Download — Linux">
+        <span class="getTop">
+          <img class="getLogo" src="/assets/platforms/linux.svg" alt="" width="26" height="26" decoding="async">
+          <span class="getName">Linux</span>
+        </span>
+        <span class="getWhat">AppImage, any distribution</span>
+        <span class="getGo">Download <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg></span>
+      </a>
+    </div>
+
+    <p class="getFoot reveal">
+      <button class="getHelp" type="button" data-help="download" data-track="Download — having problems">Having problems downloading?</button>
+      <span class="getOr">or <a href="https://app.fosbury.ai" data-track="Open app — download section">open Fosbury in your browser</a> — nothing to install.</span>
+    </p>
+  </div>
+</section>
 
 <!-- ═══ how it works ══════════════════════════════════════════════════════ -->
 <section class="band" id="how" data-section="How it works">
@@ -349,9 +445,14 @@
 <!-- ═══ the close ═════════════════════════════════════════════════════════ -->
 <section class="end" id="get" data-section="Closing">
   <h2 class="endTitle">Ready to <em>close</em> something?</h2>
-  <button class="endBtn" type="button" data-ask="close" data-track="Get access — closing">
-    Get access <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
-  </button>
+  <div class="endGo">
+    <a class="endBtn" href="https://app.fosbury.ai" data-track="Open app — closing">
+      Open app <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#arrow"/></svg>
+    </a>
+    <a class="endBtn endBtn--ghost" href="#download" data-track="Download — closing">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#down"/></svg> Download
+    </a>
+  </div>
 </section>
 
 </main>

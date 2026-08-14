@@ -1,0 +1,96 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   The download-help dialog.
+
+   `scripts/help.js` puts the markup in; this is what it looks like.
+
+   Deliberately not the room the old access dialog was — that one was a single
+   question given a whole screen to stand in, and this is somebody who is
+   already annoyed and wants to be finished. So it is a card sized to its own
+   two fields, sitting on the paper it was opened from, and the fastest thing in
+   it is the Send button.
+
+   One tone, because there is one place it opens from. If it ever opens over the
+   black hero, this is where the second set of values would go.
+   ══════════════════════════════════════════════════════════════════════════ */
+body[data-locked]{overflow:hidden}
+
+.scrim{
+  position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;
+  background:rgb(255 255 255 / .76);animation:fade .2s ease forwards;
+  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+}
+.scrim[hidden]{display:none}
+
+.help{
+  position:relative;width:min(520px,100%);
+  padding:clamp(28px,4vw,38px);border-radius:24px;
+  background:var(--paper);color:var(--ink);text-align:left;
+  box-shadow:0 0 0 1px var(--line), 0 32px 80px -24px rgb(0 0 0 / .26);
+  animation:helpIn .24s cubic-bezier(.2,.7,.2,1) forwards;
+}
+@keyframes helpIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+
+.helpX{
+  position:absolute;top:16px;right:16px;display:grid;place-items:center;
+  width:34px;height:34px;border-radius:999px;
+  background:rgb(17 17 20 / .05);color:var(--faint);
+  transition:background .16s ease,color .16s ease;
+}
+.helpX:hover{background:rgb(17 17 20 / .11);color:var(--ink)}
+
+.helpStep[hidden]{display:none}
+.helpTitle{font-family:var(--serif);font-weight:600;font-size:clamp(21px,2.2vw,26px);
+  line-height:1.15;letter-spacing:-.024em;color:var(--ink);padding-right:36px}
+.helpSub{margin-top:9px;font-size:15px;line-height:1.5;color:var(--mute);text-wrap:pretty}
+
+.helpForm{margin-top:22px}
+/* The label is the field's name and nothing else — a hint under every box is a
+   form that looks like work. What the box wants is in its own placeholder. */
+.helpLabel{display:block;margin-bottom:6px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint)}
+.helpLabel + .helpField{margin-bottom:16px}
+.helpField{
+  display:block;width:100%;padding:12px 15px;
+  border:1px solid var(--line);border-radius:12px;
+  background:rgb(17 17 20 / .025);color:var(--ink);
+  font:inherit;font-size:15.5px;line-height:1.5;
+  transition:background .18s ease,border-color .18s ease;
+}
+.helpField::placeholder{color:var(--faint)}
+.helpField:focus{outline:none;background:#fff;border-color:rgb(17 17 20 / .34)}
+.helpField:disabled{opacity:.55}
+.helpArea{resize:vertical;min-height:96px}
+
+/* Present, submitted, and never seen. `visibility` as well as the offset, so
+   nothing here is reachable by tab, by voice, or by a screen reader. */
+.helpTrap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;visibility:hidden}
+
+.helpSend{
+  display:inline-flex;align-items:center;justify-content:center;
+  height:48px;padding:0 28px;border-radius:999px;
+  background:var(--ink);color:#fff;
+  font-size:15.5px;font-weight:600;letter-spacing:-.014em;
+  transition:background .18s ease,opacity .18s ease;
+}
+.helpSend:hover{background:#000}
+.helpForm[data-sending] .helpSend{opacity:.55;pointer-events:none}
+.helpDone{margin-top:22px}
+
+.helpNote{margin-top:12px;min-height:16px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint)}
+.helpNote[data-bad]{color:#c2524f;letter-spacing:.06em;text-transform:none;font-size:12.5px;
+  font-family:var(--sans);line-height:1.45}
+
+.helpElse{margin-top:16px;padding-top:15px;border-top:1px solid var(--line);
+  font-size:12.5px;line-height:1.5;color:var(--faint);text-wrap:pretty}
+.helpElse a{color:var(--mute);text-decoration:underline;
+  text-decoration-color:var(--line);text-underline-offset:2.5px}
+.helpElse a:hover{color:var(--ink)}
+
+@media(max-width:640px){
+  .scrim{padding:16px;place-items:end center}
+  .help{padding:26px 20px 22px;border-radius:20px}
+  .helpSend{width:100%}
+}
