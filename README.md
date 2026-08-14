@@ -48,23 +48,35 @@ The buttons point at the **app's** origin, not this one:
 | `https://app.fosbury.ai/download/windows` | newest `.exe` |
 | `https://app.fosbury.ai/download/linux` | newest `.AppImage` |
 
-`backend/download.ts` in `fosbury-app` is **off unless `FOSBURY_DOWNLOADS` names
-a directory on that deployment.** With it unset — which is how production stands
-— the app's SPA catch-all answers instead, so each link returns an HTML login
-screen rather than an installer. Somebody clicking Download gets no file and no
-error, which is worse than not being offered it.
+`backend/download.ts` in `fosbury-app` needs two things, and they fail
+differently:
+
+| | Symptom at `/download/mac` |
+|---|---|
+| `FOSBURY_DOWNLOADS` unset | the app's SPA catch-all answers — an HTML login screen |
+| set, but no artifacts in it | `302` to `/download`, which says *No build has been published yet* |
+
+**As it stands the variable is set and the directory is empty**, so the links
+redirect to a page that admits there is nothing there. Either way somebody
+clicking Download gets no file, which is worse than not being offered it.
 
 ### Switching it back on
 
+Follow the redirect and look at what actually comes back:
+
 ```bash
-curl -sI https://app.fosbury.ai/download/mac | grep content-type
+curl -sL -o /dev/null -w '%{content_type}\n' https://app.fosbury.ai/download/mac
 ```
 
-When that says `application/*` rather than `text/html`, uncomment the blocks
-above. Getting it to say that is three steps in `fosbury-app`, none of them
-here: run the **desktop** workflow for the three artifacts, put them in the
-directory `FOSBURY_DOWNLOADS` names on the Railway volume, and set that variable.
-See its `DEPLOY.md`.
+Uncomment the blocks above when that says `application/x-apple-diskimage`.
+**Anything containing `text/html` means there is still no build** — including a
+`302`, which is the empty-directory case and reads like progress if you only
+look at the status code. Do not use `curl -I`: a `HEAD` on that path answers
+`404 application/json`, which is neither of the states above.
+
+Getting a real answer is two steps in `fosbury-app`, neither of them here: run
+the **desktop** workflow for the three artifacts, and put them in the directory
+`FOSBURY_DOWNLOADS` names on the Railway volume. See its `DEPLOY.md`.
 
 Nothing here names a version, so once those links work they keep working —
 publishing a build is putting a file in a directory, and the aliases resolve to

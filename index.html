@@ -197,14 +197,16 @@
 
      OFF UNTIL THERE ARE BUILDS.
 
-     `https://app.fosbury.ai/download/mac` and its two siblings answer with the
-     app's own HTML right now, not with a file — `backend/download.ts` is off
-     unless `FOSBURY_DOWNLOADS` names a directory on that deployment, and with it
-     unset the SPA catch-all takes the request instead. So every button here
-     lands somebody on a login screen holding no installer, which is worse than
-     not offering it. It goes back the day these return `application/*`:
+     `https://app.fosbury.ai/download/mac` and its two siblings do not answer
+     with a file. `FOSBURY_DOWNLOADS` is set on that deployment now, so the route
+     is live — but the directory it names is empty, and an alias with nothing to
+     resolve to redirects to `/download`, which says *No build has been published
+     yet*. So every button here would land somebody on a page admitting there is
+     nothing there. It goes back the day this prints a disk image rather than
+     anything with `text/html` in it — a 302 counts as text/html, and `curl -I`
+     answers 404 on this path, so follow the redirect and read the type:
 
-         curl -sI https://app.fosbury.ai/download/mac | grep content-type
+         curl -sL -o /dev/null -w '%{content_type}\n' https://app.fosbury.ai/download/mac
 
      Three things switch it back on, all of them marked OFF UNTIL THERE ARE
      BUILDS: this section, the four buttons that point at it (bar, corner, hero,
