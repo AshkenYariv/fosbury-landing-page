@@ -16,7 +16,7 @@
 'use strict';
 const deck = document.querySelector('.deck');
 const nav = document.querySelector('.nav');
-const corner = document.querySelector('.getAccess');
+const corner = document.querySelector('[data-corner]');
 const about = nav.querySelector('.navAbout');
 
 /* Each screen carries its own name, address and title, so this file holds no
@@ -50,7 +50,13 @@ const arrived = (screen) =>
    changes shape the moment you ask, which is what makes the two feel like one
    place rather than two pages.
    ─────────────────────────────────────────────────────────────────────── */
-function show(next, push) {
+/**
+ * `hash` is what makes `/#download` from the about screen land on the download
+ * section rather than at the top of the home one. Without it the corner ask —
+ * which is on both screens and points at a section that lives on only one of
+ * them — would take you home and then leave you to find it.
+ */
+function show(next, push, hash) {
   if (!screens[next] || next === at) return;
   const leaving = screens[at];
   const arriving = screens[next];
@@ -61,7 +67,7 @@ function show(next, push) {
   document.title = arriving.dataset.title;
   ask();
   arrived(next);
-  if (push) history.pushState({ view: next }, '', arriving.dataset.path);
+  if (push) history.pushState({ view: next }, '', arriving.dataset.path + (hash || ''));
 
   leaving.setAttribute('data-off', '');
   clearTimeout(swap);
@@ -70,10 +76,23 @@ function show(next, push) {
        you are in it can change without anybody watching it happen. */
     leaving.setAttribute('data-idle', '');
     arriving.removeAttribute('data-idle');
-    scrollTo({ top: 0, behavior: 'instant' });
+    /* After the screen is out of `data-idle` and has its height back: a section
+       inside a screen that is still 100svh tall and clipped has nowhere to be
+       scrolled to. Instant, not smooth — this is happening behind white. */
+    const target = hash && find(arriving, hash);
+    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    else scrollTo({ top: 0, behavior: 'instant' });
     document.documentElement.dataset.view = next;
     requestAnimationFrame(() => arriving.removeAttribute('data-off'));
   }, OUT);
+}
+
+/* A fragment out of a URL is somebody else's string, and `querySelector` throws
+   on one that is not a selector — `/#a b`, or anything with a bracket in it.
+   The throw would be inside a timeout, where there is nothing to catch it and
+   the screen would be left half swapped. */
+function find(view, hash) {
+  try { return view.querySelector(hash); } catch { return null; }
 }
 
 document.addEventListener('click', (e) => {
@@ -93,10 +112,12 @@ document.addEventListener('click', (e) => {
     return;
   }
   e.preventDefault();
-  show(next, true);
+  show(next, true, to.hash);
 });
 
-addEventListener('popstate', (e) => show(e.state?.view || landed(), false));
+/* Going back to `/#download` is going back to the section, not to the top of
+   the screen it is on — the address the entry was pushed with said so. */
+addEventListener('popstate', (e) => show(e.state?.view || landed(), false, location.hash));
 
 /* ── arriving ─────────────────────────────────────────────────────────────
    Whichever screen was asked for is the one that is up, with no travel to it,
@@ -109,7 +130,9 @@ for (const [name, view] of Object.entries(screens)) {
 document.documentElement.dataset.view = at;
 document.title = screens[at].dataset.title;
 about.toggleAttribute('aria-current', at === 'about');
-history.replaceState({ view: at }, '', location.pathname);
+/* The fragment is kept. Somebody who arrived on `/#download` should be able to
+   copy the address out of the bar and send the same place to somebody else. */
+history.replaceState({ view: at }, '', location.pathname + location.hash);
 
 /* What each label is worth, once, so the bar has a real length to travel to.
    Its words are sized to their own content, so this holds whether the bar is

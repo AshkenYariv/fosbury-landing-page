@@ -70,14 +70,28 @@ body{font-size:17px;line-height:1.58}
   font-size:clamp(18px,2.2vw,27px);font-weight:400;line-height:1.24;letter-spacing:-.016em;
   color:#fff;text-wrap:balance;
 }
+/* The two of them, side by side and centred under the sentence. They wrap onto
+   two lines rather than shrink, because a 44px target is the floor and a phone
+   in the narrowest case is exactly where that matters. */
+.heroGo{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;
+  margin-top:clamp(22px,3.6vh,36px)}
 .getBtn{
-  display:inline-flex;align-items:center;gap:9px;margin-top:clamp(22px,3.6vh,36px);
+  display:inline-flex;align-items:center;gap:9px;
   height:52px;padding:0 28px;border-radius:999px;background:#fff;color:#0a0a0a;
   font-size:16px;font-weight:600;letter-spacing:-.015em;
-  transition:transform .4s var(--ease),box-shadow .4s var(--ease);
+  transition:transform .4s var(--ease),box-shadow .4s var(--ease),background .2s ease;
 }
 .getBtn:hover{transform:translateY(-2px);box-shadow:0 16px 38px -18px rgb(255 255 255 / .55)}
 .getBtn svg{height:14px;width:auto}
+/* Outlined on the black, so the pair reads as one offer with a first choice in
+   it rather than as two buttons competing. The face behind them is moving, so
+   the fill is a real one at low alpha and not a bare border. */
+.getBtn--ghost{background:rgb(255 255 255 / .1);color:#fff;
+  box-shadow:inset 0 0 0 1px rgb(255 255 255 / .34);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.getBtn--ghost:hover{background:rgb(255 255 255 / .18);color:#fff;
+  box-shadow:inset 0 0 0 1px rgb(255 255 255 / .5)}
+.getBtn--ghost svg{height:15px;opacity:.9}
 
 /* ── make it stop ─────────────────────────────────────────────────────────
    It says the only thing anybody is thinking by the third second, and it does
@@ -119,6 +133,73 @@ body{font-size:17px;line-height:1.58}
   color:var(--ink);text-wrap:balance;max-width:20ch}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .85s var(--ease),transform .85s var(--ease)}
 .reveal[data-seen]{opacity:1;transform:none}
+
+/* ── download ─────────────────────────────────────────────────────────────
+   Three builds, one of them yours. The section stops far enough down that all
+   three are on screen at once, which is the only reason to follow the link in
+   the bar to it.
+   ─────────────────────────────────────────────────────────────────────── */
+#download{scroll-margin-top:0}
+/* Three or one, and never two. `auto-fit` would give two of them a row and
+   leave the third alone under a gap the width of a tile, which reads as a
+   platform that was an afterthought. The breakpoint is the one the section
+   below already turns at, so the page changes shape once rather than twice. */
+.gets{margin-top:clamp(30px,5vh,48px);
+  display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:860px){.gets{grid-template-columns:minmax(0,1fr)}}
+.get{
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:20px 20px 18px;border-radius:18px;
+  background:#fff;box-shadow:0 0 0 1px var(--line);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.get:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgb(17 17 20 / .18), 0 20px 40px -26px rgb(0 0 0 / .5)}
+/* The mark and the name on one line. Each logo is left in its own colours and
+   sized by its own box, which is why they are `img` rather than symbols in the
+   sprite — the sprite is for glyphs that take the colour of whatever draws
+   them, and these three are the opposite of that. */
+.getTop{display:flex;align-items:center;gap:10px;min-width:0}
+.getLogo{flex:none;width:26px;height:26px;object-fit:contain}
+/* Optical sizing, because the three marks fill their own boxes differently and
+   a single width makes that everybody's problem. Windows is four solid panes
+   edge to edge and reads a size larger; Tux is drawn inside a round frame that
+   is mostly air and reads a size smaller. Nudged until the three look level,
+   which is not the same as measuring the same. */
+.get[data-os="windows"] .getLogo{width:22px;height:22px;margin:2px}
+.get[data-os="linux"] .getLogo{width:32px;height:32px;margin:-3px}
+.getName{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+.getWhat{margin-top:3px;font-size:14px;color:var(--mute)}
+/* The button inside the tile is not a second target — the whole tile is the
+   link, and this is what tells you so. */
+.getGo{display:inline-flex;align-items:center;gap:7px;margin-top:18px;
+  height:40px;padding:0 18px;border-radius:999px;
+  background:var(--ink);color:#fff;font-size:14.5px;font-weight:600;letter-spacing:-.014em;
+  transition:background .2s ease}
+.get:hover .getGo{background:#000}
+.getGo svg{height:14px;width:auto}
+
+/* Yours, and first. Moved rather than merely marked: on a phone the three are
+   stacked, and the one that matters should not be the one you scroll to. */
+.get[data-yours]{order:-1;box-shadow:0 0 0 1.5px var(--ink)}
+.get[data-yours] .getName::after{
+  content:'For this machine';
+  display:inline-block;vertical-align:middle;margin-left:9px;
+  padding:0 9px;height:20px;line-height:20px;border-radius:999px;
+  background:rgb(94 106 210 / .1);color:var(--accent);
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+}
+
+.getFoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;
+  margin-top:clamp(22px,3.5vh,30px);font-size:14.5px;color:var(--mute)}
+/* A button, because it opens a dialog rather than going anywhere — but it has
+   to read as the link it is standing in for. */
+.getHelp{font-size:14.5px;font-weight:500;color:var(--body);
+  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;
+  transition:color .16s ease}
+.getHelp:hover{color:var(--ink);text-decoration-color:currentColor}
+.getOr a{color:var(--body);text-decoration:underline;
+  text-decoration-color:var(--line);text-underline-offset:3px}
+.getOr a:hover{color:var(--ink)}
 
 /* ── how it works ─────────────────────────────────────────────────────────
    One section instead of three screens of scrolling: the three claims stand
@@ -361,11 +442,19 @@ body{font-size:17px;line-height:1.58}
 .endTitle{font-family:var(--serif);font-weight:600;font-size:clamp(32px,5.4vw,64px);
   line-height:1.04;letter-spacing:-.03em;color:#fff;text-wrap:balance}
 .endTitle em{font-style:italic;font-weight:500}
-.endBtn{display:inline-flex;align-items:center;gap:9px;margin-top:clamp(26px,4.5vh,42px);
+.endGo{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:clamp(26px,4.5vh,42px)}
+.endBtn{display:inline-flex;align-items:center;gap:9px;
   height:54px;padding:0 30px;border-radius:999px;background:#fff;color:#0a0a0a;
-  font-size:16.5px;font-weight:600;letter-spacing:-.015em;transition:transform .35s var(--ease)}
+  font-size:16.5px;font-weight:600;letter-spacing:-.015em;
+  transition:transform .35s var(--ease),background .2s ease}
 .endBtn:hover{transform:translateY(-2px)}
 .endBtn svg{height:14px;width:auto}
+/* The same pair as the hero, on the same black, saying the same thing twice —
+   deliberately, because this is the other end of the page. */
+.endBtn--ghost{background:rgb(255 255 255 / .1);color:#fff;
+  box-shadow:inset 0 0 0 1px rgb(255 255 255 / .34)}
+.endBtn--ghost:hover{background:rgb(255 255 255 / .18);color:#fff}
+.endBtn--ghost svg{height:15px;opacity:.9}
 
 /* ── on a phone ───────────────────────────────────────────────────────────
    The drawn screens are the app at the app's own size, and a phone is not that

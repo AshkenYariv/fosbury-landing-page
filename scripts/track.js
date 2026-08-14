@@ -15,10 +15,18 @@
  *   Clicks.    Anything carrying `data-track`. The attribute is the name, so
  *              a new button is counted by adding one word to its markup.
  *
- * Every event carries where it happened: which screen, and which section was
- * last under your eye. So "Get access — corner" from the middle of the six is
- * a different row from the same button pressed on the about screen, without
- * either of them needing its own name.
+ * Every event carries where it happened: which screen, which section was last
+ * under your eye, and which machine it was pressed on. So "Download — corner"
+ * from the middle of the six is a different row from the same button pressed on
+ * the about screen, and "Open app — hero" from a phone is a different row from
+ * the same button on a Mac — without any of them needing its own name.
+ *
+ * The machine is the one dimension this page could not do without: half of what
+ * it now offers is a file that only runs on three of them, and "the download
+ * button was pressed" is not a number anybody can act on until it says which
+ * download. It is `scripts/download.js` that works the answer out, once, and
+ * `data-os` on the document is where this reads it — no second detection, and
+ * no way for the two to disagree about what somebody is running.
  */
 (() => {
 'use strict';
@@ -32,7 +40,13 @@ const send = (name, where) => {
    where it was going, not where it had been. */
 let screen = document.documentElement.dataset.view || 'home';
 let section = 'Hero';
-const where = (extra) => ({ screen, section, ...extra });
+/* Read at the moment of the event rather than kept, so the value is the one on
+   the document and not a copy of whatever it was when this file loaded.
+   `unknown` said out loud: a missing property is indistinguishable from an
+   event sent before the counting was there, and the machines we cannot name
+   are exactly the ones worth being able to count. */
+const os = () => document.documentElement.dataset.os || 'unknown';
+const where = (extra) => ({ screen, section, os: os(), ...extra });
 
 /* ── sections ──────────────────────────────────────────────────────────────
    Where you are, and — the first time only — that you got there at all.
@@ -42,7 +56,7 @@ function reach(name) {
   section = name;
   if (reached.has(name)) return;
   reached.add(name);
-  send(`Section — ${name}`, { screen });
+  send(`Section — ${name}`, { screen, os: os() });
 }
 
 if ('IntersectionObserver' in window) {
@@ -64,7 +78,7 @@ if ('IntersectionObserver' in window) {
    ─────────────────────────────────────────────────────────────────────── */
 document.addEventListener('screen:shown', (e) => {
   screen = e.detail?.screen || screen;
-  send(`Screen — ${screen === 'about' ? 'About' : 'Home'}`, { screen });
+  send(`Screen — ${screen === 'about' ? 'About' : 'Home'}`, { screen, os: os() });
   reach(screen === 'about' ? 'About' : 'Hero');
 });
 
@@ -78,15 +92,21 @@ document.addEventListener('click', (e) => {
   if (hit) send(hit.dataset.track, where());
 }, true);
 
-/* ── the waitlist ──────────────────────────────────────────────────────────
-   `scripts/waitlist.js` says what happened and stays out of the naming.
+/* ── the download-help dialog ──────────────────────────────────────────────
+   `scripts/help.js` says what happened and stays out of the naming.
+
+   Worth counting in full rather than at the ends: somebody opening this is
+   somebody a download has already failed for, and the gap between "opened" and
+   "sent" is the number that says whether the form itself is the second thing
+   that failed them. `os` rides along on all six, so a run of them from one
+   platform is visible as one, which is usually what a broken build looks like.
    ─────────────────────────────────────────────────────────────────────── */
 const say = (name, detail) => (e) => send(name, where(detail ? detail(e.detail || {}) : undefined));
 
-document.addEventListener('waitlist:open',   say('Waitlist — opened', (d) => ({ from: d.from })));
-document.addEventListener('waitlist:close',  say('Waitlist — closed', (d) => ({ joined: Boolean(d.joined) })));
-document.addEventListener('waitlist:invalid', say('Waitlist — address rejected'));
-document.addEventListener('waitlist:sending', say('Waitlist — address submitted'));
-document.addEventListener('waitlist:joined', say('Waitlist — joined', (d) => ({ confirmed: d.confirmed })));
-document.addEventListener('waitlist:failed', say('Waitlist — send failed', (d) => ({ reason: d.reason })));
+document.addEventListener('help:open',    say('Download help — opened', (d) => ({ from: d.from })));
+document.addEventListener('help:close',   say('Download help — closed', (d) => ({ sent: Boolean(d.sent) })));
+document.addEventListener('help:invalid', say('Download help — rejected', (d) => ({ field: d.field })));
+document.addEventListener('help:sending', say('Download help — submitted'));
+document.addEventListener('help:sent',    say('Download help — sent'));
+document.addEventListener('help:failed',  say('Download help — send failed', (d) => ({ reason: d.reason })));
 })();
