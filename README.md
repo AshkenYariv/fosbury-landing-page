@@ -62,9 +62,10 @@ in GA alone without even that.
 
 ### GA4 settings that matter
 
-* **The id is one constant**, `ID` at the top of `scripts/analytics.js`. While it
-  is the `G-XXXXXXXXXX` placeholder nothing is loaded and every event is logged
-  to the console instead.
+* **The id is one constant**, `ID` at the top of `scripts/analytics.js`:
+  `G-98TXZSL290`, property **Fosbury**, stream *Fosbury web (fosbury.ai + app)*.
+  The app's `frontend/public/analytics.js` carries the same one. Emptied, nothing
+  is loaded and every event is logged to the console instead.
 * **Nothing is sent from `localhost` or a `*.vercel.app` preview** — the events
   are logged to the console as `[analytics] …`, which is how to check a payload
   before it ships.
@@ -74,7 +75,11 @@ in GA alone without even that.
   `element`, `is_control` and `tracked` as **event-scoped custom dimensions**,
   or they arrive and cannot be reported on.
 * The same web stream is used by `app.fosbury.ai`, so the page and the app are
-  one journey. Add both domains under the stream's *Configure your domains*.
+  one journey; *Configure your domains* holds `fosbury.ai`, which covers both.
+* The stream's enhanced measurement keeps page loads, scrolls and video only.
+  History page views, outbound clicks, site search, form interactions and file
+  downloads are **off**: the first would double-count, and in the app the rest
+  would read real URLs and link targets out of somebody's workspace.
 
 ## Downloads — built, and switched off
 

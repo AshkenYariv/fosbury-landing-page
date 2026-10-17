@@ -17,14 +17,15 @@
 
 /* The Fosbury GA4 property's web stream. One stream covers fosbury.ai and
    app.fosbury.ai, so a visit that goes from the page into the app is one
-   journey rather than two strangers. Empty means nothing is loaded or sent. */
-const ID = 'G-XXXXXXXXXX';
+   journey rather than two strangers. Property "Fosbury" (Israel time), stream
+   "Fosbury web (fosbury.ai + app)". Empty means nothing is loaded or sent. */
+const ID = 'G-98TXZSL290';
 
 /* Local work must never reach the property, or the funnel is our own reloads.
    Vercel preview deployments are the same thing on a public address. */
 const DEV = /^(localhost|127\.0\.0\.1|\[?::1\]?)$/.test(location.hostname) ||
   /\.vercel\.app$/.test(location.hostname);
-const OFF = !/^G-[A-Z0-9]{6,}$/.test(ID) || ID === 'G-XXXXXXXXXX';
+const OFF = !/^G-[A-Z0-9]{6,}$/.test(ID);
 
 window.dataLayer = window.dataLayer || [];
 function gtag() { dataLayer.push(arguments); }
@@ -36,7 +37,7 @@ gtag('config', ID, { send_page_view: false });
 if (DEV || OFF) {
   /* Nothing is loaded, so nothing is sent: dataLayer just fills up unread.
      The log is how you check an event's payload before it ships. */
-  console.info(`[analytics] ${OFF ? 'no GA4 id set' : 'dev host'} — events logged, not sent`);
+  console.info(`[analytics] ${OFF ? 'no GA4 id' : 'dev host'} — events logged, not sent`);
 } else {
   const s = document.createElement('script');
   s.async = true;
