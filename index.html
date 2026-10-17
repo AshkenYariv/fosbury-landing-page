@@ -35,6 +35,10 @@
 <!-- Umami. Loads out of the way of the page, and counts nothing but the page. -->
 <script defer src="https://cloud.umami.is/script.js"
         data-website-id="4091c37b-0667-4e75-afd2-15874c002962"></script>
+<!-- Google Analytics 4. The loader and nothing else — `track.js` decides what
+     is counted and sends it to both. Before `track.js`, so the door is open by
+     the time the first count goes through it. -->
+<script defer src="/scripts/analytics.js"></script>
 <!-- Order matters once, and only here: `download.js` works out which machine
      this is and writes it onto the document, and `track.js` reads it off there
      for every event it sends. Deferred scripts run in the order they are

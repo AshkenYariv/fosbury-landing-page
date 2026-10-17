@@ -21,6 +21,15 @@
  * the about screen, and "Open app — hero" from a phone is a different row from
  * the same button on a Mac — without any of them needing its own name.
  *
+ * Everything goes to two places. Umami gets the names above, written for a
+ * person to read. Google Analytics gets the same moments as a handful of
+ * snake_case events with the name as a parameter, because GA4 event names are
+ * identifiers (letters, digits, underscores, forty characters) and a report
+ * with one event per button is a report nobody can pivot. GA additionally gets
+ * a `ui_click` for every click on the page, tagged or not — the Skipping Stones
+ * rule — so a button somebody forgot to name still shows up as pressed. The
+ * full map is in the README under "What is counted".
+ *
  * The machine is the one dimension this page could not do without: half of what
  * it now offers is a file that only runs on three of them, and "the download
  * button was pressed" is not a number anybody can act on until it says which
@@ -31,8 +40,9 @@
 (() => {
 'use strict';
 
-const send = (name, where) => {
+const send = (name, where, ga) => {
   try { window.umami?.track(name, where); } catch { /* counted or not, the page goes on */ }
+  if (ga) window.fosburyGa?.(ga, { name, ...where });
 };
 
 /* Held here rather than read off the page: the page takes a moment to change
@@ -56,7 +66,7 @@ function reach(name) {
   section = name;
   if (reached.has(name)) return;
   reached.add(name);
-  send(`Section — ${name}`, { screen, os: os() });
+  send(`Section — ${name}`, { screen, os: os() }, 'section_reached');
 }
 
 if ('IntersectionObserver' in window) {
@@ -76,10 +86,30 @@ if ('IntersectionObserver' in window) {
    Arriving at a screen is arriving at the top of it, which the observer above
    has no change to notice — the two were always in the same place.
    ─────────────────────────────────────────────────────────────────────── */
+/* GA's page view, sent here rather than by gtag (see `scripts/analytics.js`).
+   The address is built from the screen, not read off the bar: `nav.js` says a
+   screen arrived a moment before it pushes the address that goes with it, and
+   a `#section` on the end is a place on the page rather than a page. */
+const pageView = () => window.fosburyGa?.('page_view', {
+  page_location: `${location.origin}${screen === 'about' ? '/about' : '/'}`,
+  page_title: document.title,
+  screen,
+  os: os(),
+});
+
 document.addEventListener('screen:shown', (e) => {
   screen = e.detail?.screen || screen;
   send(`Screen — ${screen === 'about' ? 'About' : 'Home'}`, { screen, os: os() });
+  pageView();
   reach(screen === 'about' ? 'About' : 'Hero');
+});
+
+/* The screen somebody landed on. `nav.js` only announces changes, and it has
+   already put the right title on the document by the time this runs — the two
+   are deferred, and this is the earlier of them, so it waits for the page. */
+document.addEventListener('DOMContentLoaded', () => {
+  screen = document.documentElement.dataset.view || screen;
+  pageView();
 });
 
 /* ── clicks ────────────────────────────────────────────────────────────────
@@ -87,9 +117,34 @@ document.addEventListener('screen:shown', (e) => {
    does, to move between screens without a reload — cannot swallow the count
    with it.
    ─────────────────────────────────────────────────────────────────────── */
+/* What a person thinks they clicked is the control, not the <span> inside it.
+   The page's own name for it wins; after that, what it says on it. Never an
+   input's value — the help dialog's fields are what somebody typed. */
+const CONTROL = 'a,button,summary,label,input,select,textarea,[role="button"],[role="link"],[role="tab"],[data-track]';
+const label = (el) =>
+  el.dataset.track || el.getAttribute('aria-label') || el.innerText || el.textContent ||
+  el.getAttribute('title') || el.getAttribute('alt') || '';
+
 document.addEventListener('click', (e) => {
-  const hit = e.target.closest('[data-track]');
+  const target = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+  const hit = target?.closest('[data-track]');
   if (hit) send(hit.dataset.track, where());
+
+  /* GA's catch-all. A container's text is the whole page under it, and GA4
+     buckets a dimension into "(other)" past 500 distinct values — so only a
+     control gets a label, and a click on the background says so. */
+  const control = target?.closest(CONTROL);
+  const el = control || target || document.body;
+  const href = control?.getAttribute('href');
+  window.fosburyGa?.('ui_click', {
+    element: el.tagName.toLowerCase(),
+    label: (control ? label(control) : '') || '(none)',
+    is_control: Boolean(control),
+    tracked: Boolean(hit),
+    link_url: href ? control.href : undefined,
+    link_outbound: href ? control.hostname !== location.hostname : undefined,
+    ...where(),
+  });
 }, true);
 
 /* ── the download-help dialog ──────────────────────────────────────────────
@@ -101,7 +156,7 @@ document.addEventListener('click', (e) => {
    that failed them. `os` rides along on all six, so a run of them from one
    platform is visible as one, which is usually what a broken build looks like.
    ─────────────────────────────────────────────────────────────────────── */
-const say = (name, detail) => (e) => send(name, where(detail ? detail(e.detail || {}) : undefined));
+const say = (name, detail) => (e) => send(name, where(detail ? detail(e.detail || {}) : undefined), 'download_help');
 
 document.addEventListener('help:open',    say('Download help — opened', (d) => ({ from: d.from })));
 document.addEventListener('help:close',   say('Download help — closed', (d) => ({ sent: Boolean(d.sent) })));

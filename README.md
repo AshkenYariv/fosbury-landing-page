@@ -23,6 +23,64 @@ here and still work — **nothing calls them.** They are kept rather than delete
 because the endpoint is the only record of how sign-ups were taken, and putting
 it back in front of a button is one commit. Its tests still run.
 
+## What is counted
+
+Two places, one map. [`scripts/track.js`](scripts/track.js) is the only file
+that decides what is counted and what it is called; it sends each moment to
+**Umami** (`4091c37b-…`, the same site the app's service reports into) and to
+**Google Analytics 4** through [`scripts/analytics.js`](scripts/analytics.js),
+which is the GA loader and nothing else — ported from the Skipping Stones
+landing site.
+
+| Moment | Umami event | GA4 event | GA4 parameters |
+|---|---|---|---|
+| Landing on a screen, or moving between the two | `Screen — Home` / `Screen — About` (moves only) | `page_view` | `page_location` (`/` or `/about`, no `#section`), `page_title`, `screen`, `os` |
+| A section crossing the middle of the window, first time per visit | `Section — <name>` | `section_reached` | `name`, `screen`, `os` |
+| A click on anything with `data-track` | the `data-track` value | `ui_click` with `tracked=yes` | below |
+| **Any** click on the page, tagged or not | — | `ui_click` | `element`, `label`, `is_control`, `tracked`, `link_url`, `link_outbound`, `screen`, `section`, `os` |
+| The download-help dialog (off with downloads) | `Download help — opened` / `closed` / `rejected` / `submitted` / `sent` / `send failed` | `download_help` | `name` (the Umami name), `from`, `sent`, `field`, `reason`, `screen`, `section`, `os` |
+
+`label` on a `ui_click` is the `data-track` name when there is one, then the
+`aria-label`, then the words on the control — never an input's value, because
+the help dialog's fields are what somebody typed. A click on page furniture has
+`label=(none)` and `is_control=no`.
+
+**Sections:** Hero, How it works, Built for, Quiet by default, Closing, About —
+and Download, which is commented out with the rest of the download surface.
+
+**Tagged clicks live today:**
+
+| Where | `data-track` |
+|---|---|
+| Bar | `Nav — Fosbury mark`, `Nav — How it works`, `Nav — Built for`, `Nav — Quiet`, `Nav — About` |
+| Open app | `Open app — hero`, `Open app — corner`, `Open app — closing`, `Make it stop` |
+| How it works tabs | `How it works — 01 A queue, not a river`, `… 02 It already replied`, `… 03 Hand off the chasing` |
+| Off with downloads | `Nav — Download`, `Download — corner` / `hero` / `closing` / `macOS` / `Windows` / `Linux` / `having problems`, `Open app — download section`, `Help — close pressed`, `Help — mailto`, `Help — done pressed` |
+
+A new button is counted in both places by adding `data-track="…"` to it, and
+in GA alone without even that.
+
+### GA4 settings that matter
+
+* **The id is one constant**, `ID` at the top of `scripts/analytics.js`:
+  `G-98TXZSL290`, property **Fosbury**, stream *Fosbury web (fosbury.ai + app)*.
+  The app's `frontend/public/analytics.js` carries the same one. Emptied, nothing
+  is loaded and every event is logged to the console instead.
+* **Nothing is sent from `localhost` or a `*.vercel.app` preview** — the events
+  are logged to the console as `[analytics] …`, which is how to check a payload
+  before it ships.
+* gtag's own page view is off (`send_page_view: false`): both screens are one
+  document, and its history listener would count every `#how` jump as a page.
+* In the GA4 property, register `screen`, `section`, `os`, `name`, `label`,
+  `element`, `is_control` and `tracked` as **event-scoped custom dimensions**,
+  or they arrive and cannot be reported on.
+* The same web stream is used by `app.fosbury.ai`, so the page and the app are
+  one journey; *Configure your domains* holds `fosbury.ai`, which covers both.
+* The stream's enhanced measurement keeps page loads, scrolls and video only.
+  History page views, outbound clicks, site search, form interactions and file
+  downloads are **off**: the first would double-count, and in the app the rest
+  would read real URLs and link targets out of somebody's workspace.
+
 ## Downloads — built, and switched off
 
 The whole download surface is written and **commented out**, because the links
