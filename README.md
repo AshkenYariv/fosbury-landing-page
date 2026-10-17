@@ -71,9 +71,11 @@ in GA alone without even that.
   before it ships.
 * gtag's own page view is off (`send_page_view: false`): both screens are one
   document, and its history listener would count every `#how` jump as a page.
-* In the GA4 property, register `screen`, `section`, `os`, `name`, `label`,
-  `element`, `is_control` and `tracked` as **event-scoped custom dimensions**,
-  or they arrive and cannot be reported on.
+* Every parameter above is registered in the property as an **event-scoped
+  custom dimension** — `label`, `section`, `screen`, `os`, `name` (shown as
+  *Umami name*), `element`, `is_control`, `tracked`, plus the app's `role`,
+  `region` and `surface`. A new parameter needs registering too (Admin →
+  Custom definitions), or it arrives and cannot be reported on.
 * The same web stream is used by `app.fosbury.ai`, so the page and the app are
   one journey; *Configure your domains* holds `fosbury.ai`, which covers both.
 * The stream's enhanced measurement keeps page loads, scrolls and video only.
