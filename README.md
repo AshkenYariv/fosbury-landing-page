@@ -25,6 +25,9 @@ it back in front of a button is one commit. Its tests still run.
 
 ## What is counted
 
+Where to read these numbers, and how they are reviewed, is
+[`product-metrics/`](product-metrics/). `product-metrics/metrics.test.js` holds this map to the page.
+
 Two places, one map. [`scripts/track.js`](scripts/track.js) is the only file
 that decides what is counted and what it is called; it sends each moment to
 **Umami** (`4091c37b-…`, the same site the app's service reports into) and to
